@@ -1,17 +1,10 @@
 {
-  "compiled_at": "2026-03-11T06:01:54.833Z",
-  "claims_hash": "aea1678",
+  "compiled_at": "2026-03-11T06:09:37.017Z",
+  "claims_hash": "e40f97a",
   "compiler_version": "0.1.0",
   "status": "ready",
   "errors": [],
   "warnings": [
-    {
-      "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"dogfooding\" has only stated-level evidence (1 claims)",
-      "claims": [
-        "d001"
-      ]
-    },
     {
       "code": "W_WEAK_EVIDENCE",
       "message": "Topic \"audience\" has only stated-level evidence (1 claims)",
@@ -31,25 +24,6 @@
       "message": "Topic \"quality\" has only stated-level evidence (1 claims)",
       "claims": [
         "d005"
-      ]
-    },
-    {
-      "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"architecture\" has only web-level evidence (4 claims)",
-      "claims": [
-        "r001",
-        "r002",
-        "r003",
-        "r008"
-      ]
-    },
-    {
-      "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"ux-pattern\" has only web-level evidence (3 claims)",
-      "claims": [
-        "r004",
-        "r005",
-        "r006"
       ]
     },
     {
@@ -295,29 +269,125 @@
       ]
     },
     {
-      "id": "r008",
-      "type": "estimate",
+      "id": "p001",
+      "type": "factual",
       "topic": "architecture",
-      "content": "The entire live server can be built with zero npm dependencies — Node.js core http + fs modules only. Estimated ~80-100 lines for: static file serving, SSE endpoint, file watcher, and compiler auto-run.",
+      "content": "Working prototype: wheat-server.js is 133 lines (not ~80 as estimated). Still zero npm dependencies. Includes: HTTP server, SSE endpoint, fs.watch on claims.json, auto-compile, static file serving, git log endpoint.",
       "source": {
-        "origin": "research",
-        "artifact": "research/live-ui-architecture.md",
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
         "connector": null
       },
-      "evidence": "web",
+      "evidence": "tested",
       "status": "active",
-      "phase_added": "research",
-      "timestamp": "2026-03-11T01:00:00Z",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [
+        "r008"
+      ],
+      "resolved_by": null,
+      "tags": [
+        "server",
+        "line-count",
+        "zero-deps"
+      ]
+    },
+    {
+      "id": "p002",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "SSE auto-reconnect confirmed working: EventSource reconnects automatically when server restarts, no client-side retry logic needed. Browser handles it natively.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
       "tags": [
-        "zero-deps",
-        "size-estimate"
+        "sse",
+        "reconnect",
+        "confirmed"
+      ]
+    },
+    {
+      "id": "p003",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "Split-pane layout works: left panel shows claims grouped by phase with type/evidence badges, right panel shows compiled output (coverage bars, conflicts, warnings, git log, certificate). Compiler stepper animates across the top on each update.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "split-pane",
+        "layout",
+        "confirmed"
+      ]
+    },
+    {
+      "id": "p004",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "fs.watch fires reliably on macOS for claims.json edits. 150ms debounce is sufficient to avoid double-fires. Compiler runs in ~50ms for 13 claims — instant feedback loop.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "fs.watch",
+        "latency",
+        "debounce"
+      ]
+    },
+    {
+      "id": "p005",
+      "type": "factual",
+      "topic": "dogfooding",
+      "content": "The live dashboard successfully visualizes its own sprint. As prototype claims were added to claims.json, the dashboard updated in real time showing the new claims, updated coverage bars, and re-animated compiler stepper. Self-referential loop confirmed working.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "dogfood",
+        "meta",
+        "self-referential"
       ]
     }
   ],
   "conflict_graph": {
     "resolved": [
+      {
+        "winner": "p001",
+        "loser": "r008",
+        "reason": "evidence_tier: tested (4) > web (2)"
+      },
       {
         "winner": "r001",
         "loser": "d002",
@@ -328,14 +398,16 @@
   },
   "coverage": {
     "dogfooding": {
-      "claims": 1,
-      "max_evidence": "stated",
-      "status": "weak",
+      "claims": 2,
+      "max_evidence": "tested",
+      "status": "strong",
       "types": [
-        "constraint"
+        "constraint",
+        "factual"
       ],
       "claim_ids": [
-        "d001"
+        "d001",
+        "p005"
       ]
     },
     "audience": {
@@ -372,32 +444,35 @@
       ]
     },
     "architecture": {
-      "claims": 4,
-      "max_evidence": "web",
-      "status": "weak",
+      "claims": 6,
+      "max_evidence": "tested",
+      "status": "strong",
       "types": [
         "recommendation",
-        "factual",
-        "estimate"
+        "factual"
       ],
       "claim_ids": [
         "r001",
         "r002",
         "r003",
-        "r008"
+        "p001",
+        "p002",
+        "p004"
       ]
     },
     "ux-pattern": {
-      "claims": 3,
-      "max_evidence": "web",
-      "status": "weak",
+      "claims": 4,
+      "max_evidence": "tested",
+      "status": "strong",
       "types": [
-        "recommendation"
+        "recommendation",
+        "factual"
       ],
       "claim_ids": [
         "r004",
         "r005",
-        "r006"
+        "r006",
+        "p003"
       ]
     },
     "output-format": {
@@ -422,8 +497,8 @@
       "complete": true
     },
     "prototype": {
-      "claims": 0,
-      "complete": false
+      "claims": 5,
+      "complete": true
     },
     "evaluate": {
       "claims": 0,
@@ -440,15 +515,15 @@
       "developer learning Wheat"
     ],
     "initiated": "2026-03-11",
-    "phase": "define",
-    "total_claims": 13,
-    "active_claims": 12,
+    "phase": "prototype",
+    "total_claims": 18,
+    "active_claims": 16,
     "conflicted_claims": 0,
-    "superseded_claims": 1,
+    "superseded_claims": 2,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:aea16781cc739cdd167496113c3d200af01a657f8c7261037fe2e3a6e2c8a302",
+    "input_hash": "sha256:e40f97a826090ad09d21a11fc3bdde5a9eb4a8585bf656248d0cba30d27c937d",
     "compiler_version": "0.1.0",
     "deterministic": true
   }

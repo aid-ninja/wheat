@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wheat — Live Dashboard</title>
+<style>
+  :root {
+    --bg: #0a0b10;
+    --surface: #111318;
+    --surface2: #181a22;
+    --surface3: #1f2230;
+    --border: #262938;
+    --border-bright: #363a4d;
+    --text: #e2e4ef;
+    --text-mid: #9a9db5;
+    --text-dim: #5c5f78;
+    --accent: #f59e0b;
+    --accent-dim: rgba(245,158,11,0.12);
+    --blue: #3b82f6;
+    --blue-dim: rgba(59,130,246,0.12);
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --purple: #a855f7;
+    --purple-dim: rgba(168,85,247,0.12);
+    --cyan: #06b6d4;
+    --cyan-dim: rgba(6,182,212,0.12);
+    --pink: #ec4899;
+    --pink-dim: rgba(236,72,153,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Layout ── */
+  .app {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 1px;
+    height: 100vh;
+    background: var(--border);
+  }
+
+  .header {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel {
+    background: var(--bg);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-header {
+    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .panel-body {
+    padding: 16px 20px;
+    flex: 1;
+  }
+
+  /* ── Header ── */
+  .logo {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--accent), #fbbf24);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .sprint-question {
+    flex: 1;
+    font-size: 12px;
+    color: var(--text-mid);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border-radius: 99px;
+  }
+
+  .badge-ready { background: var(--green-dim); color: var(--green); }
+  .badge-blocked { background: var(--red-dim); color: var(--red); }
+  .badge-phase { background: var(--blue-dim); color: var(--blue); }
+  .badge-claims { background: var(--surface2); color: var(--text-mid); }
+
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+  }
+
+  .disconnected .live-dot { background: var(--red); animation: none; }
+
+  /* ── Compiler Stepper ── */
+  .stepper {
+    display: flex;
+    gap: 0;
+    padding: 16px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    font-size: 11px;
+    white-space: nowrap;
+    position: relative;
+  }
+
+  .step:not(:last-child)::after {
+    content: '→';
+    position: absolute;
+    right: -4px;
+    color: var(--text-dim);
+    font-size: 10px;
+  }
+
+  .step-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+    transition: all 0.3s;
+  }
+
+  .step.idle .step-dot { background: var(--border-bright); }
+  .step.pass .step-dot { background: var(--green); }
+  .step.warn .step-dot { background: var(--accent); }
+  .step.fail .step-dot { background: var(--red); }
+  .step.running .step-dot { background: var(--blue); animation: pulse 0.8s infinite; }
+
+  .step-label { color: var(--text-dim); transition: color 0.3s; }
+  .step.pass .step-label { color: var(--text-mid); }
+  .step.warn .step-label { color: var(--accent); }
+  .step.fail .step-label { color: var(--red); }
+
+  /* ── Claims List ── */
+  .claim {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    transition: all 0.3s;
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .claim:hover { border-color: var(--border-bright); background: var(--surface2); }
+
+  .claim-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .claim-id {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 36px;
+  }
+
+  .claim-type-badge {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 1px 7px;
+    border-radius: 4px;
+  }
+
+  .type-constraint { background: var(--red-dim); color: var(--red); }
+  .type-factual { background: var(--blue-dim); color: var(--blue); }
+  .type-estimate { background: var(--purple-dim); color: var(--purple); }
+  .type-risk { background: var(--pink-dim); color: var(--pink); }
+  .type-recommendation { background: var(--green-dim); color: var(--green); }
+  .type-feedback { background: var(--cyan-dim); color: var(--cyan); }
+
+  .claim-evidence {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 1px 7px;
+    border-radius: 4px;
+    margin-left: auto;
+  }
+
+  .ev-stated { background: var(--surface3); color: var(--text-dim); }
+  .ev-web { background: var(--blue-dim); color: var(--blue); }
+  .ev-documented { background: var(--purple-dim); color: var(--purple); }
+  .ev-tested { background: var(--green-dim); color: var(--green); }
+  .ev-production { background: var(--accent-dim); color: var(--accent); }
+
+  .claim-content {
+    font-size: 12px;
+    color: var(--text-mid);
+    line-height: 1.5;
+  }
+
+  .claim-meta {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  .claim.superseded { opacity: 0.35; }
+  .claim.superseded .claim-content { text-decoration: line-through; }
+  .claim.conflicted { border-color: var(--red); border-style: dashed; }
+
+  /* ── Coverage ── */
+  .coverage-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .coverage-topic {
+    font-size: 12px;
+    color: var(--text);
+    min-width: 120px;
+    font-weight: 600;
+  }
+
+  .coverage-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: var(--surface3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .coverage-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease, background 0.3s;
+  }
+
+  .coverage-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    min-width: 70px;
+    text-align: right;
+  }
+
+  /* ── Conflicts ── */
+  .conflict-card {
+    background: var(--surface);
+    border: 1px dashed var(--red);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+  }
+
+  .conflict-resolved {
+    border-color: var(--green);
+    border-style: solid;
+  }
+
+  .conflict-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+
+  .conflict-label.unresolved { color: var(--red); }
+  .conflict-label.resolved { color: var(--green); }
+
+  .conflict-detail {
+    font-size: 12px;
+    color: var(--text-mid);
+    line-height: 1.5;
+  }
+
+  /* ── Git Log ── */
+  .git-entry {
+    display: flex;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 11px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .git-hash {
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .git-msg {
+    color: var(--text-mid);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Certificate ── */
+  .cert {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 11px;
+    line-height: 1.8;
+  }
+
+  .cert-key { color: var(--text-dim); }
+  .cert-val { color: var(--green); }
+  .cert-hash { color: var(--accent); word-break: break-all; }
+
+  /* ── Phase groups ── */
+  .phase-group {
+    margin-bottom: 16px;
+  }
+
+  .phase-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    padding: 4px 0 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .phase-count {
+    background: var(--surface3);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    color: var(--text-mid);
+  }
+
+  /* ── Section headers in right panel ── */
+  .section-header {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    padding: 8px 0 12px;
+    margin-top: 16px;
+  }
+
+  .section-header:first-child { margin-top: 0; }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  .empty-state .icon { font-size: 32px; margin-bottom: 12px; opacity: 0.5; }
+
+  /* ── Update flash ── */
+  .flash { animation: flash 0.6s ease-out; }
+
+  @keyframes flash {
+    0% { background: rgba(245,158,11,0.1); }
+    100% { background: transparent; }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; }
+    .stepper { flex-wrap: wrap; }
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- Header -->
+  <div class="header" id="header">
+    <div class="logo">wheat</div>
+    <div class="sprint-question" id="sprint-question">Loading...</div>
+    <div class="header-meta">
+      <span class="badge badge-phase" id="badge-phase">—</span>
+      <span class="badge badge-claims" id="badge-claims">—</span>
+      <span class="badge" id="badge-status">—</span>
+      <div class="live-dot" id="live-dot" title="SSE connected"></div>
+    </div>
+  </div>
+
+  <!-- Left Panel: Claims -->
+  <div class="panel" id="left-panel">
+    <div class="panel-header">
+      <span>Claims</span>
+      <span id="claims-count" style="color: var(--text-mid);">0</span>
+    </div>
+    <!-- Compiler stepper -->
+    <div class="stepper" id="stepper">
+      <div class="step idle" data-pass="schema"><div class="step-dot"></div><div class="step-label">Schema</div></div>
+      <div class="step idle" data-pass="types"><div class="step-dot"></div><div class="step-label">Types</div></div>
+      <div class="step idle" data-pass="evidence"><div class="step-dot"></div><div class="step-label">Evidence</div></div>
+      <div class="step idle" data-pass="conflicts"><div class="step-dot"></div><div class="step-label">Conflicts</div></div>
+      <div class="step idle" data-pass="resolve"><div class="step-dot"></div><div class="step-label">Resolve</div></div>
+      <div class="step idle" data-pass="coverage"><div class="step-dot"></div><div class="step-label">Coverage</div></div>
+      <div class="step idle" data-pass="ready"><div class="step-dot"></div><div class="step-label">Ready</div></div>
+    </div>
+    <div class="panel-body" id="claims-body">
+      <div class="empty-state"><div class="icon">🌾</div>Waiting for data...</div>
+    </div>
+  </div>
+
+  <!-- Right Panel: Compilation -->
+  <div class="panel">
+    <div class="panel-header">
+      <span>Compilation</span>
+      <span id="last-compiled" style="color: var(--text-mid);">—</span>
+    </div>
+    <div class="panel-body" id="compilation-body">
+      <div class="empty-state"><div class="icon">⚙️</div>Waiting for compilation...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──
+let compilation = null;
+let claims = null;
+let prevHash = null;
+
+// ── SSE Connection ──
+function connectSSE() {
+  const es = new EventSource('/events');
+
+  es.addEventListener('connected', () => {
+    document.getElementById('header').classList.remove('disconnected');
+    console.log('[wheat] SSE connected');
+    fetchAll();
+  });
+
+  es.addEventListener('compilation', (e) => {
+    const data = JSON.parse(e.data);
+    console.log('[wheat] update:', data.hash);
+    fetchAll();
+  });
+
+  es.addEventListener('error', (e) => {
+    const data = JSON.parse(e.data);
+    console.error('[wheat] error:', data.message);
+  });
+
+  es.onerror = () => {
+    document.getElementById('header').classList.add('disconnected');
+  };
+}
+
+// ── Data fetching ──
+async function fetchAll() {
+  animateCompiler();
+
+  try {
+    const [compRes, claimsRes, gitRes] = await Promise.all([
+      fetch('/compilation.json'),
+      fetch('/claims.json'),
+      fetch('/git-log'),
+    ]);
+
+    compilation = await compRes.json();
+    claims = await claimsRes.json();
+    const gitLog = await gitRes.text();
+
+    if (compilation.claims_hash !== prevHash) {
+      prevHash = compilation.claims_hash;
+      render(gitLog);
+    }
+  } catch (err) {
+    console.error('[wheat] fetch error:', err);
+  }
+}
+
+// ── Compiler animation ──
+function animateCompiler() {
+  const steps = document.querySelectorAll('.step');
+  steps.forEach((s, i) => {
+    s.className = 'step idle';
+    setTimeout(() => {
+      s.className = 'step running';
+      setTimeout(() => {
+        s.className = 'step pass';
+      }, 120);
+    }, i * 80);
+  });
+}
+
+function setCompilerResult() {
+  if (!compilation) return;
+  const steps = document.querySelectorAll('.step');
+
+  // Conflicts step
+  const hasConflicts = compilation.conflict_graph.unresolved.length > 0;
+  const conflictStep = steps[3];
+  if (hasConflicts) conflictStep.className = 'step fail';
+
+  // Coverage step
+  const weakTopics = Object.values(compilation.coverage).filter(c => c.status === 'weak').length;
+  if (weakTopics > 0) steps[5].className = 'step warn';
+
+  // Ready step
+  const readyStep = steps[6];
+  readyStep.className = compilation.status === 'ready' ? 'step pass' : 'step fail';
+}
+
+// ── Render ──
+function render(gitLog) {
+  if (!compilation || !claims) return;
+
+  // Header
+  document.getElementById('sprint-question').textContent = compilation.sprint_meta.question || 'No sprint initialized';
+  document.getElementById('badge-phase').textContent = compilation.sprint_meta.phase;
+  document.getElementById('badge-claims').textContent = `${compilation.sprint_meta.total_claims} claims`;
+
+  const statusBadge = document.getElementById('badge-status');
+  statusBadge.textContent = compilation.status;
+  statusBadge.className = `badge ${compilation.status === 'ready' ? 'badge-ready' : 'badge-blocked'}`;
+
+  document.getElementById('claims-count').textContent = compilation.sprint_meta.total_claims;
+  document.getElementById('last-compiled').textContent = new Date(compilation.compiled_at).toLocaleTimeString();
+
+  // Compiler stepper
+  setTimeout(() => setCompilerResult(), 600);
+
+  // Left panel: Claims grouped by phase
+  renderClaims();
+
+  // Right panel: Coverage + Conflicts + Git + Certificate
+  renderCompilation(gitLog);
+}
+
+function renderClaims() {
+  const body = document.getElementById('claims-body');
+  const allClaims = claims.claims || [];
+
+  if (allClaims.length === 0) {
+    body.innerHTML = '<div class="empty-state"><div class="icon">🌾</div>No claims yet. Run /init to get started.</div>';
+    return;
+  }
+
+  // Group by phase
+  const phases = ['define', 'research', 'prototype', 'evaluate', 'feedback'];
+  const grouped = {};
+  phases.forEach(p => grouped[p] = []);
+  allClaims.forEach(c => {
+    const phase = c.phase_added || 'define';
+    if (!grouped[phase]) grouped[phase] = [];
+    grouped[phase].push(c);
+  });
+
+  let html = '';
+  phases.forEach(phase => {
+    const phaseClaims = grouped[phase];
+    if (phaseClaims.length === 0) return;
+
+    html += `<div class="phase-group">`;
+    html += `<div class="phase-label">${phase} <span class="phase-count">${phaseClaims.length}</span></div>`;
+
+    phaseClaims.forEach(c => {
+      const statusClass = c.status === 'superseded' ? 'superseded' : c.status === 'conflicted' ? 'conflicted' : '';
+      html += `
+        <div class="claim ${statusClass}">
+          <div class="claim-top">
+            <span class="claim-id">${c.id}</span>
+            <span class="claim-type-badge type-${c.type}">${c.type}</span>
+            <span class="claim-evidence ev-${c.evidence}">${c.evidence}</span>
+          </div>
+          <div class="claim-content">${escHtml(c.content)}</div>
+          <div class="claim-meta">
+            <span>${c.topic}</span>
+            ${c.status !== 'active' ? `<span style="color: var(--${c.status === 'superseded' ? 'red' : 'accent'})">${c.status}</span>` : ''}
+            ${c.conflicts_with && c.conflicts_with.length ? `<span style="color: var(--red)">conflicts: ${c.conflicts_with.join(', ')}</span>` : ''}
+          </div>
+        </div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  body.innerHTML = html;
+  body.classList.add('flash');
+  setTimeout(() => body.classList.remove('flash'), 600);
+}
+
+function renderCompilation(gitLog) {
+  const body = document.getElementById('compilation-body');
+  let html = '';
+
+  // Coverage
+  html += '<div class="section-header">Evidence Coverage</div>';
+  const coverage = compilation.coverage || {};
+  const tierValues = { stated: 1, web: 2, documented: 3, tested: 4, production: 5 };
+  const tierColors = { stated: 'var(--text-dim)', web: 'var(--blue)', documented: 'var(--purple)', tested: 'var(--green)', production: 'var(--accent)' };
+
+  Object.entries(coverage).forEach(([topic, data]) => {
+    const pct = ((tierValues[data.max_evidence] || 1) / 5) * 100;
+    const color = tierColors[data.max_evidence] || 'var(--text-dim)';
+    html += `
+      <div class="coverage-row">
+        <span class="coverage-topic">${topic}</span>
+        <div class="coverage-bar-bg">
+          <div class="coverage-bar" style="width: ${pct}%; background: ${color};"></div>
+        </div>
+        <span class="coverage-label">${data.max_evidence} (${data.claims})</span>
+      </div>`;
+  });
+
+  // Conflicts
+  const resolved = compilation.conflict_graph.resolved || [];
+  const unresolved = compilation.conflict_graph.unresolved || [];
+
+  if (resolved.length > 0 || unresolved.length > 0) {
+    html += '<div class="section-header">Conflicts</div>';
+
+    unresolved.forEach(c => {
+      html += `
+        <div class="conflict-card">
+          <div class="conflict-label unresolved">Unresolved</div>
+          <div class="conflict-detail">${c.claimA} vs ${c.claimB} — ${c.reason || 'same evidence tier'}</div>
+        </div>`;
+    });
+
+    resolved.forEach(c => {
+      html += `
+        <div class="conflict-card conflict-resolved">
+          <div class="conflict-label resolved">Resolved</div>
+          <div class="conflict-detail">${c.winner} wins over ${c.loser} — ${c.reason}</div>
+        </div>`;
+    });
+  }
+
+  // Warnings
+  const warnings = compilation.warnings || [];
+  if (warnings.length > 0) {
+    html += '<div class="section-header">Warnings</div>';
+    warnings.forEach(w => {
+      html += `
+        <div class="claim" style="border-color: var(--accent); border-style: dashed;">
+          <div class="claim-top">
+            <span class="claim-id" style="color: var(--accent);">${w.code}</span>
+          </div>
+          <div class="claim-content">${escHtml(w.message)}</div>
+        </div>`;
+    });
+  }
+
+  // Git log
+  const gitLines = gitLog.trim().split('\n').filter(l => l.trim());
+  if (gitLines.length > 0 && gitLines[0] !== 'no commits') {
+    html += '<div class="section-header">Sprint Event Log</div>';
+    gitLines.forEach(line => {
+      const parts = line.match(/^([a-f0-9]+)\s+(.*)$/);
+      if (parts) {
+        html += `<div class="git-entry"><span class="git-hash">${parts[1]}</span><span class="git-msg">${escHtml(parts[2])}</span></div>`;
+      }
+    });
+  }
+
+  // Certificate
+  if (compilation.compilation_certificate) {
+    html += '<div class="section-header">Compilation Certificate</div>';
+    html += `
+      <div class="cert">
+        <span class="cert-key">status:</span> <span class="cert-val">${compilation.status}</span><br>
+        <span class="cert-key">claims:</span> <span class="cert-val">${compilation.sprint_meta.active_claims} active, ${compilation.sprint_meta.superseded_claims} superseded, ${compilation.sprint_meta.conflicted_claims} conflicted</span><br>
+        <span class="cert-key">topics:</span> <span class="cert-val">${Object.keys(coverage).length}</span><br>
+        <span class="cert-key">hash:</span> <span class="cert-hash">${compilation.compilation_certificate.input_hash}</span><br>
+        <span class="cert-key">compiler:</span> <span class="cert-val">v${compilation.compilation_certificate.compiler_version}</span><br>
+        <span class="cert-key">deterministic:</span> <span class="cert-val">${compilation.compilation_certificate.deterministic}</span>
+      </div>`;
+  }
+
+  body.innerHTML = html;
+  body.classList.add('flash');
+  setTimeout(() => body.classList.remove('flash'), 600);
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Init ──
+connectSSE();
+</script>
+
+</body>
+</html>

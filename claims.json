@@ -3,7 +3,7 @@
     "question": "How can we build a live visualization of Wheat that teaches the framework by showing itself in action?",
     "initiated": "2026-03-11",
     "audience": ["developer learning Wheat"],
-    "phase": "define",
+    "phase": "prototype",
     "connectors": []
   },
   "claims": [
@@ -185,9 +185,79 @@
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
-      "conflicts_with": [],
+      "conflicts_with": ["p001"],
       "resolved_by": null,
       "tags": ["zero-deps", "size-estimate"]
+    },
+    {
+      "id": "p001",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Working prototype: wheat-server.js is 133 lines (not ~80 as estimated). Still zero npm dependencies. Includes: HTTP server, SSE endpoint, fs.watch on claims.json, auto-compile, static file serving, git log endpoint.",
+      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": ["r008"],
+      "resolved_by": null,
+      "tags": ["server", "line-count", "zero-deps"]
+    },
+    {
+      "id": "p002",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "SSE auto-reconnect confirmed working: EventSource reconnects automatically when server restarts, no client-side retry logic needed. Browser handles it natively.",
+      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["sse", "reconnect", "confirmed"]
+    },
+    {
+      "id": "p003",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "Split-pane layout works: left panel shows claims grouped by phase with type/evidence badges, right panel shows compiled output (coverage bars, conflicts, warnings, git log, certificate). Compiler stepper animates across the top on each update.",
+      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["split-pane", "layout", "confirmed"]
+    },
+    {
+      "id": "p004",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "fs.watch fires reliably on macOS for claims.json edits. 150ms debounce is sufficient to avoid double-fires. Compiler runs in ~50ms for 13 claims — instant feedback loop.",
+      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["fs.watch", "latency", "debounce"]
+    },
+    {
+      "id": "p005",
+      "type": "factual",
+      "topic": "dogfooding",
+      "content": "The live dashboard successfully visualizes its own sprint. As prototype claims were added to claims.json, the dashboard updated in real time showing the new claims, updated coverage bars, and re-animated compiler stepper. Self-referential loop confirmed working.",
+      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["dogfood", "meta", "self-referential"]
     }
   ]
 }
