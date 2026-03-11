@@ -20,8 +20,8 @@
     --cyan: #22d3ee;
     --orange: #f59e0b;
     --text: #e8ecf1;
-    --text-secondary: #8b95a5;
-    --text-dim: #4f5b6b;
+    --text-secondary: #9ba5b7;
+    --text-dim: #6b7a8d;
     --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
     --sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
   }
@@ -250,92 +250,99 @@
 
   .pipeline-caption {
     text-align: center;
-    font-size: 9pt;
-    color: var(--text-dim);
+    font-size: 10pt;
+    color: var(--text-secondary);
     margin-top: 16px;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
   }
 
-  /* --- Stat tiles (clickable) --- */
-  .stat-tiles {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    padding: 16px 0;
+  /* --- Stat accordion --- */
+  .stat-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 8px 0;
   }
 
-  .stat-tile {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px 16px;
-    text-align: center;
+  .stat-acc-item {
+    border-bottom: 1px solid var(--border);
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.22,1,0.36,1);
-    position: relative;
-    overflow: hidden;
+    transition: background 0.2s;
   }
-  .stat-tile:hover {
-    background: var(--surface-hover);
-    border-color: var(--border-light);
-    transform: translateY(-2px);
-  }
-  .stat-tile.open {
-    border-color: var(--border-light);
-    background: var(--surface-hover);
+  .stat-acc-item:last-child { border-bottom: none; }
+  .stat-acc-item:hover { background: var(--surface); }
+
+  .stat-acc-header {
+    display: flex;
+    align-items: center;
+    padding: 16px 4px;
+    gap: 16px;
   }
 
-  .stat-tile .st-num {
-    font-size: 26pt;
+  .stat-acc-header .sa-num {
+    font-size: 22pt;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
     line-height: 1;
+    min-width: 48px;
+    text-align: right;
   }
-  .stat-tile .st-label {
-    font-size: 8pt;
+
+  .stat-acc-header .sa-label {
+    font-size: 10pt;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-dim);
-    margin-top: 6px;
+    color: var(--text-secondary);
+    flex: 1;
   }
-  .stat-tile .st-expand {
+
+  .stat-acc-header .sa-chev {
+    font-size: 8pt;
+    color: var(--text-dim);
+    opacity: 0.4;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+
+  .stat-acc-item.open .sa-chev {
+    transform: rotate(90deg);
+    opacity: 0.8;
+  }
+
+  .stat-acc-body {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.35s ease, margin 0.35s ease;
-    margin-top: 0;
-    text-align: left;
+    transition: max-height 0.35s ease, padding 0.35s ease;
+    padding: 0 4px 0 68px;
   }
-  .stat-tile.open .st-expand {
+  .stat-acc-item.open .stat-acc-body {
     max-height: 300px;
-    margin-top: 14px;
+    padding: 0 4px 16px 68px;
   }
-  .stat-tile .st-expand-inner {
-    border-top: 1px solid var(--border);
-    padding-top: 12px;
-    font-size: 8.5pt;
+
+  .stat-acc-body-inner {
+    font-size: 9pt;
     color: var(--text-secondary);
     line-height: 1.7;
   }
-  .stat-tile .st-expand-inner .tier-row,
-  .stat-tile .st-expand-inner .pass-row {
+
+  .stat-acc-body-inner .tier-row,
+  .stat-acc-body-inner .pass-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 3px 0;
+    padding: 2px 0;
+    gap: 8px;
   }
-  .stat-tile .st-expand-inner .tier-num {
+  .stat-acc-body-inner .tier-num {
     font-family: var(--mono);
     font-size: 8pt;
     opacity: 0.5;
-    margin-right: 6px;
+    min-width: 14px;
   }
-  .stat-tile .st-expand-inner .tier-bar {
+  .stat-acc-body-inner .tier-bar {
     height: 3px;
     border-radius: 2px;
     flex: 1;
-    margin-left: 8px;
-    opacity: 0.3;
+    max-width: 120px;
+    opacity: 0.35;
   }
 
   /* --- Steps --- */
@@ -594,7 +601,7 @@
     section { padding: 0 20px; }
     .steps-grid, .cmd-columns, .artifacts-grid { grid-template-columns: 1fr; }
     .explore-grid { grid-template-columns: 1fr; }
-    .stat-tiles { grid-template-columns: repeat(2, 1fr); }
+    .stat-acc-body { padding-left: 48px !important; }
     .spacer { height: 80px; }
     .hero-section { min-height: auto; padding-top: 60px; padding-bottom: 60px; }
     .cta-row { flex-direction: column; align-items: center; }
@@ -632,11 +639,14 @@
 
   <!-- ═══ STATS ═══ -->
   <section>
-    <div class="stat-tiles reveal">
-      <div class="stat-tile" data-tile="commands">
-        <div class="st-num" data-target="17" style="color:var(--blue)">0</div>
-        <div class="st-label">Commands</div>
-        <div class="st-expand"><div class="st-expand-inner">
+    <div class="stat-accordion reveal">
+      <div class="stat-acc-item">
+        <div class="stat-acc-header">
+          <div class="sa-num" data-target="17" style="color:var(--blue)">0</div>
+          <div class="sa-label">Commands</div>
+          <span class="sa-chev">&#9654;</span>
+        </div>
+        <div class="stat-acc-body"><div class="stat-acc-body-inner">
           <strong style="color:var(--green);font-size:7.5pt;letter-spacing:0.08em;">LIFECYCLE</strong><br>
           /init, /research, /prototype, /evaluate, /brief, /present, /handoff<br><br>
           <strong style="color:var(--orange);font-size:7.5pt;letter-spacing:0.08em;">QUALITY</strong><br>
@@ -645,38 +655,47 @@
           /status, /replay, /merge, /calibrate, /feedback, /connect
         </div></div>
       </div>
-      <div class="stat-tile" data-tile="tiers">
-        <div class="st-num" data-target="5" style="color:var(--green)">0</div>
-        <div class="st-label">Evidence Tiers</div>
-        <div class="st-expand"><div class="st-expand-inner">
-          <div class="tier-row"><span><span class="tier-num">1</span> Stated</span><div class="tier-bar" style="background:var(--green);max-width:20%;"></div></div>
-          <div class="tier-row"><span><span class="tier-num">2</span> Web</span><div class="tier-bar" style="background:var(--green);max-width:40%;"></div></div>
-          <div class="tier-row"><span><span class="tier-num">3</span> Documented</span><div class="tier-bar" style="background:var(--green);max-width:60%;"></div></div>
-          <div class="tier-row"><span><span class="tier-num">4</span> Tested</span><div class="tier-bar" style="background:var(--green);max-width:80%;"></div></div>
-          <div class="tier-row"><span><span class="tier-num">5</span> Production</span><div class="tier-bar" style="background:var(--green);max-width:100%;"></div></div>
-          <div style="margin-top:6px;font-size:7.5pt;color:var(--text-dim);">Higher tier = stronger evidence. The compiler sorts claims by tier for conflict resolution.</div>
+      <div class="stat-acc-item">
+        <div class="stat-acc-header">
+          <div class="sa-num" data-target="5" style="color:var(--green)">0</div>
+          <div class="sa-label">Evidence Tiers</div>
+          <span class="sa-chev">&#9654;</span>
+        </div>
+        <div class="stat-acc-body"><div class="stat-acc-body-inner">
+          <div class="tier-row"><span class="tier-num">1</span> Stated <div class="tier-bar" style="background:var(--green);width:20%;"></div></div>
+          <div class="tier-row"><span class="tier-num">2</span> Web <div class="tier-bar" style="background:var(--green);width:40%;"></div></div>
+          <div class="tier-row"><span class="tier-num">3</span> Documented <div class="tier-bar" style="background:var(--green);width:60%;"></div></div>
+          <div class="tier-row"><span class="tier-num">4</span> Tested <div class="tier-bar" style="background:var(--green);width:80%;"></div></div>
+          <div class="tier-row"><span class="tier-num">5</span> Production <div class="tier-bar" style="background:var(--green);width:100%;"></div></div>
+          <div style="margin-top:8px;font-size:8pt;color:var(--text-dim);">Higher tier = stronger evidence. The compiler sorts by tier for conflict resolution.</div>
         </div></div>
       </div>
-      <div class="stat-tile" data-tile="passes">
-        <div class="st-num" data-target="7" style="color:var(--orange)">0</div>
-        <div class="st-label">Compiler Passes</div>
-        <div class="st-expand"><div class="st-expand-inner">
-          <div class="pass-row"><span><span class="tier-num">1</span> Schema Validation</span></div>
-          <div class="pass-row"><span><span class="tier-num">2</span> Type Checking</span></div>
-          <div class="pass-row"><span><span class="tier-num">3</span> Evidence Sorting</span></div>
-          <div class="pass-row"><span><span class="tier-num">4</span> Conflict Detection</span></div>
-          <div class="pass-row"><span><span class="tier-num">5</span> Auto-Resolution</span></div>
-          <div class="pass-row"><span><span class="tier-num">6</span> Coverage Analysis</span></div>
-          <div class="pass-row"><span><span class="tier-num">7</span> Readiness Check</span></div>
-          <div style="margin-top:6px;font-size:7.5pt;color:var(--text-dim);">Deterministic: same claims in = same compilation out. Certificate hash proves it.</div>
+      <div class="stat-acc-item">
+        <div class="stat-acc-header">
+          <div class="sa-num" data-target="7" style="color:var(--orange)">0</div>
+          <div class="sa-label">Compiler Passes</div>
+          <span class="sa-chev">&#9654;</span>
+        </div>
+        <div class="stat-acc-body"><div class="stat-acc-body-inner">
+          <div class="pass-row"><span class="tier-num">1</span> Schema Validation</div>
+          <div class="pass-row"><span class="tier-num">2</span> Type Checking</div>
+          <div class="pass-row"><span class="tier-num">3</span> Evidence Sorting</div>
+          <div class="pass-row"><span class="tier-num">4</span> Conflict Detection</div>
+          <div class="pass-row"><span class="tier-num">5</span> Auto-Resolution</div>
+          <div class="pass-row"><span class="tier-num">6</span> Coverage Analysis</div>
+          <div class="pass-row"><span class="tier-num">7</span> Readiness Check</div>
+          <div style="margin-top:8px;font-size:8pt;color:var(--text-dim);">Deterministic: same claims in = same compilation out. Certificate hash proves it.</div>
         </div></div>
       </div>
-      <div class="stat-tile" data-tile="deps">
-        <div class="st-num" data-target="0" style="color:var(--text-dim)">0</div>
-        <div class="st-label">Dependencies</div>
-        <div class="st-expand"><div class="st-expand-inner">
+      <div class="stat-acc-item">
+        <div class="stat-acc-header">
+          <div class="sa-num" data-target="0" style="color:var(--text-dim)">0</div>
+          <div class="sa-label">Dependencies</div>
+          <span class="sa-chev">&#9654;</span>
+        </div>
+        <div class="stat-acc-body"><div class="stat-acc-body-inner">
           Zero runtime dependencies. The compiler, all output generators, and the test suite run on Node.js built-ins only.<br><br>
-          <span style="color:var(--text-dim);font-size:7.5pt;">Optional: md-to-pdf for PDF generation.</span>
+          <span style="color:var(--text-dim);">Optional: md-to-pdf for PDF generation.</span>
         </div></div>
       </div>
     </div>
@@ -830,7 +849,7 @@
   var statsObs = new IntersectionObserver(function(entries) {
     entries.forEach(function(e) {
       if (e.isIntersecting) {
-        document.querySelectorAll('.st-num[data-target]').forEach(function(el) {
+        document.querySelectorAll('.sa-num[data-target]').forEach(function(el) {
           var target = parseInt(el.getAttribute('data-target'));
           if (target === 0) { el.textContent = '0'; return; }
           var start = performance.now();
@@ -844,15 +863,15 @@
       }
     });
   }, { threshold: 0.3 });
-  var tilesEl = document.querySelector('.stat-tiles');
-  if (tilesEl) statsObs.observe(tilesEl);
+  var accEl = document.querySelector('.stat-accordion');
+  if (accEl) statsObs.observe(accEl);
 
-  // ── Stat tile toggle ──
-  document.querySelectorAll('.stat-tile').forEach(function(tile) {
-    tile.addEventListener('click', function() {
-      var wasOpen = this.classList.contains('open');
-      document.querySelectorAll('.stat-tile.open').forEach(function(t) { t.classList.remove('open'); });
-      if (!wasOpen) this.classList.add('open');
+  // ── Stat accordion toggle ──
+  document.querySelectorAll('.stat-acc-item').forEach(function(item) {
+    item.querySelector('.stat-acc-header').addEventListener('click', function() {
+      var wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.stat-acc-item.open').forEach(function(t) { t.classList.remove('open'); });
+      if (!wasOpen) item.classList.add('open');
     });
   });
 
@@ -1093,8 +1112,8 @@
   function drawChip(x, y, node, active) {
     var col = node.color;
     var isHub = node.isHub;
-    var w = isHub ? 90 : 66;
-    var h = isHub ? 44 : 32;
+    var w = isHub ? 100 : 72;
+    var h = isHub ? 48 : 34;
     var r = 6;
     var glow = active ? 0.2 : 0.04;
 
@@ -1153,25 +1172,25 @@
 
     // Icon inside chip
     ctx.fillStyle = active
-      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.9)'
-      : 'rgba(148,163,184,0.35)';
-    ctx.font = (isHub ? '700 11px ' : '700 9px ') + monoFont;
+      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.95)'
+      : 'rgba(155,165,183,0.5)';
+    ctx.font = (isHub ? '700 13px ' : '700 10px ') + monoFont;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(node.icon, x, y);
 
     // Label below chip
     ctx.textBaseline = 'top';
-    ctx.fillStyle = active ? 'rgba(241,245,249,0.9)' : 'rgba(148,163,184,0.65)';
-    ctx.font = '600 8.5px ' + sansFont;
-    ctx.fillText(node.label, x, y + h/2 + 8);
+    ctx.fillStyle = active ? 'rgba(241,245,249,0.95)' : 'rgba(155,165,183,0.8)';
+    ctx.font = '600 10px ' + sansFont;
+    ctx.fillText(node.label, x, y + h/2 + 10);
 
     var subText = node.sub;
     if (node.isHub && active) {
       subText = 'Pass ' + (passIdx+1) + ': ' + passes[passIdx];
     }
-    ctx.fillStyle = 'rgba(100,116,139,0.55)';
-    ctx.font = '500 7px ' + sansFont;
-    ctx.fillText(subText, x, y + h/2 + 20);
+    ctx.fillStyle = 'rgba(107,122,141,0.75)';
+    ctx.font = '500 8.5px ' + sansFont;
+    ctx.fillText(subText, x, y + h/2 + 24);
   }
 
   function spawnFlow(ei) {
