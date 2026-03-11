@@ -965,11 +965,11 @@
         "connector": null
       },
       "evidence": "tested",
-      "status": "active",
+      "status": "superseded",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T13:00:00Z",
       "conflicts_with": [],
-      "resolved_by": null,
+      "resolved_by": "Fixed in P0 release prep. Compiler now catches JSON parse errors with try-catch, exits with code 1 and a clean error message. Verified by tests: \"malformed JSON\" and \"empty claims\" test cases in test/compiler.test.js.",
       "tags": [
         "error-handling",
         "robustness",

@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-11T12:23:33.337Z",
-  "claims_hash": "38b4f2a",
+  "compiled_at": "2026-03-11T12:43:42.513Z",
+  "claims_hash": "fabafec",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -880,28 +880,6 @@
         "scalability",
         "benchmark",
         "performance"
-      ]
-    },
-    {
-      "id": "e002",
-      "type": "risk",
-      "topic": "architecture",
-      "content": "Compiler crashes on empty or unparseable claims.json files (throws unhandled JSON parse error). Gracefully handles structural issues: missing claims array defaults to empty, missing meta defaults to empty, invalid claim fields produce BLOCKED status with errors. Two crash cases (empty file, malformed JSON) should be caught with a try/catch at the top level.",
-      "source": {
-        "origin": "evaluation",
-        "artifact": "evidence/sprint-evaluation.html",
-        "connector": null
-      },
-      "evidence": "tested",
-      "status": "active",
-      "phase_added": "evaluate",
-      "timestamp": "2026-03-11T13:00:00Z",
-      "conflicts_with": [],
-      "resolved_by": null,
-      "tags": [
-        "error-handling",
-        "robustness",
-        "crash"
       ]
     },
     {
@@ -3696,7 +3674,7 @@
       ]
     },
     "architecture": {
-      "claims": 48,
+      "claims": 47,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -3719,7 +3697,6 @@
         "r015",
         "r016",
         "e001",
-        "e002",
         "w001",
         "w002",
         "x004",
@@ -4089,7 +4066,6 @@
     "r022": 0,
     "p009": 1,
     "e001": 1,
-    "e002": 1,
     "e003": 1,
     "e004": 1,
     "e005": 1,
@@ -4236,13 +4212,13 @@
     "initiated": "2026-03-11",
     "phase": "evaluate",
     "total_claims": 165,
-    "active_claims": 152,
+    "active_claims": 151,
     "conflicted_claims": 0,
-    "superseded_claims": 9,
+    "superseded_claims": 10,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:38b4f2a0e57f4d9da95260adedfd6316fc59c85cacc07cf69d78cb83ae0551c5",
+    "input_hash": "sha256:fabafec29199b08ec386d775a37c59edeac8bbb9f231101a29f8b430fc6d4b11",
     "compiler_version": "0.2.0",
     "deterministic": true
   }
