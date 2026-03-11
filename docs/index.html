@@ -152,9 +152,10 @@
   .art-desc{font-size:8pt;color:var(--text-3)}
 
   /* ── Pipeline ── */
-  .pipeline-wrap{position:relative;height:540px;padding:20px 0}
+  .pipeline-section{max-width:none;padding:0}
+  .pipeline-wrap{position:relative;height:540px;padding:0;width:100%}
   #pipeline-canvas{width:100%;height:100%;display:block}
-  .pipeline-caption{text-align:center;font-size:10pt;color:var(--text-2);margin-top:16px}
+  .pipeline-caption{text-align:center;font-size:10pt;color:var(--text-2);margin-top:16px;padding:0 40px}
 
   /* ── Steps ── */
   .steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
@@ -487,8 +488,8 @@
   <div class="spacer"></div>
 
   <!-- ═══════════ PIPELINE ═══════════ -->
-  <section>
-    <div class="section-label gold rv">Under the Hood</div>
+  <section class="pipeline-section">
+    <div class="section-label gold rv" style="max-width:900px;margin:0 auto;padding:0 40px">Under the Hood</div>
     <div class="pipeline-wrap rv rv-d1">
       <canvas id="pipeline-canvas"></canvas>
     </div>
@@ -612,9 +613,9 @@
   var fp=[],pT=0,aE=0,eT=0,ED=90,pI2=0,pT2=0;
 
   function gP(){
-    var pad=80,cx=PW/2,mob=PW<500;
+    var pad=70,cx=PW/2,mob=PW<500;
     if(mob){var sp=(PH-pad*2)/5,y0=pad;return[{x:cx,y:y0},{x:cx,y:y0+sp},{x:cx,y:y0+sp*2},{x:cx,y:y0+sp*3},{x:cx,y:y0+sp*4},{x:cx,y:y0+sp*5}]}
-    var cL=Math.max(pad+50,cx*.3),cR=Math.min(PW-pad-50,cx*1.7),uH=PH-pad*2,y0=pad;
+    var cL=PW*.18,cR=PW*.82,uH=PH-pad*2,y0=pad;
     return[{x:cL,y:y0},{x:cx,y:y0+uH*.2},{x:cR,y:y0+uH*.2},{x:cx,y:y0+uH*.47},{x:cx,y:y0+uH*.7},{x:cx,y:y0+uH}]
   }
   function gT(a,b,i){var mob=PW<500;if(mob)return[{x:a.x,y:a.y},{x:b.x,y:b.y}];if(i===0)return[{x:a.x,y:a.y},{x:b.x,y:a.y},{x:b.x,y:b.y}];if(i===2)return[{x:a.x,y:a.y},{x:a.x,y:b.y}];return[{x:a.x,y:a.y},{x:b.x,y:b.y}]}
