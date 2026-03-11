@@ -688,7 +688,243 @@ if (args.includes('--gate')) {
   process.exit(0);
 }
 
+// ─── --next: Data-driven next action recommendation ──────────────────────────
+if (args.includes('--next')) {
+  const n = parseInt(args[args.indexOf('--next') + 1]) || 1;
+  const actions = computeNextActions(compilation);
+  const top = actions.slice(0, n);
+
+  if (top.length === 0) {
+    console.log('\nNo actions recommended — sprint looks complete.');
+    console.log('Consider: /brief to compile, /present to share, /calibrate after shipping.');
+  } else {
+    console.log(`\nNext ${top.length === 1 ? 'action' : top.length + ' actions'} (by Bran priority):`);
+    console.log('='.repeat(50));
+    top.forEach((a, i) => {
+      console.log(`\n${i + 1}. [${a.priority}] ${a.command}`);
+      console.log(`   ${a.reason}`);
+      console.log(`   Impact: ${a.impact}`);
+    });
+    console.log();
+  }
+  // Also output as JSON for programmatic use
+  if (args.includes('--json')) {
+    console.log(JSON.stringify(top, null, 2));
+  }
+  process.exit(0);
+}
+
+function computeNextActions(comp) {
+  const actions = [];
+  const coverage = comp.coverage || {};
+  const conflicts = comp.conflict_graph || { resolved: [], unresolved: [] };
+  const phase = comp.sprint_meta?.phase || 'init';
+  const phases = comp.phase_summary || {};
+  const warnings = comp.warnings || [];
+  const corroboration = comp.corroboration || {};
+
+  // ── Priority 1: Unresolved conflicts (blocks compilation) ──────────────
+  if (conflicts.unresolved.length > 0) {
+    conflicts.unresolved.forEach(c => {
+      actions.push({
+        priority: 'P0-BLOCKER',
+        score: 1000,
+        command: `/resolve ${c.claim_a} ${c.claim_b}`,
+        reason: `Unresolved conflict between ${c.claim_a} and ${c.claim_b} — blocks compilation.`,
+        impact: 'Unblocks compilation. Status changes from BLOCKED to READY.',
+      });
+    });
+  }
+
+  // ── Priority 2: Phase progression ──────────────────────────────────────
+  const phaseFlow = ['init', 'define', 'research', 'prototype', 'evaluate'];
+  const phaseIdx = phaseFlow.indexOf(phase);
+
+  if (phase === 'init') {
+    actions.push({
+      priority: 'P1-PHASE',
+      score: 900,
+      command: '/init',
+      reason: 'Sprint not initialized. No question, constraints, or audience defined.',
+      impact: 'Establishes sprint question and seeds constraint claims.',
+    });
+  }
+
+  // If in define, push toward research
+  if (phase === 'define' && (!phases.research || phases.research.claims === 0)) {
+    // Find topics with only constraint claims
+    const constraintTopics = Object.entries(coverage)
+      .filter(([, e]) => e.constraint_count === e.claims && e.claims > 0)
+      .map(([t]) => t);
+    const researchTarget = Object.entries(coverage)
+      .sort((a, b) => a[1].claims - b[1].claims)
+      .filter(([t]) => !constraintTopics.includes(t) || coverage[t].claims <= 1)
+      .map(([t]) => t)[0];
+
+    actions.push({
+      priority: 'P1-PHASE',
+      score: 850,
+      command: `/research "${researchTarget || 'core topic'}"`,
+      reason: `Phase is define with no research claims yet. Need to advance to research.`,
+      impact: 'Adds web-level evidence. Moves sprint into research phase.',
+    });
+  }
+
+  // If lots of research but no prototypes
+  if (phaseIdx >= 2 && (!phases.prototype || phases.prototype.claims === 0)) {
+    // Find topic with most web claims — best candidate to upgrade
+    const webHeavy = Object.entries(coverage)
+      .filter(([, e]) => e.max_evidence === 'web' && e.claims >= 2)
+      .sort((a, b) => b[1].claims - a[1].claims);
+
+    if (webHeavy.length > 0) {
+      actions.push({
+        priority: 'P1-PHASE',
+        score: 800,
+        command: `/prototype "${webHeavy[0][0]}"`,
+        reason: `Topic "${webHeavy[0][0]}" has ${webHeavy[0][1].claims} claims at web-level. Prototyping upgrades to tested.`,
+        impact: `Evidence upgrade: web → tested for ${webHeavy[0][0]}. Enters prototype phase.`,
+      });
+    }
+  }
+
+  // ── Priority 3: Weak evidence topics ───────────────────────────────────
+  const evidenceRank = { stated: 1, web: 2, documented: 3, tested: 4, production: 5 };
+  const phaseExpectation = { define: 1, research: 2, prototype: 4, evaluate: 4 };
+  const expected = phaseExpectation[phase] || 2;
+
+  Object.entries(coverage).forEach(([topic, entry]) => {
+    const rank = evidenceRank[entry.max_evidence] || 1;
+    const constraintRatio = (entry.constraint_count || 0) / entry.claims;
+
+    // Skip constraint-dominated topics
+    if (constraintRatio > 0.5) return;
+
+    if (rank < expected) {
+      const gap = expected - rank;
+      const score = 600 + (gap * 50) + entry.claims * 5;
+
+      if (rank <= 2 && expected >= 4) {
+        actions.push({
+          priority: 'P2-EVIDENCE',
+          score,
+          command: `/prototype "${topic}"`,
+          reason: `Topic "${topic}" is at ${entry.max_evidence} (${entry.claims} claims) but phase is ${phase}. Needs tested-level evidence.`,
+          impact: `Evidence upgrade: ${entry.max_evidence} → tested. Closes coverage gap.`,
+        });
+      } else if (rank <= 1) {
+        actions.push({
+          priority: 'P2-EVIDENCE',
+          score,
+          command: `/research "${topic}"`,
+          reason: `Topic "${topic}" is at ${entry.max_evidence} (${entry.claims} claims). Needs deeper research.`,
+          impact: `Evidence upgrade: ${entry.max_evidence} → web/documented.`,
+        });
+      }
+    }
+  });
+
+  // ── Priority 4: Type monoculture ───────────────────────────────────────
+  Object.entries(coverage).forEach(([topic, entry]) => {
+    const constraintRatio = (entry.constraint_count || 0) / entry.claims;
+    if (constraintRatio > 0.5) return;
+
+    if ((entry.type_diversity || 0) < 2 && entry.claims >= 2) {
+      const missing = (entry.missing_types || []).slice(0, 3).join(', ');
+      actions.push({
+        priority: 'P3-DIVERSITY',
+        score: 400 + entry.claims * 3,
+        command: `/challenge ${entry.claim_ids?.[0] || topic}`,
+        reason: `Topic "${topic}" has ${entry.claims} claims but only ${entry.type_diversity} type(s). Missing: ${missing}.`,
+        impact: 'Adds risk/recommendation claims. Improves type diversity.',
+      });
+    }
+
+    // Missing risk claims specifically
+    if (entry.claims >= 3 && !(entry.types || []).includes('risk')) {
+      actions.push({
+        priority: 'P3-DIVERSITY',
+        score: 380,
+        command: `/challenge ${entry.claim_ids?.[0] || topic}`,
+        reason: `Topic "${topic}" has ${entry.claims} claims but zero risks. What could go wrong?`,
+        impact: 'Adds adversarial risk claims. Stress-tests assumptions.',
+      });
+    }
+  });
+
+  // ── Priority 5: Echo chambers ──────────────────────────────────────────
+  Object.entries(coverage).forEach(([topic, entry]) => {
+    if (entry.claims >= 3 && (entry.source_count || 1) === 1) {
+      actions.push({
+        priority: 'P4-CORROBORATION',
+        score: 300 + entry.claims * 2,
+        command: `/witness ${entry.claim_ids?.[0] || ''} <url>`,
+        reason: `Topic "${topic}" has ${entry.claims} claims all from "${(entry.source_origins || ['unknown'])[0]}". Single source.`,
+        impact: 'Adds external corroboration. Breaks echo chamber.',
+      });
+    }
+  });
+
+  // ── Priority 6: Zero corroboration on high-value claims ────────────────
+  const uncorroborated = Object.entries(corroboration)
+    .filter(([, count]) => count === 0)
+    .map(([id]) => id);
+
+  // Find tested claims with zero corroboration — highest value to witness
+  if (uncorroborated.length > 0) {
+    const testedUncorroborated = (comp.resolved_claims || [])
+      .filter(c => c.evidence === 'tested' && uncorroborated.includes(c.id))
+      .slice(0, 1);
+
+    if (testedUncorroborated.length > 0) {
+      actions.push({
+        priority: 'P4-CORROBORATION',
+        score: 250,
+        command: `/witness ${testedUncorroborated[0].id} <url>`,
+        reason: `Tested claim "${testedUncorroborated[0].id}" has zero external corroboration.`,
+        impact: 'Adds external validation to highest-evidence claim.',
+      });
+    }
+  }
+
+  // ── Priority 7: Sprint completion suggestions ──────────────────────────
+  const hasEvaluate = phases.evaluate && phases.evaluate.claims > 0;
+  const allTopicsTested = Object.entries(coverage)
+    .filter(([, e]) => (e.constraint_count || 0) / e.claims <= 0.5)
+    .every(([, e]) => evidenceRank[e.max_evidence] >= 4);
+
+  if (hasEvaluate && allTopicsTested && conflicts.unresolved.length === 0) {
+    actions.push({
+      priority: 'P5-SHIP',
+      score: 100,
+      command: '/brief',
+      reason: 'All non-constraint topics at tested evidence, evaluate phase complete, 0 conflicts.',
+      impact: 'Compiles the decision document. Sprint ready to ship.',
+    });
+  } else if (!hasEvaluate && phaseIdx >= 3) {
+    actions.push({
+      priority: 'P1-PHASE',
+      score: 750,
+      command: '/evaluate',
+      reason: `Phase is ${phase} but no evaluation claims exist. Time to test claims against reality.`,
+      impact: 'Validates claims, resolves conflicts, produces comparison dashboard.',
+    });
+  }
+
+  // Sort by score descending
+  actions.sort((a, b) => b.score - a.score);
+
+  // Deduplicate by command
+  const seen = new Set();
+  return actions.filter(a => {
+    const key = a.command.split(' ').slice(0, 2).join(' ');
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 // Export for use as a library
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { compile, diffCompilations, loadConfig, EVIDENCE_TIERS, VALID_TYPES };
+  module.exports = { compile, diffCompilations, computeNextActions, loadConfig, EVIDENCE_TIERS, VALID_TYPES };
 }
