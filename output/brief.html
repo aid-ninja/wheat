@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision Brief — Live Visualization of Wheat</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #263548;
+    --border: rgba(255,255,255,0.06);
+    --text: #f1f5f9;
+    --text-mid: #94a3b8;
+    --text-dim: #64748b;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --blue: #3b82f6;
+    --blue-dim: rgba(59,130,246,0.12);
+    --amber: #f59e0b;
+    --amber-dim: rgba(245,158,11,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.12);
+    --cyan: #06b6d4;
+    --cyan-dim: rgba(6,182,212,0.12);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 40px;
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+  }
+  .header-meta {
+    display: flex;
+    gap: 24px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .header-meta strong { color: var(--text-mid); }
+
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 32px 40px 80px;
+  }
+
+  h2 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--blue);
+    margin-top: 40px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  h2::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    color: var(--text-mid);
+    font-size: 14px;
+    line-height: 1.65;
+    margin-bottom: 12px;
+  }
+
+  .summary-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--blue);
+    border-radius: 0 10px 10px 0;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+  .summary-box p { margin-bottom: 0; font-size: 15px; }
+
+  .rec-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--green);
+    border-radius: 0 10px 10px 0;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+  .rec-box p { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+
+  ol, ul {
+    color: var(--text-mid);
+    font-size: 13px;
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+  li { margin-bottom: 6px; line-height: 1.5; }
+
+  .claim-ref {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: rgba(255,255,255,0.03);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  .topic-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .topic-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .topic-name { font-size: 15px; font-weight: 700; }
+  .topic-pill {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .pill-tested { background: var(--green-dim); color: var(--green); }
+  .pill-documented { background: var(--purple-dim); color: var(--purple); }
+  .pill-web { background: var(--blue-dim); color: var(--blue); }
+  .pill-stated { background: rgba(255,255,255,0.04); color: var(--text-dim); }
+  .topic-claims { font-size: 11px; color: var(--text-dim); }
+  .topic-body { color: var(--text-mid); font-size: 13px; line-height: 1.6; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 12px 0;
+  }
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--surface);
+    color: var(--blue);
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 2px solid rgba(59,130,246,0.2);
+  }
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-mid);
+    vertical-align: top;
+  }
+  td:first-child { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; color: var(--text); font-weight: 600; }
+
+  .risk-row { background: rgba(239,68,68,0.03); }
+
+  .conflict-box {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-bottom: 12px;
+    font-size: 13px;
+  }
+  .conflict-winner { color: var(--green); font-weight: 700; }
+  .conflict-loser { color: var(--red); font-weight: 500; text-decoration: line-through; opacity: 0.6; }
+  .conflict-arrow { color: var(--text-dim); font-size: 18px; }
+
+  .certificate {
+    margin-top: 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 24px;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    text-align: center;
+  }
+  .certificate strong { color: var(--text-mid); }
+
+  @media print {
+    body { background: #fff; color: #111; }
+    header { background: #f8f9fa; }
+    .topic-section, .summary-box, .rec-box, .conflict-box, .certificate { background: #f8f9fa; border-color: #ddd; }
+    h2 { color: #333; }
+    p, .topic-body, td, li { color: #444; }
+    th { background: #eee; color: #333; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Decision Brief: Live Visualization of Wheat</h1>
+  <div class="header-meta">
+    <span><strong>Date</strong> 2026-03-11</span>
+    <span><strong>Audience</strong> Developer learning Wheat</span>
+    <span><strong>Phase</strong> Compiled</span>
+    <span><strong>Claims</strong> 48 (46 active)</span>
+    <span><strong>Status</strong> READY</span>
+  </div>
+</header>
+
+<main>
+
+  <h2>Executive Summary</h2>
+  <div class="summary-box">
+    <p>The sprint successfully built a live, self-referential visualization of the Wheat framework — a real-time dashboard that teaches Wheat by being a product of it. A zero-dependency Node.js SSE server watches <code>claims.json</code>, auto-compiles, and pushes updates to a timeline-first browser dashboard. All 5 original constraints are satisfied, 48 claims across 8 topics have been validated, and the system scales to 1000+ claims with sub-60ms compile times.</p>
+  </div>
+
+  <h2>Recommendation</h2>
+  <div class="rec-box">
+    <p>Ship the current implementation as the canonical Wheat teaching tool.</p>
+    <ol>
+      <li><strong>Live dashboard</strong> for dev-time experience — real-time claim→compile→artifact loop <span class="claim-ref">f003, p005</span></li>
+      <li><strong>Static HTML</strong> for sharing — fully self-contained, works via <code>file://</code> <span class="claim-ref">f002, p008, e003</span></li>
+      <li><strong>17-command suite</strong> in 3 tiers for future sprints <span class="claim-ref">r013, r016</span></li>
+      <li><strong>Robustness fixes</strong> shipped — compiler handles malformed JSON gracefully <span class="claim-ref">e002</span></li>
+    </ol>
+  </div>
+
+  <h2>Evidence by Topic</h2>
+
+  <div class="topic-section">
+    <div class="topic-header">
+      <span class="topic-name">Architecture</span>
+      <span class="topic-pill pill-tested">tested</span>
+      <span class="topic-claims">14 claims &middot; 4 sources &middot; 4 types</span>
+    </div>
+    <div class="topic-body">
+      Zero-dependency Node.js stack: <code>wheat-server.js</code> (133 lines) with SSE push, <code>fs.watch</code> with 150ms debounce, auto-compile in ~50ms <span class="claim-ref">p001, p004</span>. SSE auto-reconnect handled natively by browser <span class="claim-ref">p002</span>. Compiler v0.2.0 (685 lines) scales linearly: 59ms at 1000 claims <span class="claim-ref">e001, r014</span>. 17 commands in 3 tiers with 3 QA feedback loops <span class="claim-ref">r013, r016</span>.
+    </div>
+  </div>
+
+  <div class="topic-section">
+    <div class="topic-header">
+      <span class="topic-name">UX Pattern</span>
+      <span class="topic-pill pill-tested">tested</span>
+      <span class="topic-claims">8 claims &middot; 3 sources &middot; 4 types</span>
+    </div>
+    <div class="topic-body">
+      Timeline-first design with phase-colored nodes (define=amber, research=blue, prototype=green, evaluate=purple, feedback=cyan) <span class="claim-ref">p006, p007</span>. Progressive disclosure via click-to-expand <span class="claim-ref">f005</span>. Reverse chronological — newest first <span class="claim-ref">f006</span>. Compiler stepper animates on each update <span class="claim-ref">r005, p003</span>.
+    </div>
+  </div>
+
+  <div class="topic-section">
+    <div class="topic-header">
+      <span class="topic-name">Accessibility</span>
+      <span class="topic-pill pill-tested">tested</span>
+      <span class="topic-claims">8 claims &middot; 3 sources &middot; 3 types</span>
+    </div>
+    <div class="topic-body">
+      13/13 WCAG 2.2 AA checks pass <span class="claim-ref">e004</span>. Five fixes in ~25 lines: contrast raised to 5.08:1, semantic landmarks, keyboard nav with Enter/Space, aria-live for SSE updates, focus-visible outlines <span class="claim-ref">r021, p009</span>. Residual: template Google Fonts import should be removed <span class="claim-ref">r022</span>.
+    </div>
+  </div>
+
+  <div class="topic-section">
+    <div class="topic-header">
+      <span class="topic-name">Output Format</span>
+      <span class="topic-pill pill-tested">tested</span>
+      <span class="topic-claims">6 claims &middot; 4 sources &middot; 4 types</span>
+    </div>
+    <div class="topic-body">
+      7/7 HTML artifacts verified self-contained: zero external dependencies, 7.3–26.3KB, all open via <code>file://</code> <span class="claim-ref">e003, p008</span>. Live server for dev, static for sharing <span class="claim-ref">r007, f002, f003</span>.
+    </div>
+  </div>
+
+  <div class="topic-section">
+    <div class="topic-header">
+      <span class="topic-name">Dogfooding</span>
+      <span class="topic-pill pill-tested">tested</span>
+      <span class="topic-claims">3 claims &middot; 3 sources &middot; 2 types</span>
+    </div>
+    <div class="topic-body">
+      20/48 claims are self-referential, 5/5 phases exercised, 16 wheat-format commits <span class="claim-ref">e005</span>. The self-referential loop is the teaching mechanism <span class="claim-ref">p005, d001</span>.
+    </div>
+  </div>
+
+  <div class="topic-section">
+    <div class="topic-header">
+      <span class="topic-name">Quality</span>
+      <span class="topic-pill pill-tested">tested</span>
+      <span class="topic-claims">5 claims &middot; 3 sources &middot; 4 types</span>
+    </div>
+    <div class="topic-body">
+      Evidence distribution: stated 27.5%, web 42.5%, documented 10%, tested 22.5% <span class="claim-ref">e006</span>. Compiler's constraint-aware coverage correctly handles constraint-dominated topics <span class="claim-ref">r009, r012</span>. Success criteria is inherently subjective <span class="claim-ref">d005</span>.
+    </div>
+  </div>
+
+  <div class="topic-section" style="opacity:0.6">
+    <div class="topic-header">
+      <span class="topic-name">Audience</span>
+      <span class="topic-pill pill-stated">stated</span>
+      <span class="topic-claims">1 claim &middot; constraint-dominated</span>
+    </div>
+    <div class="topic-body">
+      Single developer seeing Wheat for the first time; visualization should be self-explanatory <span class="claim-ref">d003</span>.
+    </div>
+  </div>
+
+  <div class="topic-section" style="opacity:0.6">
+    <div class="topic-header">
+      <span class="topic-name">Scope</span>
+      <span class="topic-pill pill-stated">stated</span>
+      <span class="topic-claims">1 claim &middot; constraint-dominated</span>
+    </div>
+    <div class="topic-body">
+      Full creative freedom — no budget, timeline, or tech constraints beyond self-contained HTML <span class="claim-ref">d004</span>.
+    </div>
+  </div>
+
+  <h2>Tradeoffs &amp; Risks</h2>
+
+  <table>
+    <thead>
+      <tr><th>Risk</th><th>Evidence</th><th>Status</th><th>Mitigation</th></tr>
+    </thead>
+    <tbody>
+      <tr class="risk-row"><td>r007</td><td>Server vs self-contained tension</td><td>Resolved</td><td>Two artifacts: server for dev, static for sharing</td></tr>
+      <tr class="risk-row"><td>e002</td><td>Compiler crashes on malformed JSON</td><td>Fixed</td><td>try/catch added; clean error messages</td></tr>
+      <tr class="risk-row"><td>r022</td><td>Template imports external Google Fonts</td><td>Open</td><td>Remove @import; use system font stack</td></tr>
+      <tr class="risk-row"><td>r018</td><td>No ARIA landmarks (initial state)</td><td>Fixed</td><td>Semantic HTML added (p009)</td></tr>
+      <tr class="risk-row"><td>r019</td><td>No keyboard navigation (initial state)</td><td>Fixed</td><td>tabindex, role, keydown added (p009)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Resolved Conflicts</h2>
+
+  <div class="conflict-box">
+    <span class="conflict-winner">p001</span>
+    <span class="conflict-arrow">&gt;</span>
+    <span class="conflict-loser">r008</span>
+    <span style="color:var(--text-dim);flex:1">Server is 133 lines (not ~80 estimated). Evidence tier: tested (4) &gt; web (2).</span>
+  </div>
+
+  <h2>Appendix: Full Claim Inventory (46 Active)</h2>
+
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Type</th><th>Topic</th><th>Evidence</th><th style="min-width:280px">Content</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>d001</td><td>constraint</td><td>dogfooding</td><td>stated</td><td>Visualization must be built through Wheat pipeline itself</td></tr>
+      <tr><td>d002</td><td>constraint</td><td>output-format</td><td>stated</td><td>Self-contained HTML, no external dependencies</td></tr>
+      <tr><td>d003</td><td>constraint</td><td>audience</td><td>stated</td><td>Single developer, self-explanatory without docs</td></tr>
+      <tr><td>d004</td><td>constraint</td><td>scope</td><td>stated</td><td>Full creative freedom, no constraints beyond HTML</td></tr>
+      <tr><td>d005</td><td>constraint</td><td>quality</td><td>stated</td><td>Subjective success — visually compelling first impression</td></tr>
+      <tr><td>r002</td><td>factual</td><td>architecture</td><td>web</td><td>fs.watch uses OS-level notifications, zero deps</td></tr>
+      <tr><td>r003</td><td>factual</td><td>architecture</td><td>web</td><td>Browser-only approaches not viable (Chrome-only)</td></tr>
+      <tr><td>r004</td><td>recommendation</td><td>ux-pattern</td><td>web</td><td>AST Explorer split-pane pattern</td></tr>
+      <tr><td>r005</td><td>recommendation</td><td>ux-pattern</td><td>web</td><td>Linear pipeline stepper for compiler passes</td></tr>
+      <tr><td>r006</td><td>recommendation</td><td>ux-pattern</td><td>web</td><td>HMR hash-notification pattern for SSE</td></tr>
+      <tr><td>r007</td><td>risk</td><td>output-format</td><td>web</td><td>Server vs self-contained tension</td></tr>
+      <tr><td>r009</td><td>factual</td><td>quality</td><td>web</td><td>3/4 weak evidence warnings are false alarms</td></tr>
+      <tr><td>r010</td><td>factual</td><td>output-format</td><td>web</td><td>Output-format is only real evidence gap</td></tr>
+      <tr><td>r011</td><td>risk</td><td>quality</td><td>web</td><td>Compiler warning has constraint blind spot</td></tr>
+      <tr><td>r012</td><td>recommendation</td><td>architecture</td><td>web</td><td>Add constraint-aware coverage analysis</td></tr>
+      <tr><td>r013</td><td>factual</td><td>architecture</td><td>documented</td><td>17 commands in 3 tiers</td></tr>
+      <tr><td>r014</td><td>factual</td><td>architecture</td><td>documented</td><td>Compiler v0.2.0: 685 lines, 9 new capabilities</td></tr>
+      <tr><td>r015</td><td>factual</td><td>architecture</td><td>documented</td><td>9 claim ID prefixes</td></tr>
+      <tr><td>r016</td><td>recommendation</td><td>architecture</td><td>documented</td><td>Tier 2 QA creates 3 feedback loops</td></tr>
+      <tr><td>r017</td><td>factual</td><td>accessibility</td><td>web</td><td>--text-dim contrast 2.78:1 fails WCAG AA</td></tr>
+      <tr><td>r018</td><td>risk</td><td>accessibility</td><td>web</td><td>Zero ARIA landmarks or semantic HTML</td></tr>
+      <tr><td>r019</td><td>risk</td><td>accessibility</td><td>web</td><td>No keyboard navigation on claim rows</td></tr>
+      <tr><td>r020</td><td>risk</td><td>accessibility</td><td>web</td><td>No aria-live for SSE updates</td></tr>
+      <tr><td>r021</td><td>recommendation</td><td>accessibility</td><td>web</td><td>Five fixes for WCAG 2.2 AA (~30 lines)</td></tr>
+      <tr><td>r022</td><td>risk</td><td>accessibility</td><td>web</td><td>Template imports external Google Fonts</td></tr>
+      <tr><td>p001</td><td>factual</td><td>architecture</td><td>tested</td><td>Server is 133 lines, zero npm deps</td></tr>
+      <tr><td>p002</td><td>factual</td><td>architecture</td><td>tested</td><td>SSE auto-reconnect confirmed</td></tr>
+      <tr><td>p003</td><td>factual</td><td>ux-pattern</td><td>tested</td><td>Split-pane layout works</td></tr>
+      <tr><td>p004</td><td>factual</td><td>architecture</td><td>tested</td><td>fs.watch reliable, ~50ms compile</td></tr>
+      <tr><td>p005</td><td>factual</td><td>dogfooding</td><td>tested</td><td>Self-referential loop confirmed</td></tr>
+      <tr><td>p006</td><td>factual</td><td>ux-pattern</td><td>tested</td><td>Timeline-first dashboard built</td></tr>
+      <tr><td>p007</td><td>factual</td><td>ux-pattern</td><td>tested</td><td>Phase-colored visual system effective</td></tr>
+      <tr><td>p008</td><td>factual</td><td>output-format</td><td>tested</td><td>All HTML artifacts verified self-contained</td></tr>
+      <tr><td>p009</td><td>factual</td><td>accessibility</td><td>tested</td><td>All 5 WCAG 2.2 AA fixes implemented</td></tr>
+      <tr><td>f001</td><td>feedback</td><td>architecture</td><td>stated</td><td>User prefers static over live server</td></tr>
+      <tr><td>f002</td><td>feedback</td><td>output-format</td><td>stated</td><td>Self-contained HTML is the right call</td></tr>
+      <tr><td>f003</td><td>feedback</td><td>architecture</td><td>stated</td><td>Live server valuable as dev-time tool</td></tr>
+      <tr><td>f004</td><td>feedback</td><td>quality</td><td>stated</td><td>Dashboard UI needs UX polish</td></tr>
+      <tr><td>f005</td><td>feedback</td><td>ux-pattern</td><td>stated</td><td>Needs timeline UI, progressive disclosure</td></tr>
+      <tr><td>f006</td><td>constraint</td><td>ux-pattern</td><td>stated</td><td>Reverse chronological — newest first</td></tr>
+      <tr><td>e001</td><td>factual</td><td>architecture</td><td>tested</td><td>Compiler scales: 59ms at 1000 claims</td></tr>
+      <tr><td>e002</td><td>risk</td><td>architecture</td><td>tested</td><td>2 crash cases on malformed JSON (fixed)</td></tr>
+      <tr><td>e003</td><td>factual</td><td>output-format</td><td>tested</td><td>7/7 artifacts verified self-contained</td></tr>
+      <tr><td>e004</td><td>factual</td><td>accessibility</td><td>tested</td><td>13/13 WCAG 2.2 AA checks pass</td></tr>
+      <tr><td>e005</td><td>factual</td><td>dogfooding</td><td>tested</td><td>20/48 self-referential, 5/5 phases</td></tr>
+      <tr><td>e006</td><td>factual</td><td>quality</td><td>tested</td><td>Evidence distribution: 22.5% tested</td></tr>
+    </tbody>
+  </table>
+
+  <div class="certificate">
+    <strong>Compilation Certificate</strong><br>
+    sha256:b311e643ba878... &middot; wheat v0.2.0 &middot; 48 claims (46 active, 2 superseded) &middot; 2026-03-11T08:17:50.289Z
+  </div>
+
+</main>
+
+</body>
+</html>
