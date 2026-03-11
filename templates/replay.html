@@ -929,6 +929,91 @@
     margin-top: 4px;
     font-style: italic;
   }
+
+  /* ─── Mobile responsive ─────────────────────────────────────────────── */
+  @media (max-width: 700px) {
+    body { font-size: 10pt; }
+
+    /* Top bar: tighter */
+    .top-bar { padding: 12px 14px 8px; }
+    .top-title { font-size: 12pt; margin-bottom: 6px; }
+    .top-title span { display: none; }
+    .commit-msg { font-size: 8pt; }
+
+    /* Scrubber: wrap controls */
+    .scrubber-row { flex-wrap: wrap; gap: 8px; }
+    .scrubber-track { order: -1; flex-basis: 100%; }
+    .scrubber-info { gap: 8px; flex-wrap: wrap; }
+    .frame-counter { font-size: 9pt; min-width: auto; }
+    .speed-btn { font-size: 8pt; }
+    .sandbox-toggle { font-size: 8pt; padding: 4px 10px; }
+    #nextCommitBtn { font-size: 7pt; padding: 3px 8px; }
+    #playBtn { width: 32px; height: 32px; font-size: 12pt; }
+
+    /* Stack panels vertically */
+    .main-area {
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .panel-left {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      overflow-y: visible;
+      padding: 12px 14px;
+      max-height: none;
+    }
+
+    .panel-right {
+      width: 100%;
+      overflow-y: visible;
+    }
+
+    .panel-section { padding: 12px 14px; }
+
+    /* Claims */
+    .claim-item { font-size: 9pt; padding: 4px 6px; }
+    .claim-id { font-size: 7.5pt; min-width: 30px; }
+    .claim-evidence { font-size: 7pt; padding: 1px 4px; }
+
+    /* Coverage */
+    .coverage-topic { width: 80px; font-size: 7.5pt; }
+    .coverage-bar-track { height: 10px; }
+    .coverage-status { font-size: 7pt; width: 48px; }
+
+    /* Stats */
+    .stats-grid { gap: 6px; }
+    .stat-card { padding: 10px 12px; }
+    .stat-value { font-size: 16pt; }
+    .stat-label { font-size: 7pt; }
+
+    /* Delta bar */
+    .delta-bar { padding: 8px 14px; font-size: 8pt; gap: 10px; flex-wrap: wrap; }
+
+    /* Hide keyboard hints on mobile */
+    .kbd-hint { display: none; }
+
+    /* Sandbox */
+    .sandbox-panel { padding: 10px 14px; }
+    .sandbox-form { flex-direction: column; }
+    .sandbox-field { min-width: 0; }
+
+    /* Annotations */
+    .annotation-panel {
+      left: 10px !important;
+      right: 10px !important;
+      max-width: none !important;
+      bottom: 50px !important;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .coverage-topic { width: 60px; }
+    .subframe-indicator { display: none; }
+  }
 </style>
 </head>
 <body>
