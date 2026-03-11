@@ -1,10 +1,19 @@
 {
-  "compiled_at": "2026-03-11T06:18:25.329Z",
-  "claims_hash": "79cf3f7",
+  "compiled_at": "2026-03-11T06:21:32.191Z",
+  "claims_hash": "43ce732",
   "compiler_version": "0.1.0",
   "status": "ready",
   "errors": [],
   "warnings": [
+    {
+      "code": "W_WEAK_EVIDENCE",
+      "message": "Topic \"output-format\" has only web-level evidence (3 claims)",
+      "claims": [
+        "d002",
+        "r007",
+        "f002"
+      ]
+    },
     {
       "code": "W_WEAK_EVIDENCE",
       "message": "Topic \"audience\" has only stated-level evidence (1 claims)",
@@ -24,14 +33,6 @@
       "message": "Topic \"quality\" has only stated-level evidence (1 claims)",
       "claims": [
         "d005"
-      ]
-    },
-    {
-      "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"output-format\" has only web-level evidence (2 claims)",
-      "claims": [
-        "r007",
-        "f002"
       ]
     }
   ],
@@ -55,6 +56,27 @@
       "tags": [
         "meta",
         "self-referential"
+      ]
+    },
+    {
+      "id": "d002",
+      "type": "constraint",
+      "topic": "output-format",
+      "content": "Output must be self-contained HTML (inline CSS/JS, no external dependencies) that can be opened directly in a browser.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-11T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "html",
+        "portable"
       ]
     },
     {
@@ -117,30 +139,6 @@
       "tags": [
         "quality",
         "wow-factor"
-      ]
-    },
-    {
-      "id": "r001",
-      "type": "recommendation",
-      "topic": "architecture",
-      "content": "Use a tiny Node.js server (~80 lines, zero dependencies) with Server-Sent Events (SSE) to push compilation updates to the browser in real time. SSE beats WebSockets here: one-way data flow, auto-reconnect built into the browser, and zero npm dependencies.",
-      "source": {
-        "origin": "research",
-        "artifact": "research/live-ui-architecture.md",
-        "connector": null
-      },
-      "evidence": "web",
-      "status": "active",
-      "phase_added": "research",
-      "timestamp": "2026-03-11T01:00:00Z",
-      "conflicts_with": [
-        "d002"
-      ],
-      "resolved_by": null,
-      "tags": [
-        "sse",
-        "server",
-        "real-time"
       ]
     },
     {
@@ -382,6 +380,27 @@
       ]
     },
     {
+      "id": "f001",
+      "type": "feedback",
+      "topic": "architecture",
+      "content": "User prefers the static file:// dashboard (output/dashboard.html) over the live SSE server (localhost:3141). The SSE server doesn't add enough value — most interaction is reading the current state, which the static HTML already shows well. The live server is over-engineered for the actual use pattern.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-11T03:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "user-feedback",
+        "static-vs-live"
+      ]
+    },
+    {
       "id": "f002",
       "type": "feedback",
       "topic": "output-format",
@@ -409,16 +428,6 @@
         "winner": "p001",
         "loser": "r008",
         "reason": "evidence_tier: tested (4) > web (2)"
-      },
-      {
-        "winner": "r001",
-        "loser": "f001",
-        "reason": "evidence_tier: web (2) > stated (1)"
-      },
-      {
-        "winner": "r001",
-        "loser": "d002",
-        "reason": "evidence_tier: web (2) > stated (1)"
       }
     ],
     "unresolved": []
@@ -435,6 +444,21 @@
       "claim_ids": [
         "d001",
         "p005"
+      ]
+    },
+    "output-format": {
+      "claims": 3,
+      "max_evidence": "web",
+      "status": "weak",
+      "types": [
+        "constraint",
+        "risk",
+        "feedback"
+      ],
+      "claim_ids": [
+        "d002",
+        "r007",
+        "f002"
       ]
     },
     "audience": {
@@ -475,16 +499,16 @@
       "max_evidence": "tested",
       "status": "strong",
       "types": [
-        "recommendation",
-        "factual"
+        "factual",
+        "feedback"
       ],
       "claim_ids": [
-        "r001",
         "r002",
         "r003",
         "p001",
         "p002",
-        "p004"
+        "p004",
+        "f001"
       ]
     },
     "ux-pattern": {
@@ -500,19 +524,6 @@
         "r005",
         "r006",
         "p003"
-      ]
-    },
-    "output-format": {
-      "claims": 2,
-      "max_evidence": "web",
-      "status": "weak",
-      "types": [
-        "risk",
-        "feedback"
-      ],
-      "claim_ids": [
-        "r007",
-        "f002"
       ]
     }
   },
@@ -546,13 +557,13 @@
     "initiated": "2026-03-11",
     "phase": "prototype",
     "total_claims": 20,
-    "active_claims": 17,
+    "active_claims": 18,
     "conflicted_claims": 0,
-    "superseded_claims": 3,
+    "superseded_claims": 2,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:79cf3f7508f18643f1af466a7b81459691692328909b8ef81790c66272b05bfc",
+    "input_hash": "sha256:43ce73248acbddd4e9851845820ce20828e2acaf7a3533ea9d8b0ef67b47f0ea",
     "compiler_version": "0.1.0",
     "deterministic": true
   }

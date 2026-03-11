@@ -31,7 +31,7 @@
       "status": "active",
       "phase_added": "define",
       "timestamp": "2026-03-11T00:00:00Z",
-      "conflicts_with": ["r001"],
+      "conflicts_with": [],
       "resolved_by": null,
       "tags": ["html", "portable"]
     },
@@ -84,11 +84,11 @@
       "content": "Use a tiny Node.js server (~80 lines, zero dependencies) with Server-Sent Events (SSE) to push compilation updates to the browser in real time. SSE beats WebSockets here: one-way data flow, auto-reconnect built into the browser, and zero npm dependencies.",
       "source": { "origin": "research", "artifact": "research/live-ui-architecture.md", "connector": null },
       "evidence": "web",
-      "status": "active",
+      "status": "superseded",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
-      "conflicts_with": ["d002"],
-      "resolved_by": null,
+      "conflicts_with": [],
+      "resolved_by": "f001",
       "tags": ["sse", "server", "real-time"]
     },
     {
@@ -269,7 +269,7 @@
       "status": "active",
       "phase_added": "feedback",
       "timestamp": "2026-03-11T03:00:00Z",
-      "conflicts_with": ["r001"],
+      "conflicts_with": [],
       "resolved_by": null,
       "tags": ["user-feedback", "static-vs-live"]
     },
