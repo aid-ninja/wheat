@@ -945,6 +945,27 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["witness", "corroboration", "color-coding", "data-viz", "atlassian"]
+    },
+    {
+      "id": "w008",
+      "type": "factual",
+      "topic": "output-format",
+      "content": "External corroboration for p008: Self-contained single-file HTML is an established distribution pattern. Multiple tools exist specifically for this (vite-plugin-singlefile, Inliner.js, HtmlPackager, webpage2html). Use cases include reports, presentations, and offline-first apps — exactly Wheat's use case. The approach of inlining all CSS/JS with zero external dependencies is the standard solution for portable, shareable HTML artifacts.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "p008",
+        "relationship": "full_support",
+        "urls": ["https://www.npmjs.com/package/vite-plugin-singlefile"]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:45:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["witness", "corroboration", "self-contained", "single-file-html"]
     }
   ]
 }
