@@ -128,13 +128,13 @@ function validateTypes(claims) {
   return errors;
 }
 
-// ─── Pass 3: Evidence Tier Sorting ───────────────────────────────────────────
+// ─── Pass 3: Evidence Tier Sorting (deterministic: tier → id) ────────────────
 function sortByEvidenceTier(claims) {
   return [...claims].sort((a, b) => {
     const tierDiff = (EVIDENCE_TIERS[b.evidence] || 0) - (EVIDENCE_TIERS[a.evidence] || 0);
     if (tierDiff !== 0) return tierDiff;
-    // Within same tier, sort by timestamp (newer first)
-    return (b.timestamp || '').localeCompare(a.timestamp || '');
+    // Deterministic tiebreak: lexicographic by claim ID (stable across runs)
+    return (a.id || '').localeCompare(b.id || '');
   });
 }
 
@@ -369,10 +369,18 @@ function summarizePhases(claims) {
   return summary;
 }
 
+// ─── Canonical JSON — key-order-independent serialization ────────────────────
+function canonicalJSON(obj) {
+  if (obj === null || typeof obj !== 'object') return JSON.stringify(obj);
+  if (Array.isArray(obj)) return '[' + obj.map(canonicalJSON).join(',') + ']';
+  const keys = Object.keys(obj).sort();
+  return '{' + keys.map(k => JSON.stringify(k) + ':' + canonicalJSON(obj[k])).join(',') + '}';
+}
+
 // ─── Compilation Certificate ─────────────────────────────────────────────────
 function generateCertificate(claimsData, compilerVersion) {
   const hash = crypto.createHash('sha256')
-    .update(JSON.stringify(claimsData))
+    .update(canonicalJSON(claimsData))
     .digest('hex');
 
   return {
@@ -523,7 +531,7 @@ function compile(inputPath, outputPath) {
   const currentPhase = meta.phase || inferPhase(phaseSummary);
 
   const compilation = {
-    compiled_at: new Date().toISOString(),
+    compiled_at: new Date().toISOString(),  // Non-deterministic metadata (excluded from certificate)
     claims_hash: certificate.input_hash.slice(7, 14),
     compiler_version: compilerVersion,
     status,

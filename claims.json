@@ -2282,6 +2282,24 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["milestone", "99-claims", "sprint-summary"]
+    },
+    {
+      "id": "f009",
+      "type": "feedback",
+      "topic": "quality",
+      "content": "Stakeholder review identified three determinism leaks in wheat-compiler.js that violated the 'pure function / bitwise replay' invariant: (1) compiled_at embeds wall-clock time — two compiles of identical input produce different output; (2) certificate hash used JSON.stringify which is not canonical — reordered keys change the hash; (3) sortByEvidenceTier tiebreak used optional timestamp strings — missing/inconsistent timestamps made sort order depend on array insertion order. All three fixed: canonical JSON (sorted keys, recursive) for hashing, lexicographic claim ID for sort tiebreak, compiled_at documented as non-deterministic metadata excluded from certificate.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": "wheat-compiler.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-11T19:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["determinism", "compiler", "bug-fix", "code-review"]
     }
   ]
 }

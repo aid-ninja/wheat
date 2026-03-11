@@ -1,36 +1,16 @@
 {
-  "compiled_at": "2026-03-11T09:04:39.580Z",
-  "claims_hash": "8804e25",
+  "compiled_at": "2026-03-11T10:07:46.507Z",
+  "claims_hash": "760b0e3",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
   "warnings": [
     {
-      "code": "W_CONSTRAINT_ONLY",
-      "message": "Topic \"audience\" is constraint-dominated (1/1 claims are constraints/feedback) — stated-level evidence is expected",
+      "code": "W_WEAK_EVIDENCE",
+      "message": "Topic \"audience\" has only web-level evidence (2 claims)",
       "claims": [
-        "d003"
-      ]
-    },
-    {
-      "code": "W_TYPE_MONOCULTURE",
-      "message": "Topic \"audience\" has only 1 claim type(s): constraint. Missing: factual, estimate, risk, recommendation, feedback",
-      "claims": [
-        "d003"
-      ]
-    },
-    {
-      "code": "W_CONSTRAINT_ONLY",
-      "message": "Topic \"scope\" is constraint-dominated (1/1 claims are constraints/feedback) — stated-level evidence is expected",
-      "claims": [
-        "d004"
-      ]
-    },
-    {
-      "code": "W_TYPE_MONOCULTURE",
-      "message": "Topic \"scope\" has only 1 claim type(s): constraint. Missing: factual, estimate, risk, recommendation, feedback",
-      "claims": [
-        "d004"
+        "d003",
+        "r040"
       ]
     }
   ],
@@ -331,28 +311,6 @@
         "split-pane",
         "layout",
         "confirmed"
-      ]
-    },
-    {
-      "id": "p004",
-      "type": "factual",
-      "topic": "architecture",
-      "content": "fs.watch fires reliably on macOS for claims.json edits. 150ms debounce is sufficient to avoid double-fires. Compiler runs in ~50ms for 13 claims — instant feedback loop.",
-      "source": {
-        "origin": "prototype",
-        "artifact": "prototypes/live-dashboard/",
-        "connector": null
-      },
-      "evidence": "tested",
-      "status": "active",
-      "phase_added": "prototype",
-      "timestamp": "2026-03-11T02:00:00Z",
-      "conflicts_with": [],
-      "resolved_by": null,
-      "tags": [
-        "fs.watch",
-        "latency",
-        "debounce"
       ]
     },
     {
@@ -1214,6 +1172,1084 @@
         "mdn",
         "auto-reconnect"
       ]
+    },
+    {
+      "id": "x004",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "The scalability benchmark (e001: 59ms at 1000 claims) measures compilation time only — it ignores the full loop cost: file I/O to read claims.json (grows linearly with file size), JSON.parse (superlinear for large strings), writing compilation.json, and the browser re-rendering the dashboard DOM. At 1000 claims the JSON file would be ~500KB and the dashboard would have 1000+ DOM nodes. The bottleneck shifts from compiler to I/O and rendering well before 1000 claims.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "scalability",
+        "full-loop-cost",
+        "io-bottleneck"
+      ]
+    },
+    {
+      "id": "x005",
+      "type": "risk",
+      "topic": "ux-pattern",
+      "content": "The timeline-first UI (p006) assumes a single-user, single-session workflow. If multiple contributors run /research or /prototype concurrently (e.g. pair programming or async collaboration), the timeline will interleave claims from different people with no attribution. There's no claim-level author tracking — the timeline shows what happened but not who did it, making collaborative sprints opaque.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:05:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "collaboration",
+        "multi-user",
+        "attribution"
+      ]
+    },
+    {
+      "id": "p011",
+      "type": "factual",
+      "topic": "output-format",
+      "content": "Automated self-containment guard implemented: `node wheat-compiler.js --scan` checks all HTML files across output/, research/, evidence/, and prototypes/ for external URLs in script src, link href, @import url, and img src. Scans 10 HTML files, reports clean/dirty with specific URLs. Exits 1 on violation. Directly resolves x003 regression risk.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "wheat-compiler.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T17:10:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "self-containment",
+        "automated-guard",
+        "scan",
+        "x003-fix"
+      ]
+    },
+    {
+      "id": "w003",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "External corroboration for p003: AST Explorer (astexplorer.net) is the canonical example of the split-pane input→output pattern for code visualization. Left pane for source input, right pane for parsed output, real-time updates as you type. The pattern is widely adopted: TypeScript AST Viewer, SQL Parser, Scalameta all use the same layout. Wheat's claims→compilation split-pane follows this established convention.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "p003",
+        "relationship": "full_support",
+        "urls": [
+          "https://astexplorer.net/"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:20:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "witness",
+        "corroboration",
+        "split-pane",
+        "ast-explorer"
+      ]
+    },
+    {
+      "id": "w004",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "External corroboration for p004: Node.js GitHub issue #47058 documents benchmarks showing fs.watch is reliable for single-file watching on macOS. Community consensus is that chokidar is only needed for recursive directory watching or cross-platform edge cases — for a single file like claims.json, native fs.watch with debounce is the recommended zero-dependency approach.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "p004",
+        "relationship": "full_support",
+        "urls": [
+          "https://github.com/nodejs/node/issues/47058"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:25:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "witness",
+        "corroboration",
+        "fs-watch",
+        "macos"
+      ]
+    },
+    {
+      "id": "w005",
+      "type": "factual",
+      "topic": "dogfooding",
+      "content": "External corroboration for p005: The self-referential dogfooding pattern is well-established. Keen IO built 'analytics for your analytics' — their Native Analytics dashboard displayed by their own analytics platform. GitLab dogfoods their Insights visualization tool internally. Bubble builds their entire website on their own platform. Wheat's 'dashboard that displays claims about itself' follows this proven pattern of tools demonstrating their own capabilities.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "p005",
+        "relationship": "full_support",
+        "urls": [
+          "https://keen.io/blog/what-we-learned-dogfooding-our-native-analytics-product/"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "witness",
+        "corroboration",
+        "dogfooding",
+        "self-referential",
+        "keen-io"
+      ]
+    },
+    {
+      "id": "w006",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "External corroboration for p006: Timeline-first layouts with progressive disclosure are an established UX pattern. Interaction Design Foundation, LogRocket, and Material UI all document vertical timelines with expandable nodes grouped by phase/stage as a standard approach for activity feeds and chronological dashboards. Accordions and click-to-expand are the canonical progressive disclosure mechanism for managing information density.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "p006",
+        "relationship": "full_support",
+        "urls": [
+          "https://ixdf.org/literature/topics/progressive-disclosure"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:35:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "witness",
+        "corroboration",
+        "timeline",
+        "progressive-disclosure",
+        "ixdf"
+      ]
+    },
+    {
+      "id": "w007",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "External corroboration for p007: Atlassian, Sigma Computing, and Datawrapper all document categorical color coding as the standard data visualization practice. Best practice is 5-7 distinct hues for categorical grouping — Wheat's 5-phase color system (amber, blue, green, purple, cyan) falls exactly in this range. Consistent color-to-category mapping across a dashboard is explicitly recommended for visual grouping without labels.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "p007",
+        "relationship": "full_support",
+        "urls": [
+          "https://www.atlassian.com/data/charts/how-to-choose-colors-data-visualization"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:40:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "witness",
+        "corroboration",
+        "color-coding",
+        "data-viz",
+        "atlassian"
+      ]
+    },
+    {
+      "id": "w008",
+      "type": "factual",
+      "topic": "output-format",
+      "content": "External corroboration for p008: Self-contained single-file HTML is an established distribution pattern. Multiple tools exist specifically for this (vite-plugin-singlefile, Inliner.js, HtmlPackager, webpage2html). Use cases include reports, presentations, and offline-first apps — exactly Wheat's use case. The approach of inlining all CSS/JS with zero external dependencies is the standard solution for portable, shareable HTML artifacts.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "p008",
+        "relationship": "full_support",
+        "urls": [
+          "https://www.npmjs.com/package/vite-plugin-singlefile"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:45:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "witness",
+        "corroboration",
+        "self-contained",
+        "single-file-html"
+      ]
+    },
+    {
+      "id": "w009",
+      "type": "factual",
+      "topic": "accessibility",
+      "content": "External corroboration for p009: WebAIM's WCAG 2 Checklist confirms the 5-fix approach (contrast, landmarks, keyboard, aria-live, focus styles) as the standard WCAG 2.2 AA remediation pattern. These are consistently listed as the top quick-wins for dashboard accessibility. The approach of fixing contrast ratios, adding semantic HTML, enabling keyboard nav, announcing dynamic updates, and styling focus indicators is the universally recommended minimum for AA compliance.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "p009",
+        "relationship": "full_support",
+        "urls": [
+          "https://webaim.org/standards/wcag/checklist"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:50:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "witness",
+        "corroboration",
+        "wcag",
+        "webaim",
+        "a11y-remediation"
+      ]
+    },
+    {
+      "id": "w010",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "External corroboration for e001: Benchmarks from esbuild/SWC/Babel comparisons confirm that lightweight Node.js build pipelines processing structured data (JSON, AST) achieve sub-100ms times for thousands of items. The wheat compiler's 59ms at 1000 claims is consistent with expected performance for a 7-pass pipeline over in-memory JSON — no exotic optimization needed, just linear traversal.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "e001",
+        "relationship": "full_support",
+        "urls": [
+          "https://datastation.multiprocess.io/blog/2021-11-13-benchmarking-esbuild-swc-typescript-babel.html"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:55:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "witness",
+        "corroboration",
+        "scalability",
+        "benchmark"
+      ]
+    },
+    {
+      "id": "w011",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "External corroboration for e002: Wrapping JSON.parse in try-catch is universally documented as the standard Node.js best practice for handling malformed input. GeeksforGeeks, Medium, OpenReplay, and Sentry all recommend this exact pattern. The wheat compiler's fix (try-catch around JSON.parse with clean error message) follows the canonical approach.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "e002",
+        "relationship": "full_support",
+        "urls": [
+          "https://www.geeksforgeeks.org/how-to-catch-json-parse-error-in-javascript/"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "witness",
+        "corroboration",
+        "json-parse",
+        "error-handling"
+      ]
+    },
+    {
+      "id": "x006",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "The compiler's 7-pass pipeline (validate→types→sort→conflicts→resolve→coverage→readiness) runs all passes sequentially even when earlier passes fail. Validation errors in pass 1 skip later passes via conditional, but there's no early-exit for warnings — a claim set with 50 warnings still runs the full pipeline. At scale this is fine (sub-60ms), but architecturally it's a latent coupling that could bite if passes become expensive.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:01:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "pipeline-coupling",
+        "early-exit"
+      ]
+    },
+    {
+      "id": "x007",
+      "type": "risk",
+      "topic": "quality",
+      "content": "The 'I'll know it when I see it' success criterion (d005) is unfalsifiable — any outcome can be retroactively declared a success or failure. This means the quality topic can never reach 'tested' evidence tier through objective means. The Samurai Jack feedback (f007) validates subjective quality but sets a dangerous precedent: novelty (themed presentations) substitutes for rigor.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:02:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "unfalsifiable",
+        "quality-bar",
+        "subjective"
+      ]
+    },
+    {
+      "id": "x008",
+      "type": "risk",
+      "topic": "accessibility",
+      "content": "WCAG 2.2 AA compliance was verified manually against 13 checks (e004), but there's no automated accessibility testing in the pipeline. Tools like axe-core, Pa11y, or Lighthouse can catch regressions automatically. Without CI-integrated a11y testing, the WCAG fixes (p009) could regress silently — same problem as x003 but for accessibility instead of self-containment.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:03:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "a11y-regression",
+        "automated-testing",
+        "ci"
+      ]
+    },
+    {
+      "id": "r023",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "The --next flag's priority system (P0-P5) is a static heuristic — it doesn't learn from user behavior. If a user consistently ignores P4-CORROBORATION suggestions, --next keeps recommending them. A smarter system would track which actions users actually execute and weight recommendations accordingly. The current implementation is a good v1 but lacks adaptive feedback.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:04:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "next-flag",
+        "adaptive",
+        "heuristic",
+        "v2-idea"
+      ]
+    },
+    {
+      "id": "r024",
+      "type": "recommendation",
+      "topic": "architecture",
+      "content": "The compiler should support a --watch mode that combines fs.watch + auto-compile + --next into a single long-running process. Currently the dev loop is: edit claims.json → manually run compiler → read output. A --watch mode would auto-compile on save and print the next suggested action, creating a tighter feedback loop than the current manual workflow.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:05:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "compiler-feature",
+        "watch-mode",
+        "dev-experience"
+      ]
+    },
+    {
+      "id": "r025",
+      "type": "factual",
+      "topic": "dogfooding",
+      "content": "The sprint's git log is itself a machine-readable event stream: every wheat commit follows the pattern 'wheat: /<command> <summary> — added <IDs>'. This means git log --oneline claims.json can be parsed to reconstruct the sprint timeline, identify command frequency, and measure velocity. The git log IS the sprint's activity log — no separate event store needed.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:06:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "git-log",
+        "event-stream",
+        "velocity",
+        "meta"
+      ]
+    },
+    {
+      "id": "r026",
+      "type": "estimate",
+      "topic": "architecture",
+      "content": "At the current claim growth rate (~15 claims per speedrun cycle), a typical sprint would produce 50-100 claims over its lifecycle. The compiler handles 1000 claims in 59ms (e001), so there's ~10-20x headroom before performance becomes noticeable. The real scaling bottleneck is human: reading and understanding 100+ claims requires better filtering/search in the dashboard.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:07:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "scaling",
+        "human-bottleneck",
+        "filtering",
+        "search"
+      ]
+    },
+    {
+      "id": "r027",
+      "type": "recommendation",
+      "topic": "ux-pattern",
+      "content": "The dashboard should support claim filtering by topic, type, evidence tier, and phase. At 50+ claims, scrolling the full timeline becomes unwieldy. A filter bar at the top (topic chips, type dropdown, evidence tier slider) would enable focused exploration without losing the timeline context. This is standard dashboard UX — every analytics tool has faceted filtering.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:08:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "filtering",
+        "faceted-search",
+        "scalability-ux"
+      ]
+    },
+    {
+      "id": "w012",
+      "type": "factual",
+      "topic": "output-format",
+      "content": "External corroboration for e003: The self-contained HTML verification method (scanning for external script/link/import/img src) is the same approach used by tools like vite-plugin-singlefile and HTMLInliner. Regex scanning for external URL patterns in generated HTML is the standard verification technique. The --scan flag (p011) now automates this exact check.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "e003",
+        "relationship": "full_support",
+        "urls": [
+          "https://www.npmjs.com/package/vite-plugin-singlefile"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:10:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "witness",
+        "corroboration",
+        "self-containment",
+        "scan"
+      ]
+    },
+    {
+      "id": "r028",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "The compiler's module.exports = { compile, diffCompilations, computeNextActions, loadConfig, EVIDENCE_TIERS, VALID_TYPES } makes it usable as both a CLI tool and a library. This dual-interface pattern enables: (1) wheat-server.js importing compile() directly, (2) future VS Code extensions using the API, (3) test suites calling compile() programmatically. Zero-dep + dual-interface = maximum composability.",
+      "source": {
+        "origin": "research",
+        "artifact": "wheat-compiler.js",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:11:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "api-design",
+        "dual-interface",
+        "composability"
+      ]
+    },
+    {
+      "id": "r029",
+      "type": "risk",
+      "topic": "dogfooding",
+      "content": "The sprint's claim count (now 75+) creates a meta-problem: the claims.json file is becoming unwieldy for human editing. At 1000+ lines of JSON, manually adding claims is error-prone (missing commas, bracket mismatches). The slash commands abstract this, but debugging a malformed claims.json requires reading raw JSON. A claims editor UI or validation-on-save hook would improve ergonomics.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:12:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "ergonomics",
+        "json-editing",
+        "scale-pain"
+      ]
+    },
+    {
+      "id": "r030",
+      "type": "recommendation",
+      "topic": "output-format",
+      "content": "The brief should support incremental updates — currently /brief regenerates the entire document from scratch. A diff-aware brief would highlight what changed since the last compilation: new claims added, conflicts resolved, evidence upgraded. This would make the brief useful as a living document during the sprint, not just a final artifact.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:13:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "incremental-brief",
+        "diff-aware",
+        "living-document"
+      ]
+    },
+    {
+      "id": "x009",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "The compiler's conflict detection relies on claims explicitly declaring conflicts_with arrays. This is manual and error-prone — if two claims contradict each other but neither author marks the conflict, the compiler silently treats both as valid. Semantic conflict detection (comparing claim content for contradictions) would catch implicit conflicts but requires NLP or heuristic content analysis.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:14:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "implicit-conflicts",
+        "semantic-detection"
+      ]
+    },
+    {
+      "id": "r031",
+      "type": "factual",
+      "topic": "quality",
+      "content": "The evidence tier hierarchy (stated→web→documented→tested→production) maps to the scientific method's evidence pyramid: anecdotal→observational→documented→experimental→longitudinal. This isn't accidental — Wheat's tier system is a lightweight application of epistemological rigor to decision-making. The /calibrate command closes the loop by checking predictions against production reality.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:15:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "epistemology",
+        "evidence-pyramid",
+        "scientific-method"
+      ]
+    },
+    {
+      "id": "r032",
+      "type": "recommendation",
+      "topic": "ux-pattern",
+      "content": "The dashboard should show a 'sprint health' indicator — a single composite score combining: evidence coverage (% of topics at tested+), conflict status (0 unresolved = green), corroboration ratio (% of tested claims with witnesses), and phase progression. This gives stakeholders a one-glance answer to 'how confident should I be in these findings?'",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:16:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "health-indicator",
+        "composite-score",
+        "stakeholder-ux"
+      ]
+    },
+    {
+      "id": "r033",
+      "type": "factual",
+      "topic": "accessibility",
+      "content": "The WCAG 2.2 AA fixes (p009) added ~25 lines of code for 13 passing checks. This is a remarkably low cost-per-fix ratio: ~2 lines per accessibility check. The fixes are also zero-overhead at runtime — semantic HTML, ARIA attributes, and CSS focus styles add no JavaScript execution cost. Accessibility was essentially free in this case.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:17:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "a11y-cost",
+        "low-overhead",
+        "cost-per-fix"
+      ]
+    },
+    {
+      "id": "x010",
+      "type": "risk",
+      "topic": "dogfooding",
+      "content": "The sprint's self-referential nature creates a selection bias in evidence: most 'tested' claims are about the dashboard/compiler because that's what we built and could measure. Claims about user experience, teaching effectiveness, and stakeholder perception remain at 'stated' tier because they require real users — which this sprint doesn't have. The evidence distribution flatters the technical claims while leaving UX claims unvalidated.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:18:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "selection-bias",
+        "evidence-distribution",
+        "user-testing"
+      ]
+    },
+    {
+      "id": "r034",
+      "type": "estimate",
+      "topic": "scope",
+      "content": "The sprint produced ~10 artifacts (7 HTML, 1 PDF, wheat-server.js, wheat-compiler.js), 17 commands, and 75+ claims in a single session. At this velocity, Wheat can go from zero to a fully-compiled decision brief in under 2 hours of focused work. This makes it viable for time-boxed research sprints (half-day or full-day).",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:19:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "velocity",
+        "time-estimate",
+        "sprint-duration"
+      ]
+    },
+    {
+      "id": "r035",
+      "type": "recommendation",
+      "topic": "architecture",
+      "content": "The compiler should emit machine-readable events (JSON lines) during compilation for tooling integration. Currently --summary outputs human-readable text. A --json-events flag that emits {type:'pass_complete', pass:'validate', duration_ms:2} for each pipeline stage would enable: build-system integration, performance monitoring, and IDE plugins that show compilation progress.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:20:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "json-events",
+        "tooling",
+        "ide-integration",
+        "observability"
+      ]
+    },
+    {
+      "id": "e007",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "fs.watch(file) on macOS silently dies when the file is atomically replaced (new inode). writeFileSync and git operations both do atomic replacement. The watcher in wheat-server.js was watching claims.json directly, which meant it would stop detecting changes after any git operation or compiler write. This contradicts p004's claim that fs.watch is reliable — it's reliable for in-place edits but not for atomic replacements.",
+      "source": {
+        "origin": "evaluation",
+        "artifact": "prototypes/live-dashboard/wheat-server.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:25:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "fs-watch",
+        "inode",
+        "atomic-replace",
+        "macos-bug"
+      ]
+    },
+    {
+      "id": "p012",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Fix applied: wheat-server.js now watches path.dirname(CLAIMS) instead of CLAIMS directly, filtering for filename === path.basename(CLAIMS). Directory inode stays stable across file replacements. The 150ms debounce still applies. This is the canonical workaround documented in Node.js issue tracker and chokidar's approach.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/wheat-server.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T18:26:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "fs-watch-fix",
+        "directory-watch",
+        "inode-stable"
+      ]
+    },
+    {
+      "id": "w013",
+      "type": "factual",
+      "topic": "accessibility",
+      "content": "External corroboration for e004: WCAG 2.2 AA has 50 success criteria, but for a single-page dashboard, 13 checks cover the applicable criteria. Many WCAG SCs apply to forms, multimedia, or complex navigation that a dashboard doesn't have. The 13/13 pass rate is meaningful because it covers all applicable criteria, not an arbitrary subset.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "e004",
+        "relationship": "partial_support",
+        "urls": [
+          "https://www.w3.org/TR/WCAG22/"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:27:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "witness",
+        "corroboration",
+        "wcag-scope",
+        "applicable-criteria"
+      ]
+    },
+    {
+      "id": "w014",
+      "type": "factual",
+      "topic": "dogfooding",
+      "content": "External corroboration for e005: The 20/48 self-referential claim ratio (~42%) is unusually high for a dogfooding sprint but expected given the meta-nature of this specific project. GitLab's internal dogfooding of Insights (their visualization tool) shows a similar pattern — the tool's own usage data becomes the demo data. Self-reference is a feature, not an accident, in meta-tooling.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "e005",
+        "relationship": "full_support",
+        "urls": [
+          "https://about.gitlab.com/blog/2020/01/30/insights/"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:28:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "witness",
+        "corroboration",
+        "self-reference-ratio",
+        "gitlab"
+      ]
+    },
+    {
+      "id": "r036",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "The compiler now has 4 CLI modes: --summary (default compilation with human output), --check (silent pass/fail for CI gates), --diff (compare two compilations), --next (priority-ranked action suggestions), and --scan (self-containment verification). Each mode shares the same compile() core but produces different output. The CLI surface area grew from 3 to 5 modes in this sprint.",
+      "source": {
+        "origin": "research",
+        "artifact": "wheat-compiler.js",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:29:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "cli-modes",
+        "compiler-surface-area",
+        "five-modes"
+      ]
+    },
+    {
+      "id": "r037",
+      "type": "recommendation",
+      "topic": "quality",
+      "content": "Future sprints should set measurable success criteria instead of relying on 'I'll know it when I see it' (d005). Even subjective quality can be operationalized: 'stakeholder rates the artifact 4+/5 on first viewing' or '3 out of 5 test users can explain what Wheat does after reading the dashboard for 2 minutes.' This would allow the quality topic to reach tested tier.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "measurable-quality",
+        "operationalize",
+        "user-testing"
+      ]
+    },
+    {
+      "id": "r038",
+      "type": "factual",
+      "topic": "output-format",
+      "content": "The sprint produced 4 distinct output formats from the same claim set: Markdown (brief.md with PDF frontmatter), PDF (brief.pdf via md-to-pdf), HTML dashboard (dark theme, interactive), and HTML presentation (Samurai Jack themed, scroll-snap). The compiler's Bran IR is format-agnostic — the same compilation.json feeds all 4 renderers. Adding new output formats requires zero changes to the compiler.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:31:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "multi-format",
+        "format-agnostic",
+        "bran-ir"
+      ]
+    },
+    {
+      "id": "r039",
+      "type": "risk",
+      "topic": "scope",
+      "content": "The sprint scope expanded significantly beyond the original question: started as 'build a live visualization' and grew to include compiler features (--next, --scan, --diff), accessibility remediation, themed presentations, and QA commands. Scope creep was productive here (the extras demonstrate Wheat's flexibility) but in a time-constrained sprint this expansion could prevent shipping.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:32:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "scope-creep",
+        "productive-expansion",
+        "time-risk"
+      ]
+    },
+    {
+      "id": "r040",
+      "type": "factual",
+      "topic": "audience",
+      "content": "The target audience (single developer learning Wheat) has an implicit assumption: they're comfortable with Node.js, CLI tools, and reading JSON. The dashboard is self-explanatory for this audience but would be opaque to a non-technical stakeholder. The /present command partially addresses this by generating visual presentations, but the core workflow (edit JSON, run compiler, open HTML) requires developer comfort.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:33:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "audience-assumption",
+        "developer-comfort",
+        "technical-barrier"
+      ]
+    },
+    {
+      "id": "f008",
+      "type": "feedback",
+      "topic": "architecture",
+      "content": "The fs.watch inode bug (e007) reveals that p004's 'fs.watch reliable' claim was only true for a specific write pattern (in-place edits). Atomic file replacement — the pattern used by writeFileSync, git, and most editors — breaks it silently. The directory-watch fix (p012) is the correct approach. This is exactly the kind of bug /challenge is designed to surface.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-11T18:34:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "user-feedback",
+        "bug-discovery",
+        "challenge-validation"
+      ]
+    },
+    {
+      "id": "e008",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "After the directory-watch fix (p012), wheat-server.js survives all file replacement patterns: writeFileSync (compiler output), git checkout (branch switch), manual save from editors (most editors do atomic save-and-rename). Tested by: running server, editing claims.json via the compiler 10 times, verifying SSE push on each change. Zero missed events.",
+      "source": {
+        "origin": "evaluation",
+        "artifact": "prototypes/live-dashboard/wheat-server.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:35:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "fs-watch-fix-verified",
+        "zero-missed-events",
+        "atomic-safe"
+      ]
+    },
+    {
+      "id": "r041",
+      "type": "recommendation",
+      "topic": "dogfooding",
+      "content": "The sprint should include a 'cold start' example — a minimal claims.json with 3-5 seed claims and a README that walks a new developer through running /init, /research, /prototype in sequence. This addresses x001 (cold-start risk) by ensuring the dashboard always has something to show, even on first use.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:36:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "cold-start-fix",
+        "seed-data",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "e009",
+      "type": "factual",
+      "topic": "quality",
+      "content": "Sprint reached 99 claims across 8 topics with 0 unresolved conflicts, 2 resolved conflicts (p001>r008, e007>p004), 10+ corroborated tested claims, and 5 adversarial challenges. The evidence distribution broadened significantly from 48 to 99 claims. The /calibrate loop remains untested — no production data exists to validate predictions against reality.",
+      "source": {
+        "origin": "evaluation",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:40:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "milestone",
+        "99-claims",
+        "sprint-summary"
+      ]
+    },
+    {
+      "id": "f009",
+      "type": "feedback",
+      "topic": "quality",
+      "content": "Stakeholder review identified three determinism leaks in wheat-compiler.js that violated the 'pure function / bitwise replay' invariant: (1) compiled_at embeds wall-clock time — two compiles of identical input produce different output; (2) certificate hash used JSON.stringify which is not canonical — reordered keys change the hash; (3) sortByEvidenceTier tiebreak used optional timestamp strings — missing/inconsistent timestamps made sort order depend on array insertion order. All three fixed: canonical JSON (sorted keys, recursive) for hashing, lexicographic claim ID for sort tiebreak, compiled_at documented as non-deterministic metadata excluded from certificate.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": "wheat-compiler.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-11T19:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "determinism",
+        "compiler",
+        "bug-fix",
+        "code-review"
+      ]
     }
   ],
   "conflict_graph": {
@@ -1228,44 +2264,52 @@
   },
   "coverage": {
     "dogfooding": {
-      "claims": 4,
+      "claims": 10,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
         "constraint",
         "factual",
-        "risk"
+        "risk",
+        "recommendation"
       ],
       "claim_ids": [
         "d001",
         "p005",
         "e005",
-        "x001"
+        "x001",
+        "w005",
+        "r025",
+        "r029",
+        "x010",
+        "w014",
+        "r041"
       ],
       "constraint_count": 1,
       "source_origins": [
         "stakeholder",
         "prototype",
         "evaluation",
-        "research"
+        "research",
+        "witness"
       ],
-      "source_count": 4,
-      "type_diversity": 3,
+      "source_count": 5,
+      "type_diversity": 4,
       "missing_types": [
         "estimate",
-        "recommendation",
         "feedback"
       ]
     },
     "output-format": {
-      "claims": 7,
+      "claims": 12,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
         "constraint",
         "risk",
         "feedback",
-        "factual"
+        "factual",
+        "recommendation"
       ],
       "claim_ids": [
         "d002",
@@ -1274,40 +2318,47 @@
         "r010",
         "p008",
         "e003",
-        "x003"
+        "x003",
+        "p011",
+        "w008",
+        "w012",
+        "r030",
+        "r038"
       ],
       "constraint_count": 2,
       "source_origins": [
         "stakeholder",
         "research",
         "prototype",
-        "evaluation"
+        "evaluation",
+        "witness"
       ],
-      "source_count": 4,
-      "type_diversity": 4,
+      "source_count": 5,
+      "type_diversity": 5,
       "missing_types": [
-        "estimate",
-        "recommendation"
+        "estimate"
       ]
     },
     "audience": {
-      "claims": 1,
-      "max_evidence": "stated",
+      "claims": 2,
+      "max_evidence": "web",
       "status": "weak",
       "types": [
-        "constraint"
+        "constraint",
+        "factual"
       ],
       "claim_ids": [
-        "d003"
+        "d003",
+        "r040"
       ],
       "constraint_count": 1,
       "source_origins": [
-        "stakeholder"
+        "stakeholder",
+        "research"
       ],
-      "source_count": 1,
-      "type_diversity": 1,
+      "source_count": 2,
+      "type_diversity": 2,
       "missing_types": [
-        "factual",
         "estimate",
         "risk",
         "recommendation",
@@ -1315,38 +2366,42 @@
       ]
     },
     "scope": {
-      "claims": 1,
-      "max_evidence": "stated",
-      "status": "weak",
+      "claims": 3,
+      "max_evidence": "documented",
+      "status": "moderate",
       "types": [
-        "constraint"
+        "constraint",
+        "estimate",
+        "risk"
       ],
       "claim_ids": [
-        "d004"
+        "d004",
+        "r034",
+        "r039"
       ],
       "constraint_count": 1,
       "source_origins": [
-        "stakeholder"
+        "stakeholder",
+        "research"
       ],
-      "source_count": 1,
-      "type_diversity": 1,
+      "source_count": 2,
+      "type_diversity": 3,
       "missing_types": [
         "factual",
-        "estimate",
-        "risk",
         "recommendation",
         "feedback"
       ]
     },
     "quality": {
-      "claims": 6,
+      "claims": 11,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
         "constraint",
         "feedback",
         "factual",
-        "risk"
+        "risk",
+        "recommendation"
       ],
       "claim_ids": [
         "d005",
@@ -1354,37 +2409,41 @@
         "r009",
         "r011",
         "e006",
-        "f007"
+        "f007",
+        "x007",
+        "r031",
+        "r037",
+        "e009",
+        "f009"
       ],
-      "constraint_count": 3,
+      "constraint_count": 4,
       "source_origins": [
         "stakeholder",
         "research",
         "evaluation"
       ],
       "source_count": 3,
-      "type_diversity": 4,
+      "type_diversity": 5,
       "missing_types": [
-        "estimate",
-        "recommendation"
+        "estimate"
       ]
     },
     "architecture": {
-      "claims": 16,
+      "claims": 31,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
         "factual",
         "feedback",
         "recommendation",
-        "risk"
+        "risk",
+        "estimate"
       ],
       "claim_ids": [
         "r002",
         "r003",
         "p001",
         "p002",
-        "p004",
         "f001",
         "f003",
         "r012",
@@ -1395,9 +2454,25 @@
         "e001",
         "e002",
         "w001",
-        "w002"
+        "w002",
+        "x004",
+        "w004",
+        "w010",
+        "w011",
+        "x006",
+        "r023",
+        "r024",
+        "r026",
+        "r028",
+        "x009",
+        "r035",
+        "e007",
+        "p012",
+        "r036",
+        "f008",
+        "e008"
       ],
-      "constraint_count": 2,
+      "constraint_count": 3,
       "source_origins": [
         "research",
         "prototype",
@@ -1406,14 +2481,13 @@
         "witness"
       ],
       "source_count": 5,
-      "type_diversity": 4,
+      "type_diversity": 5,
       "missing_types": [
-        "constraint",
-        "estimate"
+        "constraint"
       ]
     },
     "ux-pattern": {
-      "claims": 9,
+      "claims": 15,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -1432,22 +2506,29 @@
         "p006",
         "p007",
         "f006",
-        "x002"
+        "x002",
+        "x005",
+        "w003",
+        "w006",
+        "w007",
+        "r027",
+        "r032"
       ],
       "constraint_count": 2,
       "source_origins": [
         "research",
         "prototype",
-        "stakeholder"
+        "stakeholder",
+        "witness"
       ],
-      "source_count": 3,
+      "source_count": 4,
       "type_diversity": 5,
       "missing_types": [
         "estimate"
       ]
     },
     "accessibility": {
-      "claims": 9,
+      "claims": 13,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -1464,15 +2545,20 @@
         "r022",
         "p009",
         "e004",
-        "p010"
+        "p010",
+        "w009",
+        "x008",
+        "r033",
+        "w013"
       ],
       "constraint_count": 0,
       "source_origins": [
         "research",
         "prototype",
-        "evaluation"
+        "evaluation",
+        "witness"
       ],
-      "source_count": 3,
+      "source_count": 4,
       "type_diversity": 3,
       "missing_types": [
         "constraint",
@@ -1495,22 +2581,21 @@
     "r007": 0,
     "p001": 1,
     "p002": 1,
-    "p003": 0,
-    "p004": 0,
-    "p005": 0,
+    "p003": 1,
+    "p005": 1,
     "f001": 0,
     "f002": 0,
     "f003": 0,
     "f004": 0,
     "f005": 0,
-    "p006": 0,
-    "p007": 0,
+    "p006": 1,
+    "p007": 1,
     "f006": 0,
     "r009": 0,
     "r010": 0,
     "r011": 0,
     "r012": 0,
-    "p008": 0,
+    "p008": 1,
     "r013": 0,
     "r014": 0,
     "r015": 0,
@@ -1521,12 +2606,12 @@
     "r020": 0,
     "r021": 0,
     "r022": 0,
-    "p009": 0,
-    "e001": 0,
-    "e002": 0,
-    "e003": 0,
-    "e004": 0,
-    "e005": 0,
+    "p009": 1,
+    "e001": 1,
+    "e002": 1,
+    "e003": 1,
+    "e004": 1,
+    "e005": 1,
     "e006": 0,
     "f007": 0,
     "x001": 0,
@@ -1534,7 +2619,52 @@
     "w001": 0,
     "p010": 0,
     "x003": 0,
-    "w002": 0
+    "w002": 0,
+    "x004": 0,
+    "x005": 0,
+    "p011": 0,
+    "w003": 0,
+    "w004": 0,
+    "w005": 0,
+    "w006": 0,
+    "w007": 0,
+    "w008": 0,
+    "w009": 0,
+    "w010": 0,
+    "w011": 0,
+    "x006": 0,
+    "x007": 0,
+    "x008": 0,
+    "r023": 0,
+    "r024": 0,
+    "r025": 0,
+    "r026": 0,
+    "r027": 0,
+    "w012": 0,
+    "r028": 0,
+    "r029": 0,
+    "r030": 0,
+    "x009": 0,
+    "r031": 0,
+    "r032": 0,
+    "r033": 0,
+    "x010": 0,
+    "r034": 0,
+    "r035": 0,
+    "e007": 0,
+    "p012": 0,
+    "w013": 0,
+    "w014": 0,
+    "r036": 0,
+    "r037": 0,
+    "r038": 0,
+    "r039": 0,
+    "r040": 0,
+    "f008": 0,
+    "e008": 0,
+    "r041": 0,
+    "e009": 0,
+    "f009": 0
   },
   "phase_summary": {
     "define": {
@@ -1542,19 +2672,19 @@
       "complete": true
     },
     "research": {
-      "claims": 22,
+      "claims": 41,
       "complete": true
     },
     "prototype": {
-      "claims": 10,
+      "claims": 12,
       "complete": true
     },
     "evaluate": {
-      "claims": 11,
+      "claims": 33,
       "complete": true
     },
     "feedback": {
-      "claims": 7,
+      "claims": 9,
       "complete": true
     }
   },
@@ -1565,14 +2695,14 @@
     ],
     "initiated": "2026-03-11",
     "phase": "evaluate",
-    "total_claims": 55,
-    "active_claims": 53,
+    "total_claims": 100,
+    "active_claims": 97,
     "conflicted_claims": 0,
-    "superseded_claims": 2,
+    "superseded_claims": 3,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:8804e253dbabc98ec94851583563da6c302a962591f94dd5b91b48e643ff51fd",
+    "input_hash": "sha256:760b0e3e389cb5cf590cf5cb1647942426c7d67b051233cb630022f2c79928e0",
     "compiler_version": "0.2.0",
     "deterministic": true
   }
