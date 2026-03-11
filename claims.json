@@ -286,6 +286,34 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["user-feedback", "simplicity"]
+    },
+    {
+      "id": "f003",
+      "type": "feedback",
+      "topic": "architecture",
+      "content": "The live SSE server IS valuable as a dev-time tool — watching claims update in real time during a sprint is useful. The earlier preference for static (f001) was about the final artifact, not the dev experience. Both have a role: live server for working, static HTML for sharing.",
+      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-11T04:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["user-feedback", "nuance", "dev-experience"]
+    },
+    {
+      "id": "f004",
+      "type": "feedback",
+      "topic": "quality",
+      "content": "The live dashboard UI (localhost:3141) is too rudimentary — functional but not sleek. Needs a UX polish pass: the layout, typography, and visual hierarchy should feel as polished as the static /status dashboard, not like a debug tool.",
+      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-11T04:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["user-feedback", "ux-polish", "quality-bar"]
     }
   ]
 }
