@@ -6,207 +6,164 @@
 <title>wheat — Research-Driven Development</title>
 <style>
   :root {
-    --bg-dark: #0a0e1a;
-    --bg-card: rgba(255,255,255,0.03);
-    --bg-card-hover: rgba(255,255,255,0.06);
-    --accent: #3b82f6;
-    --accent-light: #60a5fa;
-    --green: #22c55e;
-    --green-dim: rgba(34,197,94,0.12);
-    --orange: #f59e0b;
-    --orange-dim: rgba(245,158,11,0.12);
-    --purple: #a78bfa;
-    --purple-dim: rgba(167,139,250,0.12);
-    --cyan: #22d3ee;
-    --cyan-dim: rgba(34,211,238,0.12);
+    --bg: #08090f;
+    --bg-subtle: #0d1017;
+    --surface: rgba(255,255,255,0.03);
+    --surface-hover: rgba(255,255,255,0.06);
+    --border: rgba(255,255,255,0.07);
+    --border-light: rgba(255,255,255,0.12);
     --gold: #f0a030;
     --gold-light: #fbbf24;
-    --gold-dim: rgba(240,160,48,0.12);
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-    --text-dim: #64748b;
+    --blue: #60a5fa;
+    --green: #22c55e;
+    --purple: #a78bfa;
+    --cyan: #22d3ee;
+    --orange: #f59e0b;
+    --text: #e8ecf1;
+    --text-secondary: #8b95a5;
+    --text-dim: #4f5b6b;
+    --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
-    background: var(--bg-dark);
+    font-family: var(--sans);
+    background: var(--bg);
     color: var(--text);
-    min-height: 100vh;
     -webkit-font-smoothing: antialiased;
-    position: relative;
     overflow-x: hidden;
   }
 
-  /* Ambient background */
-  .bg-glow {
+  /* --- Scroll reveal --- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+
+  /* --- Ambient --- */
+  .bg-ambient {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+    inset: 0;
     pointer-events: none;
     z-index: 0;
     overflow: hidden;
   }
-
-  .bg-glow .orb {
+  .bg-ambient .orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.07;
-    animation: orbFloat 20s ease-in-out infinite;
+    filter: blur(100px);
+    opacity: 0.06;
+    animation: drift 25s ease-in-out infinite alternate;
+  }
+  .bg-ambient .orb:nth-child(1) { width: 700px; height: 700px; background: var(--gold); top: -15%; left: 15%; }
+  .bg-ambient .orb:nth-child(2) { width: 500px; height: 500px; background: var(--blue); top: 35%; right: -8%; animation-delay: -8s; animation-duration: 30s; }
+  .bg-ambient .orb:nth-child(3) { width: 450px; height: 450px; background: var(--purple); bottom: 10%; left: -5%; animation-delay: -16s; animation-duration: 28s; }
+  @keyframes drift {
+    0% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(25px,-18px) scale(1.04); }
+    100% { transform: translate(-15px,12px) scale(0.97); }
   }
 
-  .bg-glow .orb:nth-child(1) {
-    width: 600px; height: 600px;
-    background: var(--gold);
-    top: -10%; left: 20%;
-    animation-delay: 0s;
-  }
-
-  .bg-glow .orb:nth-child(2) {
-    width: 500px; height: 500px;
-    background: var(--accent);
-    top: 40%; right: -10%;
-    animation-delay: -7s;
-    animation-duration: 25s;
-  }
-
-  .bg-glow .orb:nth-child(3) {
-    width: 400px; height: 400px;
-    background: var(--purple);
-    bottom: -5%; left: -5%;
-    animation-delay: -14s;
-    animation-duration: 22s;
-  }
-
-  @keyframes orbFloat {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(30px, -20px) scale(1.05); }
-    66% { transform: translate(-20px, 15px) scale(0.95); }
-  }
-
-  #grain-canvas {
+  #particle-canvas {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+    inset: 0;
     pointer-events: none;
     z-index: 1;
   }
 
-  .container {
-    max-width: 820px;
+  /* --- Layout --- */
+  .page { position: relative; z-index: 2; }
+
+  section {
+    max-width: 880px;
     margin: 0 auto;
-    padding: 60px 32px 48px;
-    position: relative;
-    z-index: 2;
+    padding: 0 36px;
   }
 
-  /* Hero */
-  .hero {
+  /* --- Hero --- */
+  .hero-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 80px;
+    padding-bottom: 80px;
+  }
+
+  .hero-inner {
     text-align: center;
-    margin-bottom: 64px;
-    background: rgba(255,255,255,0.025);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 24px;
-    padding: 64px 48px 52px;
-    position: relative;
-    overflow: hidden;
-    box-shadow:
-      0 24px 80px rgba(0,0,0,0.4),
-      inset 0 1px 0 rgba(255,255,255,0.08);
+    max-width: 640px;
   }
 
-  .hero::before {
-    content: '';
+  .hero-glow {
     position: absolute;
-    top: 0; left: 50%;
-    transform: translateX(-50%);
-    width: 60%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(240,160,48,0.4), transparent);
-  }
-
-  .sun-rays {
-    position: absolute;
-    top: -40px; left: 50%;
-    transform: translateX(-50%);
-    width: 340px; height: 340px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    width: 500px;
+    height: 500px;
     pointer-events: none;
-    opacity: 0.15;
   }
-
-  .sun-rays::before,
-  .sun-rays::after {
+  .hero-glow::before, .hero-glow::after {
     content: '';
     position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
+    inset: 0;
     border-radius: 50%;
   }
-
-  .sun-rays::before {
-    width: 200px; height: 200px;
-    background: radial-gradient(circle, rgba(240,160,48,0.6) 0%, transparent 70%);
-    animation: sunPulse 6s ease-in-out infinite;
+  .hero-glow::before {
+    background: radial-gradient(circle, rgba(240,160,48,0.12) 0%, transparent 65%);
+    animation: heroPulse 6s ease-in-out infinite;
+  }
+  .hero-glow::after {
+    background: radial-gradient(circle, rgba(240,160,48,0.06) 0%, transparent 50%);
+    animation: heroPulse 6s ease-in-out infinite 1.5s;
+  }
+  @keyframes heroPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.12); opacity: 0.6; }
   }
 
-  .sun-rays::after {
-    width: 320px; height: 320px;
-    background: radial-gradient(circle, rgba(240,160,48,0.25) 0%, transparent 60%);
-    animation: sunPulse 6s ease-in-out infinite 1s;
-  }
-
-  @keyframes sunPulse {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.7; }
-  }
-
-  h1 {
-    font-size: 64pt;
+  .hero-title {
+    font-size: clamp(52pt, 10vw, 80pt);
     font-weight: 800;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.05em;
     line-height: 1;
-    margin-bottom: 8px;
-    background: linear-gradient(135deg, #f0a030, #fbbf24, #f59e0b);
+    background: linear-gradient(135deg, #f0a030 0%, #fbbf24 50%, #f59e0b 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     position: relative;
-    display: inline-block;
+    margin-bottom: 6px;
   }
 
-  h1::after {
-    content: 'wheat';
-    position: absolute;
-    top: 0; left: 0;
-    background: linear-gradient(135deg, #f0a030, #fbbf24, #f59e0b);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: blur(20px);
-    opacity: 0.4;
-    z-index: -1;
-  }
-
-  .subtitle {
+  .hero-sub {
     font-size: 10pt;
     font-weight: 600;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--text-dim);
-    margin-bottom: 28px;
+    margin-bottom: 32px;
   }
 
-  .tagline {
-    font-size: 15pt;
-    color: var(--text-muted);
-    line-height: 1.7;
-    max-width: 520px;
-    margin: 0 auto 36px;
+  .hero-tagline {
+    font-size: clamp(14pt, 2.2vw, 17pt);
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 40px;
   }
-
-  .tagline strong {
+  .hero-tagline strong {
     color: var(--text);
     font-weight: 600;
   }
@@ -215,7 +172,6 @@
     display: flex;
     justify-content: center;
     gap: 14px;
-    margin-bottom: 40px;
     flex-wrap: wrap;
   }
 
@@ -227,224 +183,189 @@
     font-weight: 600;
     text-decoration: none;
     border-radius: 12px;
-    padding: 14px 28px;
-    transition: all 0.2s;
-    position: relative;
+    padding: 15px 30px;
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .cta-primary {
     background: linear-gradient(135deg, #f0a030, #e6920a);
     color: #0a0e1a;
-    box-shadow: 0 0 30px rgba(240,160,48,0.25), 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 0 40px rgba(240,160,48,0.2), 0 4px 16px rgba(0,0,0,0.4);
   }
-
   .cta-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0 40px rgba(240,160,48,0.35), 0 8px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 0 50px rgba(240,160,48,0.3), 0 8px 24px rgba(0,0,0,0.4);
   }
 
-  .cta-secondary {
-    background: rgba(255,255,255,0.05);
-    color: var(--text-muted);
-    border: 1px solid rgba(255,255,255,0.1);
+  .cta-ghost {
+    background: var(--surface);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
   }
-
-  .cta-secondary:hover {
-    background: rgba(255,255,255,0.08);
+  .cta-ghost:hover {
+    background: var(--surface-hover);
     color: var(--text);
     transform: translateY(-2px);
   }
 
-  .stats {
+  /* --- Section dividers --- */
+  .spacer { height: 120px; }
+  .spacer-sm { height: 72px; }
+
+  .section-label {
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .section-label.gold { color: var(--gold); }
+  .section-label.blue { color: var(--blue); }
+  .section-label.green { color: var(--green); }
+  .section-label.purple { color: var(--purple); }
+
+  /* --- Pipeline --- */
+  .pipeline-section { padding-top: 20px; padding-bottom: 20px; }
+
+  .pipeline-wrap {
+    position: relative;
+    height: 440px;
+  }
+
+  #pipeline-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .pipeline-caption {
+    text-align: center;
+    font-size: 9pt;
+    color: var(--text-dim);
+    margin-top: 16px;
+    letter-spacing: 0.02em;
+  }
+
+  /* --- Stats bar --- */
+  .stats-bar {
     display: flex;
     justify-content: center;
-    gap: 36px;
+    gap: 48px;
+    padding: 32px 0;
   }
-
   .stat { text-align: center; }
-
-  .stat-number {
-    font-size: 24pt;
+  .stat-num {
+    font-size: 28pt;
     font-weight: 800;
-    line-height: 1;
     font-variant-numeric: tabular-nums;
-    transition: color 0.3s;
+    line-height: 1;
   }
-
-  .stat:hover .stat-number {
-    filter: brightness(1.3);
-  }
-
   .stat-label {
     font-size: 8pt;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--text-dim);
-    margin-top: 4px;
+    margin-top: 6px;
   }
 
-  /* Sections */
-  .section {
-    margin-bottom: 48px;
-  }
-
-  .section-header {
-    font-size: 9pt;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 16px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-  }
-
-  .section-header.blue { color: var(--accent-light); }
-  .section-header.green { color: var(--green); }
-  .section-header.purple { color: var(--purple); }
-  .section-header.cyan { color: var(--cyan); }
-  .section-header.gold { color: var(--gold); }
-
-  /* Why section */
-  .why-section {
-    text-align: center;
-    margin-bottom: 56px;
-    padding: 0 20px;
-  }
-
-  .why-section p {
-    font-size: 13pt;
-    line-height: 1.8;
-    color: var(--text-dim);
-    max-width: 540px;
-    margin: 0 auto;
-  }
-
-  .why-section p strong {
-    color: var(--text-muted);
-    font-weight: 500;
-  }
-
-  /* Pipeline visualization */
-  .pipeline {
-    margin-bottom: 56px;
-    position: relative;
-  }
-
-  .pipeline-canvas {
-    width: 100%;
-    height: 340px;
-    display: block;
-  }
-
-  .pipeline-label {
-    text-align: center;
-    font-size: 8pt;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--text-dim);
-    margin-top: 12px;
-  }
-
-  @media (max-width: 640px) {
-    .pipeline-canvas { height: 500px; }
-  }
-
-  /* Get Started steps */
-  .grid-3 {
+  /* --- Steps --- */
+  .steps-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 14px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
   }
 
-  .step-card {
-    background: var(--bg-card);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 14px;
-    padding: 22px 20px;
-    position: relative;
-    transition: all 0.2s;
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    transition: all 0.25s;
+  }
+  .step:hover {
+    background: var(--surface-hover);
+    border-color: var(--border-light);
+    transform: translateY(-3px);
   }
 
-  .step-card:hover {
-    background: var(--bg-card-hover);
-    border-color: rgba(255,255,255,0.1);
-    transform: translateY(-2px);
-  }
-
-  .step-number {
+  .step-num {
     font-size: 9pt;
     font-weight: 700;
-    display: inline-block;
-    width: 24px; height: 24px;
-    line-height: 24px;
+    width: 26px; height: 26px;
+    line-height: 26px;
     text-align: center;
     border-radius: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
+    display: inline-block;
   }
-
-  .step-card:nth-child(1) .step-number { background: rgba(59,130,246,0.15); color: var(--accent-light); }
-  .step-card:nth-child(2) .step-number { background: var(--green-dim); color: var(--green); }
-  .step-card:nth-child(3) .step-number { background: var(--purple-dim); color: var(--purple); }
+  .step:nth-child(1) .step-num { background: rgba(96,165,250,0.12); color: var(--blue); }
+  .step:nth-child(2) .step-num { background: rgba(34,197,94,0.1); color: var(--green); }
+  .step:nth-child(3) .step-num { background: rgba(167,139,250,0.1); color: var(--purple); }
 
   .step-title {
     font-weight: 600;
-    font-size: 11pt;
-    margin-bottom: 6px;
+    font-size: 12pt;
+    margin-bottom: 8px;
   }
 
   .step-desc {
     font-size: 9pt;
     color: var(--text-dim);
-    line-height: 1.5;
+    line-height: 1.55;
   }
 
-  code.cmd-inline {
+  .step code {
     display: block;
-    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
-    font-size: 9pt;
-    color: var(--text-muted);
-    background: rgba(0,0,0,0.3);
-    padding: 8px 12px;
-    border-radius: 6px;
-    margin-top: 8px;
-    line-height: 1.6;
-    border: 1px solid rgba(255,255,255,0.04);
+    font-family: var(--mono);
+    font-size: 8.5pt;
+    color: var(--text-secondary);
+    background: rgba(0,0,0,0.35);
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-top: 12px;
+    line-height: 1.7;
+    border: 1px solid rgba(255,255,255,0.03);
   }
 
-  /* Accordion commands */
-  .cmd-accordion {
+  /* --- Commands accordion --- */
+  .cmd-columns {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
   }
 
-  .cmd-group-label {
+  .cmd-col-label {
     font-size: 8pt;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
   }
 
-  .cmd-item {
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-  }
+  .cmd-item { border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .cmd-item:last-child { border-bottom: none; }
 
-  .cmd-item:last-child {
-    border-bottom: none;
-  }
-
-  .cmd-toggle {
+  .cmd-btn {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
-    font-size: 10pt;
-    color: var(--text-muted);
-    padding: 8px 10px;
+    font-family: var(--mono);
+    font-size: 9.5pt;
+    color: var(--text-secondary);
+    padding: 9px 10px;
     background: none;
     border: none;
     border-radius: 6px;
@@ -452,62 +373,49 @@
     transition: all 0.15s;
     text-align: left;
   }
-
-  .cmd-toggle:hover {
-    color: var(--text);
-    background: var(--bg-card-hover);
+  .cmd-btn:hover { color: var(--text); background: var(--surface-hover); }
+  .cmd-btn .chev {
+    font-size: 7pt;
+    opacity: 0.35;
+    transition: transform 0.2s, opacity 0.2s;
   }
+  .cmd-item.open .cmd-btn .chev { transform: rotate(90deg); opacity: 0.7; }
+  .cmd-item.open .cmd-btn { color: var(--text); }
 
-  .cmd-toggle .chevron {
-    font-size: 8pt;
-    transition: transform 0.2s;
-    opacity: 0.4;
-  }
-
-  .cmd-item.open .cmd-toggle .chevron {
-    transform: rotate(90deg);
-  }
-
-  .cmd-item.open .cmd-toggle {
-    color: var(--text);
-  }
-
-  .cmd-desc {
+  .cmd-detail {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.25s ease, padding 0.25s ease;
+    transition: max-height 0.3s ease, padding 0.3s ease;
     font-size: 8.5pt;
     color: var(--text-dim);
-    line-height: 1.5;
+    line-height: 1.55;
     padding: 0 10px;
   }
-
-  .cmd-item.open .cmd-desc {
-    max-height: 60px;
-    padding: 0 10px 8px;
+  .cmd-item.open .cmd-detail {
+    max-height: 50px;
+    padding: 0 10px 10px;
   }
 
-  /* Link cards */
-  .grid-2 {
+  /* --- Explore cards --- */
+  .explore-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 14px;
   }
 
-  a.card {
+  .explore-card {
     display: block;
-    background: var(--bg-card);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: var(--surface);
+    border: 1px solid var(--border);
     color: var(--text);
     text-decoration: none;
-    padding: 18px 20px;
-    border-radius: 12px;
-    transition: all 0.2s;
+    padding: 22px 24px;
+    border-radius: 14px;
+    transition: all 0.25s;
     position: relative;
     overflow: hidden;
   }
-
-  a.card::before {
+  .explore-card::before {
     content: '';
     position: absolute;
     top: 0; left: 0;
@@ -515,73 +423,80 @@
     opacity: 0;
     transition: opacity 0.2s;
   }
-
-  a.card:hover {
-    background: var(--bg-card-hover);
-    border-color: rgba(255,255,255,0.12);
+  .explore-card:hover {
+    background: var(--surface-hover);
+    border-color: var(--border-light);
     transform: translateY(-2px);
   }
+  .explore-card:hover::before { opacity: 1; }
 
-  a.card:hover::before { opacity: 1; }
+  .explore-card.blue-accent::before { background: var(--blue); }
+  .explore-card.green-accent::before { background: var(--green); }
+  .explore-card.purple-accent::before { background: var(--purple); }
 
-  a.card.accent::before { background: var(--accent-light); }
-  a.card.green::before { background: var(--green); }
-  a.card.purple::before { background: var(--purple); }
-  a.card.orange::before { background: var(--orange); }
-  a.card.cyan::before { background: var(--cyan); }
-
-  a.card .card-label {
-    font-weight: 600;
-    display: block;
-    margin-bottom: 4px;
-    font-size: 11pt;
+  .explore-card.featured {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(96,165,250,0.04) 100%);
+    border-color: rgba(96,165,250,0.1);
+    padding: 28px 28px;
   }
 
-  a.card .card-desc {
-    font-size: 9pt;
-    color: var(--text-dim);
-    line-height: 1.4;
-  }
-
-  a.card .card-tag {
+  .ec-label { font-weight: 600; font-size: 12pt; display: block; margin-bottom: 5px; }
+  .ec-desc { font-size: 9pt; color: var(--text-dim); line-height: 1.5; }
+  .ec-tag {
     display: inline-block;
     font-size: 7pt;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 2px 6px;
-    border-radius: 3px;
-    margin-top: 8px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-top: 10px;
+  }
+  .explore-card.blue-accent .ec-tag { color: var(--blue); background: rgba(96,165,250,0.1); }
+  .explore-card.green-accent .ec-tag { color: var(--green); background: rgba(34,197,94,0.1); }
+  .explore-card.purple-accent .ec-tag { color: var(--purple); background: rgba(167,139,250,0.1); }
+
+  .artifacts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
   }
 
-  a.card.accent .card-tag { color: var(--accent-light); background: rgba(59,130,246,0.12); }
-  a.card.green .card-tag { color: var(--green); background: var(--green-dim); }
-  a.card.purple .card-tag { color: var(--purple); background: var(--purple-dim); }
-  a.card.orange .card-tag { color: var(--orange); background: var(--orange-dim); }
-
-  a.featured {
-    grid-column: 1 / -1;
-    padding: 24px 28px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(59,130,246,0.05) 100%);
-    border-color: rgba(59,130,246,0.12);
+  .artifact-card {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    padding: 16px 18px;
+    border-radius: 12px;
+    transition: all 0.2s;
   }
+  .artifact-card:hover {
+    background: var(--surface-hover);
+    border-color: var(--border-light);
+    transform: translateY(-2px);
+  }
+  .artifact-card .ac-label { font-weight: 600; font-size: 10pt; display: block; margin-bottom: 3px; }
+  .artifact-card .ac-desc { font-size: 8pt; color: var(--text-dim); }
 
-  a.featured .card-label { font-size: 14pt; font-weight: 700; }
-  a.featured .card-desc { font-size: 10pt; color: var(--text-muted); }
-
-  /* Closing CTA */
-  .closing {
+  /* --- Closing --- */
+  .closing-section {
     text-align: center;
-    margin: 20px 0 48px;
-    padding: 48px 32px;
-    background: var(--bg-card);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 20px;
+    padding-top: 40px;
+    padding-bottom: 100px;
+  }
+
+  .closing-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 56px 40px;
     position: relative;
     overflow: hidden;
   }
-
-  .closing::before {
+  .closing-card::before {
     content: '';
     position: absolute;
     top: 0; left: 50%;
@@ -592,758 +507,608 @@
   }
 
   .closing-headline {
-    font-size: 22pt;
+    font-size: 24pt;
     font-weight: 700;
     letter-spacing: -0.02em;
     margin-bottom: 12px;
-    color: var(--text);
   }
 
   .closing-sub {
     font-size: 11pt;
     color: var(--text-dim);
-    margin-bottom: 24px;
+    margin-bottom: 28px;
   }
 
   .footer {
     text-align: center;
-    padding-top: 24px;
-    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 32px 36px;
     font-size: 9pt;
     color: var(--text-dim);
-    line-height: 1.6;
+    border-top: 1px solid var(--border);
   }
-
-  .footer a {
-    color: var(--accent-light);
-    text-decoration: none;
-  }
-
+  .footer a { color: var(--blue); text-decoration: none; }
   .footer a:hover { text-decoration: underline; }
 
+  /* --- Responsive --- */
   @media (max-width: 640px) {
-    .grid-2, .grid-3, .cmd-accordion { grid-template-columns: 1fr; }
-    a.featured { padding: 18px 20px; }
-    a.featured .card-label { font-size: 12pt; }
-    h1 { font-size: 42pt; }
-    .stats { gap: 20px; flex-wrap: wrap; }
-    .stat-number { font-size: 18pt; }
-    .hero { padding: 44px 24px 36px; }
+    section { padding: 0 20px; }
+    .steps-grid, .cmd-columns, .artifacts-grid { grid-template-columns: 1fr; }
+    .explore-grid { grid-template-columns: 1fr; }
+    .stats-bar { gap: 24px; flex-wrap: wrap; }
+    .stat-num { font-size: 22pt; }
+    .spacer { height: 80px; }
+    .hero-section { min-height: auto; padding-top: 60px; padding-bottom: 60px; }
     .cta-row { flex-direction: column; align-items: center; }
+    .pipeline-wrap { height: 480px; }
   }
 </style>
 </head>
 <body>
 
-<div class="bg-glow">
+<div class="bg-ambient">
   <div class="orb"></div>
   <div class="orb"></div>
   <div class="orb"></div>
 </div>
+<canvas id="particle-canvas"></canvas>
 
-<canvas id="grain-canvas"></canvas>
+<div class="page">
 
-<div class="container">
-
-  <div class="hero">
-    <div class="sun-rays"></div>
-    <h1>wheat</h1>
-    <div class="subtitle">for Claude Code</div>
-    <p class="tagline">
-      Turn <strong>messy research</strong> into <strong>decisions you can defend</strong>. A claims compiler that tracks evidence, detects conflicts, and ships auditable artifacts.
-    </p>
-    <div class="cta-row">
-      <a href="https://github.com/aid-ninja/wheat" class="cta cta-primary">Start a Research Sprint</a>
-      <a href="replay.html" class="cta cta-secondary">See It In Action</a>
+  <!-- ═══ HERO ═══ -->
+  <section class="hero-section">
+    <div class="hero-inner">
+      <div class="hero-glow"></div>
+      <h1 class="hero-title reveal">wheat</h1>
+      <div class="hero-sub reveal reveal-delay-1">for Claude Code</div>
+      <p class="hero-tagline reveal reveal-delay-2">
+        Turn <strong>messy research</strong> into <strong>decisions you can defend</strong>.<br>
+        A claims compiler that tracks evidence, catches conflicts, and ships auditable artifacts.
+      </p>
+      <div class="cta-row reveal reveal-delay-3">
+        <a href="https://github.com/aid-ninja/wheat" class="cta cta-primary">Start a Sprint</a>
+        <a href="replay.html" class="cta cta-ghost">See It In Action</a>
+      </div>
     </div>
-    <div class="stats">
+  </section>
+
+  <!-- ═══ STATS ═══ -->
+  <section>
+    <div class="stats-bar reveal">
       <div class="stat">
-        <div class="stat-number" data-target="17" style="color: var(--accent-light)">0</div>
+        <div class="stat-num" data-target="17" style="color:var(--blue)">0</div>
         <div class="stat-label">Commands</div>
       </div>
       <div class="stat">
-        <div class="stat-number" data-target="5" style="color: var(--green)">0</div>
+        <div class="stat-num" data-target="5" style="color:var(--green)">0</div>
         <div class="stat-label">Evidence Tiers</div>
       </div>
       <div class="stat">
-        <div class="stat-number" data-target="7" style="color: var(--orange)">0</div>
+        <div class="stat-num" data-target="7" style="color:var(--orange)">0</div>
         <div class="stat-label">Compiler Passes</div>
       </div>
       <div class="stat">
-        <div class="stat-number" data-target="0" style="color: var(--text-dim)">0</div>
+        <div class="stat-num" data-target="0" style="color:var(--text-dim)">0</div>
         <div class="stat-label">Dependencies</div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Why -->
-  <div class="why-section">
-    <p>
-      <strong>Research today is fragmented.</strong> Findings live in chat threads, docs, and someone's memory. Decisions get made without traceability.<br><br>
-      <strong>Wheat makes every claim defensible</strong> — from first question to final brief.
-    </p>
-  </div>
+  <div class="spacer"></div>
 
-  <!-- Pipeline Visualization -->
-  <div class="pipeline">
-    <div class="section-header gold">How It Works</div>
-    <canvas class="pipeline-canvas" id="pipeline-canvas"></canvas>
-    <div class="pipeline-label">Claims flow through 7 compiler passes — from question to auditable artifact</div>
-  </div>
+  <!-- ═══ PIPELINE ═══ -->
+  <section class="pipeline-section">
+    <div class="section-label gold reveal">How It Works</div>
+    <div class="pipeline-wrap reveal reveal-delay-1">
+      <canvas id="pipeline-canvas"></canvas>
+    </div>
+    <p class="pipeline-caption reveal reveal-delay-2">Claims flow through 7 compiler passes — from question to auditable artifact</p>
+  </section>
 
-  <!-- Get Started -->
-  <div class="section">
-    <div class="section-header blue">Get Started in 3 Steps</div>
-    <div class="grid-3">
-      <div class="step-card">
-        <div class="step-number">1</div>
+  <div class="spacer"></div>
+
+  <!-- ═══ GET STARTED ═══ -->
+  <section>
+    <div class="section-label blue reveal">Get Started</div>
+    <div class="steps-grid">
+      <div class="step reveal">
+        <div class="step-num">1</div>
         <div class="step-title">Clone</div>
-        <code class="cmd-inline">git clone https://github.com/aid-ninja/wheat.git<br>cd wheat</code>
+        <code>git clone aid-ninja/wheat<br>cd wheat</code>
       </div>
-      <div class="step-card">
-        <div class="step-number">2</div>
-        <div class="step-title">Init</div>
-        <div class="step-desc">Open the folder in Claude Code and run</div>
-        <code class="cmd-inline">/init</code>
-        <div class="step-desc" style="margin-top:6px;">Creates your sprint with a research question and seed claims.</div>
+      <div class="step reveal reveal-delay-1">
+        <div class="step-num">2</div>
+        <div class="step-title">Init a Sprint</div>
+        <div class="step-desc">Open the folder in Claude Code and bootstrap your first research question.</div>
+        <code>/init</code>
       </div>
-      <div class="step-card">
-        <div class="step-number">3</div>
-        <div class="step-title">Go</div>
-        <div class="step-desc">Start researching. The compiler runs automatically.</div>
-        <code class="cmd-inline">/research "your question"<br>/prototype<br>/brief</code>
-      </div>
-    </div>
-  </div>
-
-  <!-- Commands accordion -->
-  <div class="section">
-    <div class="section-header gold">17 Slash Commands</div>
-    <div class="cmd-accordion">
-      <div class="cmd-group">
-        <div class="cmd-group-label" style="color:var(--green)">Lifecycle</div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/init <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Bootstrap a new research sprint with a question and seed claims.</div>
-        </div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/research <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Deep-dive on a topic — generates typed, evidence-graded claims.</div>
-        </div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/prototype <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Build something testable to validate claims with real code.</div>
-        </div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/evaluate <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Test claims against reality and resolve conflicts.</div>
-        </div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/brief <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Compile a decision document from all resolved claims.</div>
-        </div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/present <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Generate a stakeholder-ready slide deck.</div>
-        </div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/handoff <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Package the sprint for transfer to another person or team.</div>
-        </div>
-      </div>
-      <div class="cmd-group">
-        <div class="cmd-group-label" style="color:var(--orange)">Quality</div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/challenge <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Stress-test a claim with structured devil's advocacy.</div>
-        </div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/witness <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Corroborate a claim against an external source or URL.</div>
-        </div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/blind-spot <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Analyze structural gaps — what hasn't been claimed yet.</div>
-        </div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/resolve <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Manually adjudicate a conflict between competing claims.</div>
-        </div>
-      </div>
-      <div class="cmd-group">
-        <div class="cmd-group-label" style="color:var(--cyan)">Operations</div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/status <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Render a live dashboard of sprint health and progress.</div>
-        </div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/replay <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Time-travel through the sprint's git history frame by frame.</div>
-        </div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/merge <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Combine claim sets from multiple sprints into one.</div>
-        </div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/calibrate <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Score past predictions against actual outcomes.</div>
-        </div>
-        <div class="cmd-item">
-          <button class="cmd-toggle">/feedback <span class="chevron">&#9654;</span></button>
-          <div class="cmd-desc">Incorporate stakeholder input as typed claims.</div>
-        </div>
+      <div class="step reveal reveal-delay-2">
+        <div class="step-num">3</div>
+        <div class="step-title">Research &amp; Ship</div>
+        <div class="step-desc">Gather evidence, resolve conflicts, compile to a decision brief.</div>
+        <code>/research "your question"<br>/prototype<br>/brief</code>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Explore -->
-  <div class="section">
-    <div class="section-header blue">Explore</div>
-    <div class="grid-2">
-      <a href="https://github.com/aid-ninja/wheat" class="card accent featured">
-        <span class="card-label">GitHub Repository</span>
-        <span class="card-desc">Clone the repo, run <code style="color:var(--accent-light);background:rgba(59,130,246,0.12);padding:1px 5px;border-radius:3px;font-size:8.5pt;">/init</code> in Claude Code, and start your first research sprint. Zero dependencies — just Node.js 18+.</span>
-        <span class="card-tag">MIT License</span>
+  <div class="spacer"></div>
+
+  <!-- ═══ COMMANDS ═══ -->
+  <section>
+    <div class="section-label gold reveal">17 Slash Commands</div>
+    <div class="cmd-columns reveal reveal-delay-1">
+      <div>
+        <div class="cmd-col-label" style="color:var(--green)">Lifecycle</div>
+        <div class="cmd-item"><button class="cmd-btn">/init <span class="chev">&#9654;</span></button><div class="cmd-detail">Bootstrap a new research sprint with a question and seed claims.</div></div>
+        <div class="cmd-item"><button class="cmd-btn">/research <span class="chev">&#9654;</span></button><div class="cmd-detail">Deep-dive on a topic — generates typed, evidence-graded claims.</div></div>
+        <div class="cmd-item"><button class="cmd-btn">/prototype <span class="chev">&#9654;</span></button><div class="cmd-detail">Build something testable to validate claims with real code.</div></div>
+        <div class="cmd-item"><button class="cmd-btn">/evaluate <span class="chev">&#9654;</span></button><div class="cmd-detail">Test claims against reality and resolve conflicts.</div></div>
+        <div class="cmd-item"><button class="cmd-btn">/brief <span class="chev">&#9654;</span></button><div class="cmd-detail">Compile a decision document from all resolved claims.</div></div>
+        <div class="cmd-item"><button class="cmd-btn">/present <span class="chev">&#9654;</span></button><div class="cmd-detail">Generate a stakeholder-ready slide deck.</div></div>
+        <div class="cmd-item"><button class="cmd-btn">/handoff <span class="chev">&#9654;</span></button><div class="cmd-detail">Package the sprint for transfer to another person or team.</div></div>
+      </div>
+      <div>
+        <div class="cmd-col-label" style="color:var(--orange)">Quality</div>
+        <div class="cmd-item"><button class="cmd-btn">/challenge <span class="chev">&#9654;</span></button><div class="cmd-detail">Stress-test a claim with structured devil's advocacy.</div></div>
+        <div class="cmd-item"><button class="cmd-btn">/witness <span class="chev">&#9654;</span></button><div class="cmd-detail">Corroborate a claim against an external source or URL.</div></div>
+        <div class="cmd-item"><button class="cmd-btn">/blind-spot <span class="chev">&#9654;</span></button><div class="cmd-detail">Analyze structural gaps — what hasn't been claimed yet.</div></div>
+        <div class="cmd-item"><button class="cmd-btn">/resolve <span class="chev">&#9654;</span></button><div class="cmd-detail">Manually adjudicate a conflict between competing claims.</div></div>
+      </div>
+      <div>
+        <div class="cmd-col-label" style="color:var(--cyan)">Operations</div>
+        <div class="cmd-item"><button class="cmd-btn">/status <span class="chev">&#9654;</span></button><div class="cmd-detail">Render a live dashboard of sprint health and progress.</div></div>
+        <div class="cmd-item"><button class="cmd-btn">/replay <span class="chev">&#9654;</span></button><div class="cmd-detail">Time-travel through the sprint's git history frame by frame.</div></div>
+        <div class="cmd-item"><button class="cmd-btn">/merge <span class="chev">&#9654;</span></button><div class="cmd-detail">Combine claim sets from multiple sprints into one.</div></div>
+        <div class="cmd-item"><button class="cmd-btn">/calibrate <span class="chev">&#9654;</span></button><div class="cmd-detail">Score past predictions against actual outcomes.</div></div>
+        <div class="cmd-item"><button class="cmd-btn">/feedback <span class="chev">&#9654;</span></button><div class="cmd-detail">Incorporate stakeholder input as typed claims.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="spacer"></div>
+
+  <!-- ═══ EXPLORE ═══ -->
+  <section>
+    <div class="section-label blue reveal">Explore</div>
+    <div class="explore-grid">
+      <a href="https://github.com/aid-ninja/wheat" class="explore-card blue-accent featured reveal">
+        <span class="ec-label">GitHub Repository</span>
+        <span class="ec-desc">Clone the repo, run <code style="color:var(--blue);background:rgba(96,165,250,0.1);padding:1px 5px;border-radius:3px;font-size:8.5pt;font-family:var(--mono);">/init</code> in Claude Code, and start your first research sprint. Zero dependencies — just Node.js 18+.</span>
+        <span class="ec-tag">MIT License</span>
       </a>
-      <a href="replay.html" class="card accent">
-        <span class="card-label">Interactive Replay</span>
-        <span class="card-desc">Watch a real sprint unfold — 99 frames of research, prototyping, and compilation</span>
-        <span class="card-tag">Demo</span>
+      <a href="replay.html" class="explore-card blue-accent reveal">
+        <span class="ec-label">Interactive Replay</span>
+        <span class="ec-desc">Watch a real sprint unfold — 99 frames of research, prototyping, and compilation</span>
+        <span class="ec-tag">Demo</span>
       </a>
-      <a href="brief.html" class="card green">
-        <span class="card-label">Example Brief</span>
-        <span class="card-desc">A compiled decision document produced by /brief</span>
-        <span class="card-tag">Output</span>
+      <a href="brief.html" class="explore-card green-accent reveal reveal-delay-1">
+        <span class="ec-label">Example Brief</span>
+        <span class="ec-desc">A compiled decision document produced by /brief</span>
+        <span class="ec-tag">Output</span>
       </a>
     </div>
-  </div>
+  </section>
 
-  <!-- Example Sprint Artifacts -->
-  <div class="section">
-    <div class="section-header purple">Example Sprint Artifacts</div>
-    <div class="grid-3">
-      <a href="presentation.html" class="card purple">
-        <span class="card-label">Presentation</span>
-        <span class="card-desc">Stakeholder slide deck</span>
-      </a>
-      <a href="dashboard.html" class="card purple">
-        <span class="card-label">Dashboard</span>
-        <span class="card-desc">Live sprint status</span>
-      </a>
-      <a href="problem-statement.html" class="card purple">
-        <span class="card-label">Problem Statement</span>
-        <span class="card-desc">Sprint kickoff</span>
-      </a>
-      <a href="research-architecture.html" class="card purple">
-        <span class="card-label">Research: Architecture</span>
-        <span class="card-desc">Deep dive</span>
-      </a>
-      <a href="research-pedagogy.html" class="card purple">
-        <span class="card-label">Research: Pedagogy</span>
-        <span class="card-desc">Deep dive</span>
-      </a>
-      <a href="research-accessibility.html" class="card purple">
-        <span class="card-label">Research: Accessibility</span>
-        <span class="card-desc">Deep dive</span>
-      </a>
-      <a href="research-replay-ui.html" class="card purple">
-        <span class="card-label">Research: Replay UI</span>
-        <span class="card-desc">Deep dive</span>
-      </a>
-      <a href="research-commands.html" class="card purple">
-        <span class="card-label">Research: Commands</span>
-        <span class="card-desc">Deep dive</span>
-      </a>
-      <a href="evidence-evaluation.html" class="card purple">
-        <span class="card-label">Evaluation</span>
-        <span class="card-desc">Test results</span>
-      </a>
+  <div class="spacer-sm"></div>
+
+  <!-- ═══ ARTIFACTS ═══ -->
+  <section>
+    <div class="section-label purple reveal">Example Sprint Artifacts</div>
+    <div class="artifacts-grid">
+      <a href="presentation.html" class="artifact-card reveal"><span class="ac-label">Presentation</span><span class="ac-desc">Stakeholder slide deck</span></a>
+      <a href="dashboard.html" class="artifact-card reveal reveal-delay-1"><span class="ac-label">Dashboard</span><span class="ac-desc">Live sprint status</span></a>
+      <a href="problem-statement.html" class="artifact-card reveal reveal-delay-2"><span class="ac-label">Problem Statement</span><span class="ac-desc">Sprint kickoff</span></a>
+      <a href="research-architecture.html" class="artifact-card reveal"><span class="ac-label">Architecture</span><span class="ac-desc">Research deep dive</span></a>
+      <a href="research-pedagogy.html" class="artifact-card reveal reveal-delay-1"><span class="ac-label">Pedagogy</span><span class="ac-desc">Research deep dive</span></a>
+      <a href="research-accessibility.html" class="artifact-card reveal reveal-delay-2"><span class="ac-label">Accessibility</span><span class="ac-desc">Research deep dive</span></a>
+      <a href="research-replay-ui.html" class="artifact-card reveal"><span class="ac-label">Replay UI</span><span class="ac-desc">Research deep dive</span></a>
+      <a href="research-commands.html" class="artifact-card reveal reveal-delay-1"><span class="ac-label">Commands</span><span class="ac-desc">Research deep dive</span></a>
+      <a href="evidence-evaluation.html" class="artifact-card reveal reveal-delay-2"><span class="ac-label">Evaluation</span><span class="ac-desc">Test results</span></a>
     </div>
-  </div>
+  </section>
 
-  <!-- Closing CTA -->
-  <div class="closing">
-    <div class="closing-headline">Decisions deserve evidence.</div>
-    <div class="closing-sub">Start your first research sprint in under a minute.</div>
-    <a href="https://github.com/aid-ninja/wheat" class="cta cta-primary">Get Started</a>
-  </div>
+  <div class="spacer"></div>
 
-  <div class="footer">
+  <!-- ═══ CLOSING ═══ -->
+  <section class="closing-section">
+    <div class="closing-card reveal">
+      <div class="closing-headline">Decisions deserve evidence.</div>
+      <div class="closing-sub">Start your first research sprint in under a minute.</div>
+      <a href="https://github.com/aid-ninja/wheat" class="cta cta-primary">Get Started</a>
+    </div>
+  </section>
+
+  <footer class="footer">
     Zero dependencies. Self-contained HTML. MIT licensed. <a href="https://github.com/aid-ninja/wheat">View on GitHub</a>
-  </div>
+  </footer>
 
 </div>
 
 <script>
 (function() {
-  // Accordion
-  document.querySelectorAll('.cmd-toggle').forEach(function(btn) {
+  // ── Scroll reveal ──
+  var reveals = document.querySelectorAll('.reveal');
+  var revealObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        revealObserver.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+  reveals.forEach(function(el) { revealObserver.observe(el); });
+
+  // ── Count-up ──
+  var statsObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) {
+        document.querySelectorAll('.stat-num[data-target]').forEach(function(el) {
+          var target = parseInt(el.getAttribute('data-target'));
+          if (target === 0) { el.textContent = '0'; return; }
+          var start = performance.now();
+          (function tick(now) {
+            var t = Math.min((now - start) / 1200, 1);
+            el.textContent = Math.round(target * (1 - Math.pow(1 - t, 3)));
+            if (t < 1) requestAnimationFrame(tick);
+          })(start);
+        });
+        statsObs.disconnect();
+      }
+    });
+  }, { threshold: 0.5 });
+  var statsBar = document.querySelector('.stats-bar');
+  if (statsBar) statsObs.observe(statsBar);
+
+  // ── Accordion ──
+  document.querySelectorAll('.cmd-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var item = this.parentElement;
-      // Close siblings in same group
-      item.parentElement.querySelectorAll('.cmd-item.open').forEach(function(el) {
+      var col = item.parentElement;
+      col.querySelectorAll('.cmd-item.open').forEach(function(el) {
         if (el !== item) el.classList.remove('open');
       });
       item.classList.toggle('open');
     });
   });
 
-  // Count-up animation
-  function animateCountUp() {
-    document.querySelectorAll('.stat-number[data-target]').forEach(function(el) {
-      var target = parseInt(el.getAttribute('data-target'));
-      if (target === 0) { el.textContent = '0'; return; }
-      var duration = 1200;
-      var start = performance.now();
-      function update(now) {
-        var progress = Math.min((now - start) / duration, 1);
-        var eased = 1 - Math.pow(1 - progress, 3);
-        el.textContent = Math.round(target * eased);
-        if (progress < 1) requestAnimationFrame(update);
-      }
-      requestAnimationFrame(update);
-    });
-  }
-
-  // Trigger count-up when hero is visible
-  var observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
-        animateCountUp();
-        observer.disconnect();
-      }
-    });
-  }, { threshold: 0.3 });
-  var hero = document.querySelector('.hero');
-  if (hero) observer.observe(hero);
-
-  // Particle canvas
-  var canvas = document.getElementById('grain-canvas');
-  var ctx = canvas.getContext('2d');
-  var w, h, particles, mouse = { x: -1000, y: -1000 };
-
-  var COLORS = [
-    { r: 96, g: 165, b: 250 },
-    { r: 34, g: 197, b: 94 },
-    { r: 167, g: 139, b: 250 },
-    { r: 245, g: 158, b: 11 },
-    { r: 34, g: 211, b: 238 },
+  // ── Particle canvas ──
+  var pc = document.getElementById('particle-canvas');
+  var pctx = pc.getContext('2d');
+  var pw, ph, pts, pmouse = { x: -999, y: -999 };
+  var PCOLS = [
+    {r:96,g:165,b:250},{r:34,g:197,b:94},{r:167,g:139,b:250},{r:245,g:158,b:11},{r:34,g:211,b:238}
   ];
 
-  var CONNECT_DIST = 120;
-  var PARTICLE_COUNT = 45;
-  var MOUSE_RADIUS = 160;
+  function pResize() { pw = pc.width = innerWidth; ph = pc.height = innerHeight; }
 
-  function resize() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-  }
-
-  function createParticle() {
-    var col = COLORS[Math.floor(Math.random() * COLORS.length)];
-    return {
-      x: Math.random() * w,
-      y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      r: Math.random() * 1.5 + 1,
-      col: col,
-      alpha: Math.random() * 0.3 + 0.15,
-      pulse: Math.random() * Math.PI * 2,
-    };
-  }
-
-  function init() {
-    resize();
-    particles = [];
-    for (var i = 0; i < PARTICLE_COUNT; i++) {
-      particles.push(createParticle());
+  function pInit() {
+    pResize();
+    pts = [];
+    for (var i = 0; i < 40; i++) {
+      var c = PCOLS[Math.floor(Math.random() * PCOLS.length)];
+      pts.push({
+        x: Math.random()*pw, y: Math.random()*ph,
+        vx: (Math.random()-0.5)*0.25, vy: (Math.random()-0.5)*0.25,
+        r: Math.random()*1.4+0.8, col: c,
+        a: Math.random()*0.25+0.1, ph: Math.random()*Math.PI*2
+      });
     }
   }
 
-  function draw() {
-    ctx.clearRect(0, 0, w, h);
-    for (var i = 0; i < particles.length; i++) {
-      for (var j = i + 1; j < particles.length; j++) {
-        var a = particles[i], b = particles[j];
-        var dx = a.x - b.x, dy = a.y - b.y;
-        var dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < CONNECT_DIST) {
-          var opacity = (1 - dist / CONNECT_DIST) * 0.08;
-          var cr = (a.col.r + b.col.r) >> 1;
-          var cg = (a.col.g + b.col.g) >> 1;
-          var cb = (a.col.b + b.col.b) >> 1;
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.strokeStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',' + opacity + ')';
-          ctx.lineWidth = 0.5;
-          ctx.stroke();
+  function pDraw() {
+    pctx.clearRect(0, 0, pw, ph);
+    for (var i = 0; i < pts.length; i++) {
+      for (var j = i+1; j < pts.length; j++) {
+        var a = pts[i], b = pts[j];
+        var dx = a.x-b.x, dy = a.y-b.y, d = Math.sqrt(dx*dx+dy*dy);
+        if (d < 110) {
+          var op = (1-d/110)*0.06;
+          pctx.beginPath(); pctx.moveTo(a.x,a.y); pctx.lineTo(b.x,b.y);
+          pctx.strokeStyle = 'rgba('+((a.col.r+b.col.r)>>1)+','+((a.col.g+b.col.g)>>1)+','+((a.col.b+b.col.b)>>1)+','+op+')';
+          pctx.lineWidth = 0.5; pctx.stroke();
         }
       }
     }
-    for (var i = 0; i < particles.length; i++) {
-      var p = particles[i];
-      p.pulse += 0.008;
-      var pulseAlpha = p.alpha + Math.sin(p.pulse) * 0.08;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(' + p.col.r + ',' + p.col.g + ',' + p.col.b + ',' + (pulseAlpha * 0.15) + ')';
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(' + p.col.r + ',' + p.col.g + ',' + p.col.b + ',' + pulseAlpha + ')';
-      ctx.fill();
+    for (var i = 0; i < pts.length; i++) {
+      var p = pts[i];
+      p.ph += 0.007;
+      var al = p.a + Math.sin(p.ph)*0.06;
+      pctx.beginPath(); pctx.arc(p.x,p.y,p.r*3.5,0,Math.PI*2);
+      pctx.fillStyle = 'rgba('+p.col.r+','+p.col.g+','+p.col.b+','+(al*0.12)+')';
+      pctx.fill();
+      pctx.beginPath(); pctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      pctx.fillStyle = 'rgba('+p.col.r+','+p.col.g+','+p.col.b+','+al+')';
+      pctx.fill();
+
+      var mdx = p.x-pmouse.x, mdy = p.y-pmouse.y, md = Math.sqrt(mdx*mdx+mdy*mdy);
+      if (md < 150 && md > 0) { var f = (1-md/150)*0.015; p.vx += (mdx/md)*f; p.vy += (mdy/md)*f; }
+      p.vx *= 0.999; p.vy *= 0.999;
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < -20) p.x = pw+20; if (p.x > pw+20) p.x = -20;
+      if (p.y < -20) p.y = ph+20; if (p.y > ph+20) p.y = -20;
     }
-    for (var i = 0; i < particles.length; i++) {
-      var p = particles[i];
-      var mdx = p.x - mouse.x, mdy = p.y - mouse.y;
-      var mdist = Math.sqrt(mdx * mdx + mdy * mdy);
-      if (mdist < MOUSE_RADIUS && mdist > 0) {
-        var force = (1 - mdist / MOUSE_RADIUS) * 0.02;
-        p.vx += (mdx / mdist) * force;
-        p.vy += (mdy / mdist) * force;
-      }
-      p.vx *= 0.999;
-      p.vy *= 0.999;
-      p.x += p.vx;
-      p.y += p.vy;
-      if (p.x < -20) p.x = w + 20;
-      if (p.x > w + 20) p.x = -20;
-      if (p.y < -20) p.y = h + 20;
-      if (p.y > h + 20) p.y = -20;
-    }
-    requestAnimationFrame(draw);
+    requestAnimationFrame(pDraw);
   }
 
-  document.addEventListener('mousemove', function(e) {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-  });
+  document.addEventListener('mousemove', function(e) { pmouse.x = e.clientX; pmouse.y = e.clientY; });
+  document.addEventListener('mouseleave', function() { pmouse.x = -999; pmouse.y = -999; });
+  addEventListener('resize', pResize);
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { pInit(); pDraw(); }
 
-  document.addEventListener('mouseleave', function() {
-    mouse.x = -1000;
-    mouse.y = -1000;
-  });
+  // ── Pipeline visualization — diamond hub layout ──
+  var plc = document.getElementById('pipeline-canvas');
+  if (!plc) return;
+  var ctx = plc.getContext('2d');
+  var dpr = devicePixelRatio || 1;
+  var PW, PH;
 
-  window.addEventListener('resize', resize);
-
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    init();
-    draw();
+  function plResize() {
+    var r = plc.getBoundingClientRect();
+    PW = r.width; PH = r.height;
+    plc.width = PW * dpr; plc.height = PH * dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
   }
-})();
-</script>
+  plResize();
+  addEventListener('resize', plResize);
 
-<script>
-// Pipeline visualization
-(function() {
-  var canvas = document.getElementById('pipeline-canvas');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var dpr = window.devicePixelRatio || 1;
-  var W, H;
+  // Nodes: diamond layout
+  //         Commands (top)
+  //        /                \
+  //   claims.json        (feedback loop)
+  //        \                /
+  //        Compiler (center, large)
+  //        /                \
+  //   compilation.json   (quality gate)
+  //        \                /
+  //         Artifacts (bottom)
 
-  function resize() {
-    var rect = canvas.getBoundingClientRect();
-    W = rect.width;
-    H = rect.height;
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-
-  resize();
-  window.addEventListener('resize', resize);
-
-  // Pipeline stages
-  var stages = [
-    { id: 'commands', label: 'Slash Commands', sub: '/research, /prototype ...', color: [96,165,250] },
-    { id: 'claims',   label: 'claims.json',    sub: 'Typed, evidence-graded',    color: [34,197,94] },
-    { id: 'compiler', label: 'Compiler',        sub: '7 passes',                  color: [240,160,48] },
-    { id: 'compiled', label: 'compilation.json',sub: 'Resolved, certified',       color: [167,139,250] },
-    { id: 'artifacts',label: 'Artifacts',       sub: 'HTML, PDF, slides',         color: [34,211,238] },
+  var nodes = [
+    { id: 'commands',  label: 'Slash Commands',    sub: '17 commands',          color: [96,165,250],  icon: '/cmd' },
+    { id: 'claims',    label: 'claims.json',       sub: 'Persistence layer',    color: [34,197,94],   icon: '{ }' },
+    { id: 'compiler',  label: 'Compiler',          sub: '7 passes',             color: [240,160,48],  icon: '7x',  isHub: true },
+    { id: 'compiled',  label: 'compilation.json',  sub: 'Certified output',     color: [167,139,250], icon: '.json' },
+    { id: 'artifacts', label: 'Artifacts',         sub: 'HTML / PDF / slides',  color: [34,211,238],  icon: 'out' },
   ];
 
-  // Compiler passes (shown inside compiler node when active)
-  var passes = [
-    'Schema', 'Types', 'Sort', 'Conflicts', 'Resolve', 'Coverage', 'Readiness'
-  ];
+  var passes = ['Schema','Types','Sort','Conflicts','Resolve','Coverage','Readiness'];
 
-  // Particles flowing through pipeline
-  var particles = [];
-  var time = 0;
-  var activeStage = 0;
-  var stageTimer = 0;
-  var STAGE_DURATION = 90; // frames per stage
-  var compilerPassIndex = 0;
-  var compilerPassTimer = 0;
+  // Edges: [fromIdx, toIdx]
+  var edges = [[0,1],[1,2],[2,3],[3,4]];
 
-  function getNodePositions() {
-    var mobile = W < 500;
-    var positions = [];
-    if (mobile) {
-      var startY = 30;
-      var gap = (H - 60) / (stages.length - 1);
-      for (var i = 0; i < stages.length; i++) {
-        positions.push({ x: W / 2, y: startY + i * gap });
-      }
-    } else {
-      var startX = 60;
-      var gap = (W - 120) / (stages.length - 1);
-      for (var i = 0; i < stages.length; i++) {
-        positions.push({ x: startX + i * gap, y: H / 2 });
-      }
-    }
-    return positions;
+  var flowParticles = [];
+  var pTime = 0;
+  var activeEdge = 0;
+  var edgeTimer = 0;
+  var EDGE_DUR = 80;
+  var passIdx = 0;
+  var passTimer = 0;
+
+  function getPositions() {
+    var cx = PW / 2;
+    var cy = PH / 2;
+    var spreadX = Math.min(PW * 0.32, 200);
+    var spreadY = Math.min(PH * 0.36, 160);
+    return [
+      { x: cx,            y: cy - spreadY * 1.15 },  // commands — top
+      { x: cx - spreadX,  y: cy - spreadY * 0.3 },   // claims — upper left
+      { x: cx,            y: cy + 4 },                // compiler — center
+      { x: cx + spreadX,  y: cy + spreadY * 0.3 },   // compiled — lower right
+      { x: cx,            y: cy + spreadY * 1.15 },   // artifacts — bottom
+    ];
   }
 
-  function spawnParticle(fromIdx) {
-    if (fromIdx >= stages.length - 1) return;
-    var pos = getNodePositions();
-    var from = pos[fromIdx];
-    var to = pos[fromIdx + 1];
-    var col = stages[fromIdx].color;
-    particles.push({
-      x: from.x, y: from.y,
-      tx: to.x, ty: to.y,
+  function spawnFlow(ei) {
+    var pos = getPositions();
+    var e = edges[ei];
+    var from = pos[e[0]], to = pos[e[1]];
+    var col = nodes[e[0]].color;
+    flowParticles.push({
+      fromIdx: e[0], toIdx: e[1],
+      fx: from.x, fy: from.y, tx: to.x, ty: to.y,
       progress: 0,
-      speed: 0.012 + Math.random() * 0.008,
-      r: 2.5 + Math.random() * 1.5,
+      speed: 0.01 + Math.random() * 0.006,
+      r: 2 + Math.random() * 1.5,
       col: col,
-      alpha: 0.7 + Math.random() * 0.3,
-      fromIdx: fromIdx,
+      alpha: 0.6 + Math.random() * 0.4,
+      seed: Math.random() * 100,
     });
   }
 
-  function drawNode(x, y, stage, index, isActive) {
-    var col = stage.color;
-    var glow = isActive ? 0.25 : 0.06;
-    var nodeR = 28;
+  function drawCurve(ax, ay, bx, by, col, active) {
+    // Bezier curve between nodes
+    var mx = (ax + bx) / 2;
+    var my = (ay + by) / 2;
+    // Perpendicular offset for curvature
+    var dx = bx - ax, dy = by - ay;
+    var len = Math.sqrt(dx*dx+dy*dy) || 1;
+    var nx = -dy / len, ny = dx / len;
+    var curve = len * 0.15;
+    var cpx = mx + nx * curve;
+    var cpy = my + ny * curve;
 
-    // Glow
-    var grad = ctx.createRadialGradient(x, y, 0, x, y, nodeR * 3);
-    grad.addColorStop(0, 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',' + glow + ')');
-    grad.addColorStop(1, 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0)');
-    ctx.beginPath();
-    ctx.arc(x, y, nodeR * 3, 0, Math.PI * 2);
-    ctx.fillStyle = grad;
-    ctx.fill();
-
-    // Node circle
-    ctx.beginPath();
-    ctx.arc(x, y, nodeR, 0, Math.PI * 2);
-    ctx.fillStyle = isActive
-      ? 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.15)'
-      : 'rgba(255,255,255,0.03)';
-    ctx.fill();
-    ctx.strokeStyle = isActive
-      ? 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.5)'
-      : 'rgba(255,255,255,0.08)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Pulse ring on active
-    if (isActive) {
-      var pulse = 0.5 + 0.5 * Math.sin(time * 0.05);
-      ctx.beginPath();
-      ctx.arc(x, y, nodeR + 6 + pulse * 4, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',' + (0.15 * (1 - pulse)) + ')';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
-
-    // Label
-    ctx.fillStyle = isActive ? 'rgba(241,245,249,0.95)' : 'rgba(148,163,184,0.8)';
-    ctx.font = '600 9px -apple-system, BlinkMacSystemFont, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(stage.label, x, y + nodeR + 18);
-
-    // Sub label
-    var subText = stage.sub;
-    // Show current compiler pass when compiler is active
-    if (index === 2 && isActive) {
-      subText = 'Pass ' + (compilerPassIndex + 1) + ': ' + passes[compilerPassIndex];
-    }
-    ctx.fillStyle = 'rgba(100,116,139,0.7)';
-    ctx.font = '500 7.5px -apple-system, BlinkMacSystemFont, sans-serif';
-    ctx.fillText(subText, x, y + nodeR + 30);
-
-    // Icon text inside node
-    var icons = ['/cmd', '{ }', '7x', '.json', 'out'];
-    ctx.fillStyle = isActive
-      ? 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.9)'
-      : 'rgba(148,163,184,0.4)';
-    ctx.font = '700 10px SF Mono, Fira Code, Consolas, monospace';
-    ctx.fillText(icons[index], x, y + 4);
-  }
-
-  function drawConnection(from, to, stage, isActive) {
-    var col = stage.color;
-    ctx.beginPath();
-    ctx.moveTo(from.x + 28, from.y);
-    ctx.lineTo(to.x - 28, to.y);
-    ctx.strokeStyle = isActive
-      ? 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.2)'
-      : 'rgba(255,255,255,0.04)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash(isActive ? [] : [4, 4]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Arrow
-    var angle = Math.atan2(to.y - from.y, to.x - from.x);
-    var ax = to.x - 28 - Math.cos(angle) * 2;
-    var ay = to.y - Math.sin(angle) * 2;
     ctx.beginPath();
     ctx.moveTo(ax, ay);
-    ctx.lineTo(ax - 6 * Math.cos(angle - 0.4), ay - 6 * Math.sin(angle - 0.4));
-    ctx.lineTo(ax - 6 * Math.cos(angle + 0.4), ay - 6 * Math.sin(angle + 0.4));
-    ctx.closePath();
-    ctx.fillStyle = isActive
-      ? 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.3)'
-      : 'rgba(255,255,255,0.06)';
-    ctx.fill();
-  }
-
-  function drawConnectionVertical(from, to, stage, isActive) {
-    var col = stage.color;
-    ctx.beginPath();
-    ctx.moveTo(from.x, from.y + 28);
-    ctx.lineTo(to.x, to.y - 28);
-    ctx.strokeStyle = isActive
-      ? 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.2)'
-      : 'rgba(255,255,255,0.04)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash(isActive ? [] : [4, 4]);
+    ctx.quadraticCurveTo(cpx, cpy, bx, by);
+    ctx.strokeStyle = active
+      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.18)'
+      : 'rgba(255,255,255,0.035)';
+    ctx.lineWidth = active ? 1.5 : 1;
+    ctx.setLineDash(active ? [] : [3,5]);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Arrow
-    var ax = to.x;
-    var ay = to.y - 30;
+    // Arrowhead
+    // Point on curve at t=0.92
+    var t = 0.92;
+    var t1 = 1 - t;
+    var px = t1*t1*ax + 2*t1*t*cpx + t*t*bx;
+    var py = t1*t1*ay + 2*t1*t*cpy + t*t*by;
+    var ang = Math.atan2(by - py, bx - px);
     ctx.beginPath();
-    ctx.moveTo(ax, ay + 6);
-    ctx.lineTo(ax - 5, ay - 2);
-    ctx.lineTo(ax + 5, ay - 2);
+    ctx.moveTo(bx, by);
+    ctx.lineTo(bx - 7*Math.cos(ang-0.35), by - 7*Math.sin(ang-0.35));
+    ctx.lineTo(bx - 7*Math.cos(ang+0.35), by - 7*Math.sin(ang+0.35));
     ctx.closePath();
-    ctx.fillStyle = isActive
-      ? 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.3)'
-      : 'rgba(255,255,255,0.06)';
+    ctx.fillStyle = active
+      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.3)'
+      : 'rgba(255,255,255,0.05)';
     ctx.fill();
   }
 
-  function drawParticle(p) {
-    var col = p.col;
-    var alpha = p.alpha * (1 - Math.abs(p.progress - 0.5) * 0.6);
-
-    // Trail
-    var trailLen = 0.08;
-    var tp = Math.max(0, p.progress - trailLen);
-    var tx = p.x - (p.x - (p.x + (p.tx - p.x) * (tp / (p.progress || 1)))) * 0;
-    // Simplified: just draw glow + core
-
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',' + (alpha * 0.2) + ')';
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',' + alpha + ')';
-    ctx.fill();
+  function bezierPoint(ax, ay, bx, by, curve, t) {
+    var mx = (ax+bx)/2, my = (ay+by)/2;
+    var dx = bx-ax, dy = by-ay, len = Math.sqrt(dx*dx+dy*dy)||1;
+    var nx = -dy/len, ny = dx/len;
+    var cpx = mx + nx * curve;
+    var cpy = my + ny * curve;
+    var t1 = 1-t;
+    return { x: t1*t1*ax + 2*t1*t*cpx + t*t*bx, y: t1*t1*ay + 2*t1*t*cpy + t*t*by };
   }
 
-  function frame() {
-    ctx.clearRect(0, 0, W, H);
-    time++;
+  function drawNodeAt(x, y, node, active) {
+    var col = node.color;
+    var R = node.isHub ? 36 : 26;
+    var glow = active ? 0.3 : 0.05;
 
-    var pos = getNodePositions();
-    var mobile = W < 500;
+    // Glow
+    var g = ctx.createRadialGradient(x,y,0,x,y,R*3.5);
+    g.addColorStop(0, 'rgba('+col[0]+','+col[1]+','+col[2]+','+glow+')');
+    g.addColorStop(1, 'rgba('+col[0]+','+col[1]+','+col[2]+',0)');
+    ctx.beginPath(); ctx.arc(x,y,R*3.5,0,Math.PI*2); ctx.fillStyle = g; ctx.fill();
 
-    // Advance stage
-    stageTimer++;
-    if (stageTimer >= STAGE_DURATION) {
-      stageTimer = 0;
-      activeStage = (activeStage + 1) % stages.length;
-      compilerPassIndex = 0;
+    // Outer ring for hub
+    if (node.isHub) {
+      ctx.beginPath(); ctx.arc(x,y,R+8,0,Math.PI*2);
+      ctx.strokeStyle = 'rgba('+col[0]+','+col[1]+','+col[2]+','+(active?0.12:0.04)+')';
+      ctx.lineWidth = 1; ctx.stroke();
     }
 
-    // Advance compiler pass display
-    if (activeStage === 2) {
-      compilerPassTimer++;
-      if (compilerPassTimer >= Math.floor(STAGE_DURATION / passes.length)) {
-        compilerPassTimer = 0;
-        compilerPassIndex = (compilerPassIndex + 1) % passes.length;
+    // Node
+    ctx.beginPath(); ctx.arc(x,y,R,0,Math.PI*2);
+    ctx.fillStyle = active
+      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.12)'
+      : 'rgba(255,255,255,0.025)';
+    ctx.fill();
+    ctx.strokeStyle = active
+      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.5)'
+      : 'rgba(255,255,255,0.07)';
+    ctx.lineWidth = 1.5; ctx.stroke();
+
+    // Pulse
+    if (active) {
+      var pulse = 0.5 + 0.5 * Math.sin(pTime * 0.05);
+      ctx.beginPath(); ctx.arc(x,y,R+5+pulse*5,0,Math.PI*2);
+      ctx.strokeStyle = 'rgba('+col[0]+','+col[1]+','+col[2]+','+(0.12*(1-pulse))+')';
+      ctx.lineWidth = 1; ctx.stroke();
+    }
+
+    // Icon
+    ctx.fillStyle = active
+      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.9)'
+      : 'rgba(148,163,184,0.35)';
+    ctx.font = (node.isHub ? '700 12px' : '700 9.5px') + ' ' + getComputedStyle(document.body).getPropertyValue('--mono');
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(node.icon, x, y);
+
+    // Labels below
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = active ? 'rgba(241,245,249,0.9)' : 'rgba(148,163,184,0.7)';
+    ctx.font = '600 9px ' + getComputedStyle(document.body).getPropertyValue('--sans');
+    ctx.fillText(node.label, x, y + R + 10);
+
+    var subText = node.sub;
+    if (node.isHub && active) {
+      subText = 'Pass ' + (passIdx+1) + ': ' + passes[passIdx];
+    }
+    ctx.fillStyle = 'rgba(100,116,139,0.6)';
+    ctx.font = '500 7.5px ' + getComputedStyle(document.body).getPropertyValue('--sans');
+    ctx.fillText(subText, x, y + R + 22);
+  }
+
+  function plFrame() {
+    ctx.clearRect(0,0,PW,PH);
+    pTime++;
+    var pos = getPositions();
+
+    // Advance active edge
+    edgeTimer++;
+    if (edgeTimer >= EDGE_DUR) {
+      edgeTimer = 0;
+      activeEdge = (activeEdge + 1) % edges.length;
+      passIdx = 0;
+    }
+
+    // Compiler pass cycling
+    var compilerActive = (edges[activeEdge][0] === 2 || edges[activeEdge][1] === 2);
+    if (compilerActive) {
+      passTimer++;
+      if (passTimer >= Math.floor(EDGE_DUR / passes.length)) {
+        passTimer = 0;
+        passIdx = (passIdx + 1) % passes.length;
       }
     }
 
-    // Spawn particles from active stage
-    if (activeStage < stages.length - 1 && time % 8 === 0) {
-      spawnParticle(activeStage);
+    // Spawn particles
+    if (pTime % 7 === 0) spawnFlow(activeEdge);
+
+    // Draw edges
+    for (var i = 0; i < edges.length; i++) {
+      var e = edges[i];
+      var a = pos[e[0]], b = pos[e[1]];
+      var dx = b.x-a.x, dy = b.y-a.y, len = Math.sqrt(dx*dx+dy*dy)||1;
+      var curve = len * 0.15;
+      var isActive = i === activeEdge;
+      drawCurve(a.x, a.y, b.x, b.y, nodes[e[0]].color, isActive);
     }
 
-    // Draw connections
-    for (var i = 0; i < stages.length - 1; i++) {
-      var connActive = i === activeStage || i === activeStage - 1;
-      if (mobile) {
-        drawConnectionVertical(pos[i], pos[i + 1], stages[i], connActive);
+    // Update + draw flow particles
+    for (var i = flowParticles.length-1; i >= 0; i--) {
+      var fp = flowParticles[i];
+      fp.progress += fp.speed;
+
+      var dx = fp.tx-fp.fx, dy = fp.ty-fp.fy, len = Math.sqrt(dx*dx+dy*dy)||1;
+      var curve = len * 0.15;
+
+      var t = fp.progress < 0.5 ? 2*fp.progress*fp.progress : -1+(4-2*fp.progress)*fp.progress;
+      var pt = bezierPoint(fp.fx, fp.fy, fp.tx, fp.ty, curve, t);
+
+      // Add wobble
+      var nx = -(fp.ty-fp.fy)/len, ny = (fp.tx-fp.fx)/len;
+      var wobble = Math.sin(fp.progress * Math.PI * 2.5 + fp.seed) * 5;
+      fp.x = pt.x + nx * wobble;
+      fp.y = pt.y + ny * wobble;
+
+      if (fp.progress >= 1) {
+        flowParticles.splice(i, 1);
       } else {
-        drawConnection(pos[i], pos[i + 1], stages[i], connActive);
+        var al = fp.alpha * (1 - Math.pow(Math.abs(fp.progress - 0.5) * 2, 2));
+        ctx.beginPath(); ctx.arc(fp.x, fp.y, fp.r*3, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba('+fp.col[0]+','+fp.col[1]+','+fp.col[2]+','+(al*0.15)+')';
+        ctx.fill();
+        ctx.beginPath(); ctx.arc(fp.x, fp.y, fp.r, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba('+fp.col[0]+','+fp.col[1]+','+fp.col[2]+','+al+')';
+        ctx.fill();
       }
     }
 
-    // Update and draw particles
-    for (var i = particles.length - 1; i >= 0; i--) {
-      var p = particles[i];
-      p.progress += p.speed;
-
-      // Ease in-out
-      var t = p.progress;
-      var eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-
-      // Offset from line for organic feel
-      var perpX = -(p.ty - p.y);
-      var perpY = (p.tx - p.x);
-      var len = Math.sqrt(perpX * perpX + perpY * perpY) || 1;
-      perpX /= len; perpY /= len;
-      var wave = Math.sin(t * Math.PI * 3 + i) * 4;
-
-      var startX = mobile ? pos[p.fromIdx].x : pos[p.fromIdx].x + 28;
-      var startY = mobile ? pos[p.fromIdx].y + 28 : pos[p.fromIdx].y;
-      var endX = mobile ? pos[p.fromIdx + 1].x : pos[p.fromIdx + 1].x - 28;
-      var endY = mobile ? pos[p.fromIdx + 1].y - 28 : pos[p.fromIdx + 1].y;
-
-      p.x = startX + (endX - startX) * eased + perpX * wave;
-      p.y = startY + (endY - startY) * eased + perpY * wave;
-
-      if (p.progress >= 1) {
-        particles.splice(i, 1);
-      } else {
-        drawParticle(p);
-      }
+    // Draw nodes on top
+    // Determine which nodes are active (involved in active edge)
+    var ae = edges[activeEdge];
+    for (var i = 0; i < nodes.length; i++) {
+      var active = i === ae[0] || i === ae[1];
+      drawNodeAt(pos[i].x, pos[i].y, nodes[i], active);
     }
 
-    // Draw nodes
-    for (var i = 0; i < stages.length; i++) {
-      var isActive = i === activeStage;
-      drawNode(pos[i].x, pos[i].y, stages[i], i, isActive);
-    }
-
-    requestAnimationFrame(frame);
+    requestAnimationFrame(plFrame);
   }
 
-  // Start when visible
-  var pipelineStarted = false;
-  var observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting && !pipelineStarted) {
-        pipelineStarted = true;
-        frame();
-      }
+  // Start pipeline when visible
+  var plStarted = false;
+  var plObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting && !plStarted) { plStarted = true; plFrame(); }
     });
-  }, { threshold: 0.2 });
-  observer.observe(canvas);
+  }, { threshold: 0.15 });
+  plObs.observe(plc);
 })();
 </script>
 </body>
