@@ -62,7 +62,7 @@
   .spacer{height:140px}
   .spacer-sm{height:80px}
 
-  .section-label{font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;margin-bottom:44px;display:flex;align-items:center;gap:16px}
+  .section-label{font-size:1.5rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;margin-bottom:44px;display:flex;align-items:center;gap:16px}
   .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
   .section-label.gold{color:var(--gold)}.section-label.blue{color:var(--blue)}.section-label.green{color:var(--green)}.section-label.purple{color:var(--purple)}.section-label.orange{color:var(--orange)}.section-label.cyan{color:var(--cyan)}.section-label.red{color:var(--red)}
 
@@ -158,16 +158,23 @@
   .pipeline-caption{text-align:center;font-size:.875rem;color:var(--text-2);margin-top:16px;padding:0 40px}
 
   /* ── Steps ── */
-  .steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch}
-  .step{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 24px;transition:all .25s;display:flex;flex-direction:column}
-  .step:hover{background:var(--surface-hover);border-color:var(--border-light);transform:translateY(-3px)}
-  .step-num{font-size:.875rem;font-weight:700;width:28px;height:28px;line-height:28px;text-align:center;border-radius:8px;margin-bottom:14px;display:inline-block}
+  .steps-list{display:flex;flex-direction:column;gap:0}
+  .step{background:var(--surface);border:1px solid var(--border);border-bottom:none;padding:0;transition:all .25s;overflow:hidden}
+  .step:first-child{border-radius:14px 14px 0 0}
+  .step:last-child{border-radius:0 0 14px 14px;border-bottom:1px solid var(--border)}
+  .step-header{display:flex;align-items:center;gap:14px;padding:18px 22px;cursor:pointer;transition:background .2s;-webkit-tap-highlight-color:transparent}
+  .step-header:hover{background:var(--surface-hover)}
+  .step-num{font-size:.875rem;font-weight:700;width:28px;height:28px;line-height:28px;text-align:center;border-radius:8px;flex-shrink:0}
   .step:nth-child(1) .step-num{background:var(--blue-dim);color:var(--blue)}
   .step:nth-child(2) .step-num{background:var(--green-dim);color:var(--green)}
   .step:nth-child(3) .step-num{background:var(--purple-dim);color:var(--purple)}
-  .step-title{font-weight:600;font-size:1.125rem;margin-bottom:8px}
-  .step-desc{font-size:.875rem;color:var(--text-3);line-height:1.55;flex:1}
-  .step code{display:block;font-family:var(--mono);font-size:.875rem;color:var(--text-2);background:rgba(0,0,0,.35);padding:10px 14px;border-radius:8px;margin-top:12px;line-height:1.7;border:1px solid rgba(255,255,255,.03)}
+  .step-title{font-weight:600;font-size:1.125rem;flex:1}
+  .step-header .chev{font-size:.75rem;opacity:.35;transition:transform .3s cubic-bezier(.22,1,.36,1),opacity .2s;color:var(--text-2)}
+  .step.open .step-header .chev{transform:rotate(90deg);opacity:.7}
+  .step-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.22,1,.36,1),padding .3s ease}
+  .step.open .step-body{max-height:200px;padding:0 22px 20px 64px}
+  .step-desc{font-size:.875rem;color:var(--text-3);line-height:1.55;margin-bottom:10px}
+  .step code{display:block;font-family:var(--mono);font-size:.875rem;color:var(--text-2);background:rgba(0,0,0,.35);padding:10px 14px;border-radius:8px;line-height:1.7;border:1px solid rgba(255,255,255,.03)}
 
   /* ── Commands ── */
   .cmd-columns{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
@@ -194,7 +201,7 @@
   /* ── Mobile ── */
   @media(max-width:700px){
     section{padding:0 20px}
-    .steps-grid,.cmd-columns{grid-template-columns:1fr}
+    .cmd-columns{grid-template-columns:1fr}
     .artifact-row{grid-template-columns:1fr 1fr 1fr}
     .spacer{height:90px}.spacer-sm{height:50px}
     .hero-section{min-height:auto;padding:60px 20px}
@@ -500,24 +507,18 @@
   <!-- ═══════════ GET STARTED ═══════════ -->
   <section>
     <div class="section-label blue rv">Get Started</div>
-    <div class="steps-grid">
-      <div class="step rv">
-        <div class="step-num">1</div>
-        <div class="step-title">Clone the repo</div>
-        <div class="step-desc">Pull wheat into your project and open it in Claude Code.</div>
-        <code>git clone aid-ninja/wheat<br>cd wheat</code>
+    <div class="steps-list rv">
+      <div class="step open">
+        <div class="step-header"><div class="step-num">1</div><div class="step-title">Clone the repo</div><span class="chev">&#9654;</span></div>
+        <div class="step-body"><div class="step-desc">Pull wheat into your project and open it in Claude Code.</div><code>git clone aid-ninja/wheat<br>cd wheat</code></div>
       </div>
-      <div class="step rv rv-d1">
-        <div class="step-num">2</div>
-        <div class="step-title">Start a sprint</div>
-        <div class="step-desc">Bootstrap a research question with seed claims and constraints.</div>
-        <code>/init</code>
+      <div class="step">
+        <div class="step-header"><div class="step-num">2</div><div class="step-title">Start a sprint</div><span class="chev">&#9654;</span></div>
+        <div class="step-body"><div class="step-desc">Bootstrap a research question with seed claims and constraints.</div><code>/init</code></div>
       </div>
-      <div class="step rv rv-d2">
-        <div class="step-num">3</div>
-        <div class="step-title">Ship a decision</div>
-        <div class="step-desc">Gather evidence, resolve conflicts, compile to a brief.</div>
-        <code>/research "your question"<br>/prototype<br>/brief</code>
+      <div class="step">
+        <div class="step-header"><div class="step-num">3</div><div class="step-title">Ship a decision</div><span class="chev">&#9654;</span></div>
+        <div class="step-body"><div class="step-desc">Gather evidence, resolve conflicts, compile to a brief.</div><code>/research "your question"<br>/prototype<br>/brief</code></div>
       </div>
     </div>
   </section>
@@ -580,8 +581,11 @@
   var rObs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('vis');rObs.unobserve(e.target)}})},{threshold:.12,rootMargin:'0px 0px -30px 0px'});
   rvs.forEach(function(el){rObs.observe(el)});
 
-  // Accordion
+  // Accordion — commands
   document.querySelectorAll('.cmd-btn').forEach(function(b){b.addEventListener('click',function(){var it=this.parentElement;var col=it.parentElement;col.querySelectorAll('.cmd-item.open').forEach(function(el){if(el!==it)el.classList.remove('open')});it.classList.toggle('open')})});
+
+  // Accordion — steps
+  document.querySelectorAll('.step-header').forEach(function(h){h.addEventListener('click',function(){var st=this.parentElement;var list=st.parentElement;list.querySelectorAll('.step.open').forEach(function(el){if(el!==st)el.classList.remove('open')});st.classList.toggle('open')})});
 
   // Particles (desktop only)
   var pc=document.getElementById('particle-canvas');var pctx=pc.getContext('2d');var pw,ph,pts,pm={x:-999,y:-999};
