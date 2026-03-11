@@ -623,6 +623,17 @@
     .hero-section { min-height: auto; padding-top: 60px; padding-bottom: 60px; }
     .cta-row { flex-direction: column; align-items: center; }
     .pipeline-wrap { height: 580px; }
+
+    /* Kill heavy GPU effects on mobile */
+    .bg-ambient { display: none; }
+    #particle-canvas { display: none; }
+
+    /* Hero shows instantly on mobile — no animation delay */
+    .hero-fade {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
   }
 </style>
 </head>
@@ -966,7 +977,7 @@
   document.addEventListener('mousemove', function(e) { pmouse.x = e.clientX; pmouse.y = e.clientY; });
   document.addEventListener('mouseleave', function() { pmouse.x = -999; pmouse.y = -999; });
   addEventListener('resize', pResize);
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { pInit(); pDraw(); }
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && innerWidth > 640) { pInit(); pDraw(); }
 
   // ── Pipeline — circuit board style ──
   var plc = document.getElementById('pipeline-canvas');
