@@ -78,9 +78,7 @@
     letter-spacing: -0.03em;
     line-height: 1.05;
     margin-bottom: 12px;
-    background: linear-gradient(135deg, #fff 0%, var(--accent-light) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #f0a030;
   }
 
   .tagline {
@@ -257,8 +255,41 @@
   .footer a.card::before { display: none; }
   .footer a.card:hover { text-decoration: underline; background: none; transform: none; }
 
+  /* Command grid */
+  .cmd-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+
+  .cmd-group-label {
+    font-size: 8pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+
+  .cmd {
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    font-size: 10pt;
+    color: var(--text-muted);
+    padding: 6px 10px;
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 6px;
+    margin-bottom: 4px;
+    transition: all 0.15s;
+  }
+
+  .cmd:hover {
+    color: var(--text);
+    background: var(--bg-card-hover);
+    border-color: rgba(255,255,255,0.1);
+  }
+
   @media (max-width: 640px) {
-    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .grid-2, .grid-3, .cmd-grid { grid-template-columns: 1fr; }
     a.featured { padding: 18px 20px; }
     a.featured .card-label { font-size: 12pt; }
     h1 { font-size: 28pt; }
@@ -271,8 +302,8 @@
 <div class="container">
 
   <div class="hero">
-    <span class="badge">For Claude Code</span>
     <h1>Wheat</h1>
+    <span class="badge">For Claude Code</span>
     <p class="tagline">
       Turn open-ended research questions into structured, evidence-backed decisions. Wheat gives Claude Code a claims compiler — track findings, detect conflicts, and produce auditable artifacts.
     </p>
@@ -317,19 +348,32 @@
 
   <!-- Commands -->
   <div class="section">
-    <div class="section-header green">Sprint Commands</div>
-    <div class="grid-3">
-      <div class="card green" style="display:block; cursor:default;">
-        <span class="card-label" style="display:block; font-weight:600; margin-bottom:4px; font-size:11pt;">Lifecycle</span>
-        <span class="card-desc">/init, /research, /prototype, /evaluate, /brief, /present, /handoff</span>
+    <div class="section-header green">17 Slash Commands</div>
+    <div class="cmd-grid">
+      <div class="cmd-group">
+        <div class="cmd-group-label" style="color:var(--green)">Lifecycle</div>
+        <div class="cmd">/init</div>
+        <div class="cmd">/research</div>
+        <div class="cmd">/prototype</div>
+        <div class="cmd">/evaluate</div>
+        <div class="cmd">/brief</div>
+        <div class="cmd">/present</div>
+        <div class="cmd">/handoff</div>
       </div>
-      <div class="card orange" style="display:block; cursor:default;">
-        <span class="card-label" style="display:block; font-weight:600; margin-bottom:4px; font-size:11pt;">Quality Assurance</span>
-        <span class="card-desc">/challenge, /witness, /blind-spot, /resolve</span>
+      <div class="cmd-group">
+        <div class="cmd-group-label" style="color:var(--orange)">Quality</div>
+        <div class="cmd">/challenge</div>
+        <div class="cmd">/witness</div>
+        <div class="cmd">/blind-spot</div>
+        <div class="cmd">/resolve</div>
       </div>
-      <div class="card cyan" style="display:block; cursor:default;">
-        <span class="card-label" style="display:block; font-weight:600; margin-bottom:4px; font-size:11pt;">Operations</span>
-        <span class="card-desc">/status, /replay, /merge, /calibrate, /feedback</span>
+      <div class="cmd-group">
+        <div class="cmd-group-label" style="color:var(--cyan)">Operations</div>
+        <div class="cmd">/status</div>
+        <div class="cmd">/replay</div>
+        <div class="cmd">/merge</div>
+        <div class="cmd">/calibrate</div>
+        <div class="cmd">/feedback</div>
       </div>
     </div>
   </div>
