@@ -314,6 +314,20 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["user-feedback", "ux-polish", "quality-bar"]
+    },
+    {
+      "id": "f005",
+      "type": "feedback",
+      "topic": "ux-pattern",
+      "content": "The dashboard needs a timeline-based UI — a visual narrative of the sprint's progression over time, not just a static grid of current state. Data-rich dashboards can be built without overwhelming the user by using progressive disclosure, timeline views, and visual hierarchy. The current layout dumps everything at once instead of telling a story.",
+      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-11T05:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["user-feedback", "timeline", "data-density", "progressive-disclosure"]
     }
   ]
 }

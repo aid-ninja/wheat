@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-11T06:25:08.439Z",
-  "claims_hash": "cbacd8a",
+  "compiled_at": "2026-03-11T06:38:59.986Z",
+  "claims_hash": "6535f04",
   "compiler_version": "0.1.0",
   "status": "ready",
   "errors": [],
@@ -465,6 +465,29 @@
         "ux-polish",
         "quality-bar"
       ]
+    },
+    {
+      "id": "f005",
+      "type": "feedback",
+      "topic": "ux-pattern",
+      "content": "The dashboard needs a timeline-based UI — a visual narrative of the sprint's progression over time, not just a static grid of current state. Data-rich dashboards can be built without overwhelming the user by using progressive disclosure, timeline views, and visual hierarchy. The current layout dumps everything at once instead of telling a story.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-11T05:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "user-feedback",
+        "timeline",
+        "data-density",
+        "progressive-disclosure"
+      ]
     }
   ],
   "conflict_graph": {
@@ -560,18 +583,20 @@
       ]
     },
     "ux-pattern": {
-      "claims": 4,
+      "claims": 5,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
         "recommendation",
-        "factual"
+        "factual",
+        "feedback"
       ],
       "claim_ids": [
         "r004",
         "r005",
         "r006",
-        "p003"
+        "p003",
+        "f005"
       ]
     }
   },
@@ -593,7 +618,7 @@
       "complete": false
     },
     "feedback": {
-      "claims": 4,
+      "claims": 5,
       "complete": true
     }
   },
@@ -604,14 +629,14 @@
     ],
     "initiated": "2026-03-11",
     "phase": "prototype",
-    "total_claims": 22,
-    "active_claims": 20,
+    "total_claims": 23,
+    "active_claims": 21,
     "conflicted_claims": 0,
     "superseded_claims": 2,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:cbacd8ab0392b079d44e596cc311d8b590fe39d1d3e82b84bfb60fcd566f022e",
+    "input_hash": "sha256:6535f045ce675bed8da5b09bf76753f20ed4ed73bdfd9cbcb34e9881c47ab81e",
     "compiler_version": "0.1.0",
     "deterministic": true
   }
