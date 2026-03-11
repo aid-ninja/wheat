@@ -4,10 +4,10 @@
 
 ## Sprint
 
-- **Question**: _(run /init to set up)_
-- **Audience**: _(run /init to set up)_
-- **Constraints**: _(run /init to set up)_
-- **Phase**: init
+- **Question**: How can we build a live visualization of Wheat that teaches the framework by showing itself in action?
+- **Audience**: Developer learning Wheat by using it
+- **Constraints**: None — full creative freedom, self-contained HTML, must dogfood the pipeline
+- **Phase**: define
 
 ## Connectors
 

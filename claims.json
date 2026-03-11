@@ -1,10 +1,81 @@
 {
   "meta": {
-    "question": "",
-    "initiated": "",
-    "audience": [],
-    "phase": "init",
+    "question": "How can we build a live visualization of Wheat that teaches the framework by showing itself in action?",
+    "initiated": "2026-03-11",
+    "audience": ["developer learning Wheat"],
+    "phase": "define",
     "connectors": []
   },
-  "claims": []
+  "claims": [
+    {
+      "id": "d001",
+      "type": "constraint",
+      "topic": "dogfooding",
+      "content": "The visualization must be built through the Wheat pipeline itself — claims, compiler, then artifact. It should demonstrate the system by being a product of it.",
+      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-11T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["meta", "self-referential"]
+    },
+    {
+      "id": "d002",
+      "type": "constraint",
+      "topic": "output-format",
+      "content": "Output must be self-contained HTML (inline CSS/JS, no external dependencies) that can be opened directly in a browser.",
+      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-11T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["html", "portable"]
+    },
+    {
+      "id": "d003",
+      "type": "constraint",
+      "topic": "audience",
+      "content": "Target audience is a single developer seeing Wheat for the first time. The visualization should be self-explanatory without external docs.",
+      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-11T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ux", "onboarding"]
+    },
+    {
+      "id": "d004",
+      "type": "constraint",
+      "topic": "scope",
+      "content": "Full creative freedom — no budget, timeline, or tech constraints beyond self-contained HTML. Go as ambitious as needed.",
+      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-11T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["freedom"]
+    },
+    {
+      "id": "d005",
+      "type": "constraint",
+      "topic": "quality",
+      "content": "Success criteria is subjective — 'I'll know it when I see it.' The artifact must be visually compelling enough to sell itself on first impression.",
+      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-11T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["quality", "wow-factor"]
+    }
+  ]
 }

@@ -1,37 +1,43 @@
 {
-  "compiled_at": "2026-03-11T05:45:34.190Z",
-  "claims_hash": "01b929b",
+  "compiled_at": "2026-03-11T05:50:20.236Z",
+  "claims_hash": "864871b",
   "compiler_version": "0.1.0",
   "status": "ready",
   "errors": [],
   "warnings": [
     {
       "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"output-format\" has only stated-level evidence (1 claims)",
+      "message": "Topic \"dogfooding\" has only stated-level evidence (1 claims)",
       "claims": [
         "d001"
       ]
     },
     {
       "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"pipeline-integrity\" has only stated-level evidence (2 claims)",
+      "message": "Topic \"output-format\" has only stated-level evidence (1 claims)",
       "claims": [
-        "d002",
-        "d005"
+        "d002"
       ]
     },
     {
       "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"visual-design\" has only stated-level evidence (1 claims)",
+      "message": "Topic \"audience\" has only stated-level evidence (1 claims)",
       "claims": [
         "d003"
       ]
     },
     {
       "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"content\" has only stated-level evidence (1 claims)",
+      "message": "Topic \"scope\" has only stated-level evidence (1 claims)",
       "claims": [
         "d004"
+      ]
+    },
+    {
+      "code": "W_WEAK_EVIDENCE",
+      "message": "Topic \"quality\" has only stated-level evidence (1 claims)",
+      "claims": [
+        "d005"
       ]
     }
   ],
@@ -39,8 +45,29 @@
     {
       "id": "d001",
       "type": "constraint",
+      "topic": "dogfooding",
+      "content": "The visualization must be built through the Wheat pipeline itself — claims, compiler, then artifact. It should demonstrate the system by being a product of it.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-11T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "meta",
+        "self-referential"
+      ]
+    },
+    {
+      "id": "d002",
+      "type": "constraint",
       "topic": "output-format",
-      "content": "Showcase must be a single self-contained HTML file with no external dependencies (inline CSS/JS only)",
+      "content": "Output must be self-contained HTML (inline CSS/JS, no external dependencies) that can be opened directly in a browser.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -54,35 +81,14 @@
       "resolved_by": null,
       "tags": [
         "html",
-        "self-contained"
-      ]
-    },
-    {
-      "id": "d002",
-      "type": "constraint",
-      "topic": "pipeline-integrity",
-      "content": "Showcase must be built through the actual Bran IR pipeline — dogfooding claims.json and the compiler, not hardcoded data",
-      "source": {
-        "origin": "stakeholder",
-        "artifact": null,
-        "connector": null
-      },
-      "evidence": "stated",
-      "status": "active",
-      "phase_added": "define",
-      "timestamp": "2026-03-11T00:00:00Z",
-      "conflicts_with": [],
-      "resolved_by": null,
-      "tags": [
-        "dogfood",
-        "bran-ir"
+        "portable"
       ]
     },
     {
       "id": "d003",
       "type": "constraint",
-      "topic": "visual-design",
-      "content": "Must use the dark theme consistent with existing Wheat templates (dashboard.html, explainer.html)",
+      "topic": "audience",
+      "content": "Target audience is a single developer seeing Wheat for the first time. The visualization should be self-explanatory without external docs.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -95,15 +101,15 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": [
-        "theme",
-        "design"
+        "ux",
+        "onboarding"
       ]
     },
     {
       "id": "d004",
       "type": "constraint",
-      "topic": "content",
-      "content": "Showcase must demonstrate the full pipeline: claims system, evidence tiers, conflict resolution, compiler passes, and output artifacts",
+      "topic": "scope",
+      "content": "Full creative freedom — no budget, timeline, or tech constraints beyond self-contained HTML. Go as ambitious as needed.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -116,15 +122,14 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": [
-        "scope",
-        "completeness"
+        "freedom"
       ]
     },
     {
       "id": "d005",
       "type": "constraint",
-      "topic": "pipeline-integrity",
-      "content": "Output artifacts must consume compilation.json, never claims.json directly — the compiler is the enforcement layer",
+      "topic": "quality",
+      "content": "Success criteria is subjective — 'I'll know it when I see it.' The artifact must be visually compelling enough to sell itself on first impression.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -137,8 +142,8 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": [
-        "compiler",
-        "enforcement"
+        "quality",
+        "wow-factor"
       ]
     }
   ],
@@ -147,7 +152,7 @@
     "unresolved": []
   },
   "coverage": {
-    "output-format": {
+    "dogfooding": {
       "claims": 1,
       "max_evidence": "stated",
       "status": "weak",
@@ -158,19 +163,18 @@
         "d001"
       ]
     },
-    "pipeline-integrity": {
-      "claims": 2,
+    "output-format": {
+      "claims": 1,
       "max_evidence": "stated",
       "status": "weak",
       "types": [
         "constraint"
       ],
       "claim_ids": [
-        "d002",
-        "d005"
+        "d002"
       ]
     },
-    "visual-design": {
+    "audience": {
       "claims": 1,
       "max_evidence": "stated",
       "status": "weak",
@@ -181,7 +185,7 @@
         "d003"
       ]
     },
-    "content": {
+    "scope": {
       "claims": 1,
       "max_evidence": "stated",
       "status": "weak",
@@ -190,6 +194,17 @@
       ],
       "claim_ids": [
         "d004"
+      ]
+    },
+    "quality": {
+      "claims": 1,
+      "max_evidence": "stated",
+      "status": "weak",
+      "types": [
+        "constraint"
+      ],
+      "claim_ids": [
+        "d005"
       ]
     }
   },
@@ -216,10 +231,9 @@
     }
   },
   "sprint_meta": {
-    "question": "How should we build an interactive showcase that demonstrates Wheat's research sprint workflow?",
+    "question": "How can we build a live visualization of Wheat that teaches the framework by showing itself in action?",
     "audience": [
-      "developers evaluating Wheat",
-      "potential adopters"
+      "developer learning Wheat"
     ],
     "initiated": "2026-03-11",
     "phase": "define",
@@ -230,7 +244,7 @@
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:01b929b58bd5d2af33bcf8234b8eddbab3c30a67553cd1fcbc4ecc0aad540a5e",
+    "input_hash": "sha256:864871b922b438268e00c017a2f9d44fa1a8edaa980753e71db2cbef041401d6",
     "compiler_version": "0.1.0",
     "deterministic": true
   }
