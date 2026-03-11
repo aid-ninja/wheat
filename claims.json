@@ -3,7 +3,7 @@
     "question": "How can we build a live visualization of Wheat that teaches the framework by showing itself in action?",
     "initiated": "2026-03-11",
     "audience": ["developer learning Wheat"],
-    "phase": "prototype",
+    "phase": "evaluate",
     "connectors": []
   },
   "claims": [
@@ -594,6 +594,90 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["wcag", "a11y", "keyboard", "aria", "contrast", "tested"]
+    },
+    {
+      "id": "e001",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Compiler scales linearly: 42 claims in 45ms, 100 in 44ms, 250 in 65ms, 500 in 50ms, 1000 in 59ms. Sub-60ms at 1000 claims means the feedback loop stays instant even for large sprints. The 7-pass pipeline has no exponential blowup — conflict detection is the only O(n^2) pass but stays fast due to sparse conflict graphs.",
+      "source": { "origin": "evaluation", "artifact": "evidence/sprint-evaluation.html", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T13:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["scalability", "benchmark", "performance"]
+    },
+    {
+      "id": "e002",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "Compiler crashes on empty or unparseable claims.json files (throws unhandled JSON parse error). Gracefully handles structural issues: missing claims array defaults to empty, missing meta defaults to empty, invalid claim fields produce BLOCKED status with errors. Two crash cases (empty file, malformed JSON) should be caught with a try/catch at the top level.",
+      "source": { "origin": "evaluation", "artifact": "evidence/sprint-evaluation.html", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T13:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["error-handling", "robustness", "crash"]
+    },
+    {
+      "id": "e003",
+      "type": "factual",
+      "topic": "output-format",
+      "content": "All 7 HTML artifacts verified fully self-contained: zero external script src, link href, @import url, or img src pointing to external resources. Sizes range from 7.3KB (problem-statement) to 26.3KB (live dashboard). Every file opens correctly via file:// with no network requests. Constraint d002 is satisfied across the entire artifact set.",
+      "source": { "origin": "evaluation", "artifact": "evidence/sprint-evaluation.html", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T13:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["self-contained", "html", "verification"]
+    },
+    {
+      "id": "e004",
+      "type": "factual",
+      "topic": "accessibility",
+      "content": "13/13 WCAG 2.2 AA checks pass on the live dashboard: lang attribute, <header> landmark, <main> landmark, role=status, role=region, aria-live=polite, aria-expanded, tabindex=0, role=button, onkeydown handler, :focus-visible styles, aria-label attributes, and contrast ratio >= 4.5:1. The accessibility research claims (r017-r022) are confirmed implemented and working.",
+      "source": { "origin": "evaluation", "artifact": "evidence/sprint-evaluation.html", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T13:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["wcag", "a11y", "verification", "13-of-13"]
+    },
+    {
+      "id": "e005",
+      "type": "factual",
+      "topic": "dogfooding",
+      "content": "The sprint successfully dogfoods itself: 20/42 claims are self-referential (reference the dashboard, Wheat, or the sprint itself). 16 wheat-format git commits trace the full event log. 4 of 5 phases exercised (define, research, prototype, feedback — evaluate now being added). 8 topics covered, 8 artifacts generated, 1 conflict auto-resolved. The visualization demonstrates the framework by being a product of it — constraint d001 is satisfied.",
+      "source": { "origin": "evaluation", "artifact": "evidence/sprint-evaluation.html", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T13:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["dogfooding", "meta", "self-referential", "constraint-check"]
+    },
+    {
+      "id": "e006",
+      "type": "factual",
+      "topic": "quality",
+      "content": "Evidence distribution across 40 active claims: stated=11 (27.5%), web=17 (42.5%), documented=4 (10%), tested=9 (22.5%), production=0. The tested tier is the highest reached. 5 of 8 topics have tested-level evidence. The constraint-dominated topics (audience, scope) correctly remain at stated. The quality topic remains at web — the only genuine evidence gap.",
+      "source": { "origin": "evaluation", "artifact": "evidence/sprint-evaluation.html", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T13:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["evidence-distribution", "coverage-analysis", "meta"]
     }
   ]
 }
