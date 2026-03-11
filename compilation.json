@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-11T10:40:52.157Z",
-  "claims_hash": "489b6b8",
+  "compiled_at": "2026-03-11T10:49:36.079Z",
+  "claims_hash": "0c2e276",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -2399,13 +2399,13 @@
         "connector": null
       },
       "evidence": "documented",
-      "status": "active",
+      "status": "resolved",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T20:00:00Z",
       "conflicts_with": [
         "r042"
       ],
-      "resolved_by": null,
+      "resolved_by": "e010",
       "tags": [
         "replay",
         "challenge",
@@ -2425,41 +2425,18 @@
         "connector": null
       },
       "evidence": "documented",
-      "status": "active",
+      "status": "resolved",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T20:00:00Z",
       "conflicts_with": [
         "r042"
       ],
-      "resolved_by": null,
+      "resolved_by": "e010",
       "tags": [
         "replay",
         "challenge",
         "narrative",
         "batch-conflation"
-      ]
-    },
-    {
-      "id": "x014",
-      "type": "recommendation",
-      "topic": "architecture",
-      "content": "Alternative to frame-per-commit: claim-level framing, where each frame adds exactly one claim (or one small logical group). The /replay pipeline would decompose batch commits into individual claim additions ordered by ID, producing ~99 frames instead of ~32. Pros: smooth pacing, clear narrative per frame, each step is digestible. Cons: loses the actual git history granularity, synthetic ordering within batches may not reflect real research sequence, higher frame count increases data size (~3x).",
-      "source": {
-        "origin": "challenge",
-        "artifact": null,
-        "connector": null
-      },
-      "evidence": "documented",
-      "status": "active",
-      "phase_added": "evaluate",
-      "timestamp": "2026-03-11T20:00:00Z",
-      "conflicts_with": [],
-      "resolved_by": null,
-      "tags": [
-        "replay",
-        "alternative",
-        "claim-level-frames",
-        "tradeoff"
       ]
     },
     {
@@ -2576,6 +2553,192 @@
         "pacing",
         "batch-commits"
       ]
+    },
+    {
+      "id": "e010",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Resolution: hybrid framing (x015) adopted as the replay frame model. Commit-level frames remain the primary timeline (preserving git fidelity per r042), but batch commits with >3 claims expand into sub-frames (one per claim) for smooth pacing. This resolves the uneven pacing risk (x012) and narrative conflation risk (x013) confirmed by prototype testing (p015), while keeping r042's core architecture (pre-computed frames, stateless render, controller) intact. Pure claim-level framing (x014) is superseded — it solved pacing but sacrificed git history correspondence. The threshold of >3 claims balances expansion granularity against scrubber complexity.",
+      "source": {
+        "origin": "resolve",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T21:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "resolution",
+        "hybrid-frames",
+        "pacing",
+        "architecture"
+      ]
+    },
+    {
+      "id": "x016",
+      "type": "risk",
+      "topic": "ux-pattern",
+      "content": "Animation timing bug at higher playback speeds: staggered claim-enter animations use the claim's index within its topic group (idx * 50ms) as delay, not its index among only-new claims. A new claim at position 15 in a 20-claim topic gets 750ms delay + 300ms animation = 1050ms total, but at 2x speed the next frame replaces innerHTML after 500ms, cutting off the animation. At 4x speed (250ms interval) even claims at position 5+ (250ms delay) are truncated. The issue is in renderClaims: delay should index only across isNew claims, and total animation budget should be capped to the frame interval.",
+      "source": {
+        "origin": "challenge",
+        "artifact": "output/replay.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T21:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "animation",
+        "timing",
+        "speed",
+        "edge-case"
+      ]
+    },
+    {
+      "id": "x017",
+      "type": "risk",
+      "topic": "ux-pattern",
+      "content": "Empty-delta frames display a bare 'Frame N:' label in the delta bar with no additional text. When a commit touches claims.json but produces zero claim-level changes (e.g., metadata-only edits, whitespace changes, or compiler re-runs), the delta bar renders only the frame number prefix with no items after it. The renderDelta function only checks for !delta (null) to show 'Initial state', but a non-null delta with all-empty arrays falls through to display nothing. Should show 'No claim changes' or similar.",
+      "source": {
+        "origin": "challenge",
+        "artifact": "output/replay.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T21:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "empty-delta",
+        "ux",
+        "edge-case"
+      ]
+    },
+    {
+      "id": "x018",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "Replay HTML file size is ~763KB for 35 frames due to full claim snapshots embedded per frame. Each frame includes the complete claims array at that point in time, so a claim added at frame 5 is repeated verbatim in frames 5-35 (30 copies). With ~99 claims averaging ~200 bytes each, this adds ~600KB of redundant data. Delta encoding (storing only the initial snapshot + per-frame diffs) could reduce payload by ~70%. For a self-contained teaching tool, 763KB is still loadable but will grow linearly with sprint length — a 100-frame sprint could exceed 2MB.",
+      "source": {
+        "origin": "challenge",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T21:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "file-size",
+        "optimization",
+        "scalability"
+      ]
+    },
+    {
+      "id": "x019",
+      "type": "risk",
+      "topic": "ux-pattern",
+      "content": "Milestone marker positioning divides by zero when FRAMES.length is 1: the expression (i / (FRAMES.length - 1)) * 100 produces NaN%, which would set the marker's CSS left to 'NaN%'. This is a degenerate edge case (a sprint with only one commit touching claims.json) but would produce a mispositioned or invisible milestone marker. The same division-by-zero affects updateScrubberFill. Guard with: if FRAMES.length <= 1, set pct to 0.",
+      "source": {
+        "origin": "challenge",
+        "artifact": "output/replay.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T21:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "division-by-zero",
+        "single-frame",
+        "edge-case"
+      ]
+    },
+    {
+      "id": "p016",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Hybrid framing implemented in build-replay.js: batch commits (>3 new claims) are automatically split into sub-frames that add 1-3 claims each, grouped by topic for narrative coherence. Each sub-frame carries subframe:true, parentFrame index, subIndex, and subTotal metadata. Non-batch commits pass through unchanged with subframe:false. The BATCH_THRESHOLD=3 constant controls the cutoff. Sub-frames share the same commit metadata but show incremental claim additions, solving the choppy pacing identified in x011-x013.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T21:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "hybrid-framing",
+        "sub-frames",
+        "batch-commits"
+      ]
+    },
+    {
+      "id": "p017",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "Hybrid framing UI adds: (1) a BATCH badge with dot-progress indicator showing sub-frame position within a batch commit, (2) a 'Next Commit' button (also N key) to skip remaining sub-frames and jump to the next git commit, (3) P key to jump to previous commit, (4) purple batch-region markers on the scrubber track showing where batch expansions occur. During auto-play, sub-frames step normally at the selected speed; the skip button provides a manual escape hatch for users who want commit-level granularity.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T21:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "hybrid-framing",
+        "ui",
+        "scrubber"
+      ]
+    },
+    {
+      "id": "p018",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "Sub-framing increases total frame count proportional to batch size — a commit adding 12 claims across 4 topics generates ~4-6 sub-frames instead of 1. For the current sprint (~35 commits, ~5 batch commits), this expands from ~35 frames to ~50-60 frames. The additional frames increase replay.html file size by roughly 40-70% due to duplicated intermediate claim arrays in each sub-frame's claims[] property. Mitigation: a future optimization could store only claim IDs in sub-frames and reconstruct from a shared claim dictionary, reducing the per-sub-frame overhead to ~100 bytes instead of ~2KB.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T21:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "hybrid-framing",
+        "file-size",
+        "optimization"
+      ]
     }
   ],
   "conflict_graph": {
@@ -2587,16 +2750,6 @@
       },
       {
         "winner": "x011",
-        "loser": "r042",
-        "reason": "evidence_tier: documented (3) > web (2)"
-      },
-      {
-        "winner": "x012",
-        "loser": "r042",
-        "reason": "evidence_tier: documented (3) > web (2)"
-      },
-      {
-        "winner": "x013",
         "loser": "r042",
         "reason": "evidence_tier: documented (3) > web (2)"
       }
@@ -2644,7 +2797,7 @@
       ]
     },
     "architecture": {
-      "claims": 42,
+      "claims": 45,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -2693,10 +2846,13 @@
         "x011",
         "x012",
         "x013",
-        "x014",
         "x015",
         "p013",
-        "p015"
+        "p015",
+        "e010",
+        "x018",
+        "p016",
+        "p018"
       ],
       "constraint_count": 3,
       "source_origins": [
@@ -2704,10 +2860,11 @@
         "evaluation",
         "prototype",
         "research",
+        "resolve",
         "stakeholder",
         "witness"
       ],
-      "source_count": 6,
+      "source_count": 7,
       "type_diversity": 5,
       "missing_types": [
         "constraint"
@@ -2879,7 +3036,7 @@
       ]
     },
     "ux-pattern": {
-      "claims": 18,
+      "claims": 22,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -2907,16 +3064,21 @@
         "r032",
         "r043",
         "w015",
-        "p014"
+        "p014",
+        "x016",
+        "x017",
+        "x019",
+        "p017"
       ],
       "constraint_count": 2,
       "source_origins": [
+        "challenge",
         "prototype",
         "research",
         "stakeholder",
         "witness"
       ],
-      "source_count": 4,
+      "source_count": 5,
       "type_diversity": 5,
       "missing_types": [
         "estimate"
@@ -3029,12 +3191,19 @@
     "x011": 0,
     "x012": 0,
     "x013": 0,
-    "x014": 0,
     "x015": 0,
     "w015": 0,
     "p013": 0,
     "p014": 0,
-    "p015": 0
+    "p015": 0,
+    "e010": 0,
+    "x016": 0,
+    "x017": 0,
+    "x018": 0,
+    "x019": 0,
+    "p016": 0,
+    "p017": 0,
+    "p018": 0
   },
   "phase_summary": {
     "define": {
@@ -3046,11 +3215,11 @@
       "complete": true
     },
     "prototype": {
-      "claims": 15,
+      "claims": 18,
       "complete": true
     },
     "evaluate": {
-      "claims": 38,
+      "claims": 43,
       "complete": true
     },
     "feedback": {
@@ -3065,14 +3234,14 @@
     ],
     "initiated": "2026-03-11",
     "phase": "evaluate",
-    "total_claims": 115,
-    "active_claims": 111,
+    "total_claims": 123,
+    "active_claims": 116,
     "conflicted_claims": 0,
-    "superseded_claims": 4,
+    "superseded_claims": 5,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:489b6b83420d1bfc513da2c6748f4cee9d8a15d5245993e840d8cb0cd383b804",
+    "input_hash": "sha256:0c2e276a6bfe7d534bafb590154e523c2afc59c4524ee278ce7259b153613274",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

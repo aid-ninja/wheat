@@ -163,67 +163,204 @@ function detectMilestones(compilations, deltas) {
   return milestones;
 }
 
-// ─── Step 6: Build FRAMES array ─────────────────────────────────────────────
+// ─── Step 5b: Detect batch commits ──────────────────────────────────────────
+const BATCH_THRESHOLD = 3; // commits adding more than this many claims are "batch"
+
+function isBatchCommit(delta) {
+  if (!delta) return false;
+  return (delta.new_claims || []).length > BATCH_THRESHOLD;
+}
+
+// ─── Step 6: Build FRAMES array (with hybrid sub-framing) ───────────────────
 function buildFrames(commits, compilations, deltas, milestones) {
   const frames = [];
+  // Track the previous compilation's claim set for sub-frame interpolation
+  let prevClaimIds = new Set();
 
   for (let i = 0; i < commits.length; i++) {
     if (!compilations[i]) continue;
 
     const comp = compilations[i];
-
-    // Slim down compilation for embedding — keep what the UI needs
-    const frame = {
-      index: frames.length,
-      commit: {
-        hash: commits[i].hash.slice(0, 7),
-        message: commits[i].message,
-        date: commits[i].date,
-      },
-      claims: (comp.resolved_claims || []).map(c => ({
-        id: c.id,
-        type: c.type,
-        topic: c.topic,
-        content: c.content,
-        evidence: c.evidence,
-        status: c.status,
-      })),
-      coverage: comp.coverage || {},
-      stats: {
-        total: comp.sprint_meta?.total_claims || 0,
-        active: comp.sprint_meta?.active_claims || 0,
-        conflicted: comp.sprint_meta?.conflicted_claims || 0,
-        superseded: comp.sprint_meta?.superseded_claims || 0,
-        topics: Object.keys(comp.coverage || {}).length,
-        phase: comp.sprint_meta?.phase || 'init',
-        status: comp.status || 'unknown',
-      },
-      conflicts: {
-        resolved: (comp.conflict_graph?.resolved || []).length,
-        unresolved: (comp.conflict_graph?.unresolved || []).length,
-      },
-      delta: deltas[i] ? {
-        added: deltas[i].new_claims || [],
-        removed: deltas[i].removed_claims || [],
-        upgraded: (deltas[i].coverage_changes || [])
-          .filter(c => c.type === 'changed' && c.changes?.max_evidence)
-          .map(c => ({
-            topic: c.topic,
-            from: c.changes.max_evidence.from,
-            to: c.changes.max_evidence.to,
-          })),
-        statusChanges: deltas[i].status_changes || [],
-        newTopics: (deltas[i].coverage_changes || [])
-          .filter(c => c.type === 'added')
-          .map(c => c.topic),
-      } : null,
-      milestone: milestones[i],
+    const delta = deltas[i];
+    const commitMeta = {
+      hash: commits[i].hash.slice(0, 7),
+      message: commits[i].message,
+      date: commits[i].date,
     };
 
-    frames.push(frame);
+    const allClaims = (comp.resolved_claims || []).map(c => ({
+      id: c.id,
+      type: c.type,
+      topic: c.topic,
+      content: c.content,
+      evidence: c.evidence,
+      status: c.status,
+    }));
+
+    const baseStats = {
+      total: comp.sprint_meta?.total_claims || 0,
+      active: comp.sprint_meta?.active_claims || 0,
+      conflicted: comp.sprint_meta?.conflicted_claims || 0,
+      superseded: comp.sprint_meta?.superseded_claims || 0,
+      topics: Object.keys(comp.coverage || {}).length,
+      phase: comp.sprint_meta?.phase || 'init',
+      status: comp.status || 'unknown',
+    };
+
+    const baseDelta = delta ? {
+      added: delta.new_claims || [],
+      removed: delta.removed_claims || [],
+      upgraded: (delta.coverage_changes || [])
+        .filter(c => c.type === 'changed' && c.changes?.max_evidence)
+        .map(c => ({
+          topic: c.topic,
+          from: c.changes.max_evidence.from,
+          to: c.changes.max_evidence.to,
+        })),
+      statusChanges: delta.status_changes || [],
+      newTopics: (delta.coverage_changes || [])
+        .filter(c => c.type === 'added')
+        .map(c => c.topic),
+    } : null;
+
+    const isBatch = isBatchCommit(delta);
+
+    if (isBatch && baseDelta) {
+      // ── Hybrid sub-framing: split batch into incremental sub-frames ──
+      const addedIds = baseDelta.added;
+      const removedIds = new Set(baseDelta.removed);
+
+      // Group added claims by topic for narrative coherence
+      const addedByTopic = {};
+      addedIds.forEach(id => {
+        const claim = allClaims.find(c => c.id === id);
+        if (claim) {
+          if (!addedByTopic[claim.topic]) addedByTopic[claim.topic] = [];
+          addedByTopic[claim.topic].push(id);
+        }
+      });
+
+      // Build sub-frame groups: ~1-3 claims per sub-frame, grouped by topic
+      const subGroups = [];
+      Object.keys(addedByTopic).sort().forEach(topic => {
+        const ids = addedByTopic[topic];
+        // Chunk into groups of 1-3
+        for (let j = 0; j < ids.length; j += 3) {
+          subGroups.push(ids.slice(j, j + 3));
+        }
+      });
+
+      // Start with the previous frame's claims (before this batch)
+      let runningClaimIds = new Set(prevClaimIds);
+      // Remove any claims that this commit removes
+      removedIds.forEach(id => runningClaimIds.delete(id));
+
+      const commitFrameStart = frames.length;
+      const totalSubFrames = subGroups.length;
+
+      for (let s = 0; s < subGroups.length; s++) {
+        const subAddedIds = subGroups[s];
+        subAddedIds.forEach(id => runningClaimIds.add(id));
+
+        // Filter allClaims to only those visible at this sub-frame
+        const visibleClaims = allClaims.filter(c => runningClaimIds.has(c.id));
+
+        // Compute sub-frame coverage from visible claims
+        const subCoverage = computeSubCoverage(visibleClaims, comp.coverage || {});
+
+        // Compute sub-frame stats
+        const subStats = {
+          ...baseStats,
+          total: visibleClaims.length,
+          active: visibleClaims.filter(c => c.status === 'active').length,
+          topics: Object.keys(subCoverage).length,
+        };
+
+        // Sub-frame delta: only the claims added in THIS sub-step
+        const isFirstSub = s === 0;
+        const subDelta = {
+          added: subAddedIds,
+          removed: isFirstSub ? baseDelta.removed : [],
+          upgraded: isFirstSub ? baseDelta.upgraded : [],
+          statusChanges: isFirstSub ? baseDelta.statusChanges : [],
+          newTopics: isFirstSub ? baseDelta.newTopics : [],
+        };
+
+        const frame = {
+          index: frames.length,
+          commit: commitMeta,
+          claims: visibleClaims,
+          coverage: subCoverage,
+          stats: subStats,
+          conflicts: {
+            resolved: (comp.conflict_graph?.resolved || []).length,
+            unresolved: (comp.conflict_graph?.unresolved || []).length,
+          },
+          delta: subDelta,
+          milestone: s === 0 ? milestones[i] : null,
+          // ── Hybrid framing metadata ──
+          subframe: true,
+          parentFrame: commitFrameStart,
+          subIndex: s,
+          subTotal: totalSubFrames,
+          batchCommit: true,
+        };
+
+        frames.push(frame);
+      }
+    } else {
+      // ── Regular (non-batch) frame ──
+      const frame = {
+        index: frames.length,
+        commit: commitMeta,
+        claims: allClaims,
+        coverage: comp.coverage || {},
+        stats: baseStats,
+        conflicts: {
+          resolved: (comp.conflict_graph?.resolved || []).length,
+          unresolved: (comp.conflict_graph?.unresolved || []).length,
+        },
+        delta: baseDelta,
+        milestone: milestones[i],
+        subframe: false,
+        parentFrame: null,
+        subIndex: null,
+        subTotal: null,
+        batchCommit: false,
+      };
+
+      frames.push(frame);
+    }
+
+    // Track claim IDs for next iteration's sub-framing
+    prevClaimIds = new Set(allClaims.map(c => c.id));
   }
 
   return frames;
+}
+
+// Helper: compute coverage for a subset of claims, using the full compilation's
+// coverage as a reference for status thresholds
+function computeSubCoverage(visibleClaims, fullCoverage) {
+  const coverage = {};
+  visibleClaims.forEach(c => {
+    if (!coverage[c.topic]) {
+      // Use the full coverage entry as a template if available
+      const ref = fullCoverage[c.topic];
+      coverage[c.topic] = {
+        claims: 0,
+        max_evidence: c.evidence,
+        status: ref?.status || 'weak',
+      };
+    }
+    coverage[c.topic].claims++;
+    // Track highest evidence tier
+    const tiers = ['stated', 'web', 'documented', 'tested', 'production'];
+    const curIdx = tiers.indexOf(coverage[c.topic].max_evidence);
+    const newIdx = tiers.indexOf(c.evidence);
+    if (newIdx > curIdx) coverage[c.topic].max_evidence = c.evidence;
+  });
+  return coverage;
 }
 
 // ─── Step 7: Generate HTML ──────────────────────────────────────────────────
@@ -413,6 +550,72 @@ function generateHTML(frames) {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  /* ─── Sub-frame indicator ──────────────────────────────────────── */
+  .subframe-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 8px;
+    font-size: 8pt;
+    color: var(--purple);
+    font-weight: 600;
+  }
+
+  .subframe-badge {
+    background: var(--purple-dim);
+    color: var(--purple);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 7.5pt;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .subframe-dots {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+  }
+
+  .subframe-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    transition: background 0.2s;
+  }
+
+  .subframe-dot.active {
+    background: var(--purple);
+    box-shadow: 0 0 4px rgba(167,139,250,0.5);
+  }
+
+  .subframe-dot.past {
+    background: var(--text-muted);
+  }
+
+  #nextCommitBtn {
+    font-size: 8pt;
+    padding: 4px 10px;
+    background: var(--purple-dim);
+    border-color: rgba(167,139,250,0.3);
+    color: var(--purple);
+  }
+
+  #nextCommitBtn:hover {
+    background: rgba(167,139,250,0.2);
+  }
+
+  /* Batch markers on scrubber */
+  .batch-marker {
+    position: absolute;
+    top: -2px;
+    height: 10px;
+    background: rgba(167,139,250,0.25);
+    border-radius: 2px;
+    pointer-events: none;
   }
 
   /* ─── Milestone markers on scrubber ────────────────────────────────── */
@@ -808,6 +1011,8 @@ function generateHTML(frames) {
     </div>
     <div class="scrubber-info">
       <span class="frame-counter" id="frameCounter">0 / 0</span>
+      <span id="subframeIndicator"></span>
+      <button class="btn" id="nextCommitBtn" title="Skip to next commit (N)" style="display:none">Next Commit &#9654;&#9654;</button>
       <button class="btn speed-btn" id="speedBtn" title="Playback speed">1x</button>
     </div>
   </div>
@@ -859,6 +1064,7 @@ function generateHTML(frames) {
 <div class="kbd-hint">
   <kbd>&larr;</kbd> <kbd>&rarr;</kbd> step &nbsp;
   <kbd>Space</kbd> play/pause &nbsp;
+  <kbd>N</kbd> next commit &nbsp;
   <kbd>Home</kbd> <kbd>End</kbd> jump
 </div>
 
@@ -901,6 +1107,20 @@ const claimsContainer = document.getElementById('claimsContainer');
 const coverageContainer = document.getElementById('coverageContainer');
 const deltaBar = document.getElementById('deltaBar');
 const milestoneMarkers = document.getElementById('milestoneMarkers');
+const subframeIndicator = document.getElementById('subframeIndicator');
+const nextCommitBtn = document.getElementById('nextCommitBtn');
+
+// Pre-compute commit boundaries for "next commit" navigation
+const commitBoundaries = []; // indices where a new commit starts
+{
+  let lastHash = null;
+  FRAMES.forEach((f, i) => {
+    if (f.commit.hash !== lastHash) {
+      commitBoundaries.push(i);
+      lastHash = f.commit.hash;
+    }
+  });
+}
 
 if (FRAMES.length > 0) {
   scrubber.max = FRAMES.length - 1;
@@ -917,6 +1137,25 @@ if (FRAMES.length > 0) {
     }
   });
 
+  // Place batch markers on scrubber (show expanded regions)
+  let batchStart = null;
+  FRAMES.forEach((f, i) => {
+    if (f.subframe && batchStart === null) {
+      batchStart = i;
+    }
+    if (batchStart !== null && (!f.subframe || i === FRAMES.length - 1)) {
+      const end = f.subframe ? i : i - 1;
+      const startPct = (batchStart / (FRAMES.length - 1)) * 100;
+      const endPct = (end / (FRAMES.length - 1)) * 100;
+      const marker = document.createElement('div');
+      marker.className = 'batch-marker';
+      marker.style.left = startPct + '%';
+      marker.style.width = Math.max(endPct - startPct, 1) + '%';
+      milestoneMarkers.appendChild(marker);
+      batchStart = null;
+    }
+  });
+
   render(FRAMES[0]);
 }
 
@@ -928,6 +1167,8 @@ scrubber.addEventListener('input', () => {
 });
 
 playBtn.addEventListener('click', togglePlay);
+
+nextCommitBtn.addEventListener('click', goToNextCommit);
 
 const SPEEDS = [1, 2, 4];
 let speedIdx = 0;
@@ -959,6 +1200,18 @@ document.addEventListener('keydown', (e) => {
       if (playing) togglePlay();
       goToFrame(currentFrame + 1);
       break;
+    case 'n':
+    case 'N':
+      e.preventDefault();
+      if (playing) togglePlay();
+      goToNextCommit();
+      break;
+    case 'p':
+    case 'P':
+      e.preventDefault();
+      if (playing) togglePlay();
+      goToPrevCommit();
+      break;
     case 'Home':
       e.preventDefault();
       if (playing) togglePlay();
@@ -978,6 +1231,36 @@ function goToFrame(idx) {
   scrubber.value = idx;
   updateScrubberFill();
   render(FRAMES[idx]);
+}
+
+function goToNextCommit() {
+  // Find the next commit boundary after current frame
+  for (let i = 0; i < commitBoundaries.length; i++) {
+    if (commitBoundaries[i] > currentFrame) {
+      goToFrame(commitBoundaries[i]);
+      return;
+    }
+  }
+  // If at or past last boundary, go to end
+  goToFrame(FRAMES.length - 1);
+}
+
+function goToPrevCommit() {
+  // Find the commit boundary at or before the current frame, then go to the one before that
+  for (let i = commitBoundaries.length - 1; i >= 0; i--) {
+    if (commitBoundaries[i] < currentFrame) {
+      // If we're in the middle of a batch, go to the start of this commit
+      const frame = FRAMES[currentFrame];
+      if (frame.subframe && frame.parentFrame === commitBoundaries[i]) {
+        // Already at the start of this commit's sub-frames; go to previous commit
+        if (i > 0) { goToFrame(commitBoundaries[i - 1]); return; }
+        goToFrame(0); return;
+      }
+      goToFrame(commitBoundaries[i]);
+      return;
+    }
+  }
+  goToFrame(0);
 }
 
 function togglePlay() {
@@ -1028,6 +1311,23 @@ function render(frame) {
   // Frame counter + commit message
   frameCounter.textContent = (frame.index + 1) + ' / ' + FRAMES.length;
   commitMsg.textContent = frame.commit.hash + ' — ' + frame.commit.message;
+
+  // Sub-frame indicator
+  if (frame.subframe) {
+    let dotsHtml = '';
+    for (let d = 0; d < frame.subTotal; d++) {
+      const cls = d < frame.subIndex ? 'past' : d === frame.subIndex ? 'active' : '';
+      dotsHtml += '<span class="subframe-dot ' + cls + '"></span>';
+    }
+    subframeIndicator.innerHTML =
+      '<span class="subframe-badge">BATCH</span>' +
+      '<span class="subframe-dots">' + dotsHtml + '</span>' +
+      '<span style="font-size:8pt;color:var(--purple)">' + (frame.subIndex + 1) + '/' + frame.subTotal + '</span>';
+    nextCommitBtn.style.display = '';
+  } else {
+    subframeIndicator.innerHTML = '';
+    nextCommitBtn.style.display = 'none';
+  }
 
   // Claims panel
   renderClaims(frame);

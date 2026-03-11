@@ -13,7 +13,7 @@
       "id": "d001",
       "type": "constraint",
       "topic": "dogfooding",
-      "content": "The visualization must be built through the Wheat pipeline itself — claims, compiler, then artifact. It should demonstrate the system by being a product of it.",
+      "content": "The visualization must be built through the Wheat pipeline itself \u2014 claims, compiler, then artifact. It should demonstrate the system by being a product of it.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -76,7 +76,7 @@
       "id": "d004",
       "type": "constraint",
       "topic": "scope",
-      "content": "Full creative freedom — no budget, timeline, or tech constraints beyond self-contained HTML. Go as ambitious as needed.",
+      "content": "Full creative freedom \u2014 no budget, timeline, or tech constraints beyond self-contained HTML. Go as ambitious as needed.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -96,7 +96,7 @@
       "id": "d005",
       "type": "constraint",
       "topic": "quality",
-      "content": "Success criteria is subjective — 'I'll know it when I see it.' The artifact must be visually compelling enough to sell itself on first impression.",
+      "content": "Success criteria is subjective \u2014 'I'll know it when I see it.' The artifact must be visually compelling enough to sell itself on first impression.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -202,7 +202,7 @@
       "id": "r005",
       "type": "recommendation",
       "topic": "ux-pattern",
-      "content": "For the compiler passes, use a linear pipeline stepper (like GitHub Actions) — stages shown left-to-right with status icons (pending/running/done/error). Color coding: green=pass, yellow=running, red=fail, grey=pending.",
+      "content": "For the compiler passes, use a linear pipeline stepper (like GitHub Actions) \u2014 stages shown left-to-right with status icons (pending/running/done/error). Color coding: green=pass, yellow=running, red=fail, grey=pending.",
       "source": {
         "origin": "research",
         "artifact": "research/live-ui-architecture.md",
@@ -265,7 +265,7 @@
       "id": "r008",
       "type": "estimate",
       "topic": "architecture",
-      "content": "The entire live server can be built with zero npm dependencies — Node.js core http + fs modules only. Estimated ~80-100 lines for: static file serving, SSE endpoint, file watcher, and compiler auto-run.",
+      "content": "The entire live server can be built with zero npm dependencies \u2014 Node.js core http + fs modules only. Estimated ~80-100 lines for: static file serving, SSE endpoint, file watcher, and compiler auto-run.",
       "source": {
         "origin": "research",
         "artifact": "research/live-ui-architecture.md",
@@ -356,7 +356,7 @@
       "id": "p004",
       "type": "factual",
       "topic": "architecture",
-      "content": "fs.watch fires reliably on macOS for claims.json edits. 150ms debounce is sufficient to avoid double-fires. Compiler runs in ~50ms for 13 claims — instant feedback loop.",
+      "content": "fs.watch fires reliably on macOS for claims.json edits. 150ms debounce is sufficient to avoid double-fires. Compiler runs in ~50ms for 13 claims \u2014 instant feedback loop.",
       "source": {
         "origin": "prototype",
         "artifact": "prototypes/live-dashboard/",
@@ -402,7 +402,7 @@
       "id": "f001",
       "type": "feedback",
       "topic": "architecture",
-      "content": "User prefers the static file:// dashboard (output/dashboard.html) over the live SSE server (localhost:3141). The SSE server doesn't add enough value — most interaction is reading the current state, which the static HTML already shows well. The live server is over-engineered for the actual use pattern.",
+      "content": "User prefers the static file:// dashboard (output/dashboard.html) over the live SSE server (localhost:3141). The SSE server doesn't add enough value \u2014 most interaction is reading the current state, which the static HTML already shows well. The live server is over-engineered for the actual use pattern.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -423,7 +423,7 @@
       "id": "f002",
       "type": "feedback",
       "topic": "output-format",
-      "content": "The self-contained HTML approach (file:// openable, no server needed) is actually the right call for this use case. The /status command already regenerates the dashboard on demand — that's sufficient. Real-time SSE updates are cool but unnecessary.",
+      "content": "The self-contained HTML approach (file:// openable, no server needed) is actually the right call for this use case. The /status command already regenerates the dashboard on demand \u2014 that's sufficient. Real-time SSE updates are cool but unnecessary.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -444,7 +444,7 @@
       "id": "f003",
       "type": "feedback",
       "topic": "architecture",
-      "content": "The live SSE server IS valuable as a dev-time tool — watching claims update in real time during a sprint is useful. The earlier preference for static (f001) was about the final artifact, not the dev experience. Both have a role: live server for working, static HTML for sharing.",
+      "content": "The live SSE server IS valuable as a dev-time tool \u2014 watching claims update in real time during a sprint is useful. The earlier preference for static (f001) was about the final artifact, not the dev experience. Both have a role: live server for working, static HTML for sharing.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -466,7 +466,7 @@
       "id": "f004",
       "type": "feedback",
       "topic": "quality",
-      "content": "The live dashboard UI (localhost:3141) is too rudimentary — functional but not sleek. Needs a UX polish pass: the layout, typography, and visual hierarchy should feel as polished as the static /status dashboard, not like a debug tool.",
+      "content": "The live dashboard UI (localhost:3141) is too rudimentary \u2014 functional but not sleek. Needs a UX polish pass: the layout, typography, and visual hierarchy should feel as polished as the static /status dashboard, not like a debug tool.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -488,7 +488,7 @@
       "id": "f005",
       "type": "feedback",
       "topic": "ux-pattern",
-      "content": "The dashboard needs a timeline-based UI — a visual narrative of the sprint's progression over time, not just a static grid of current state. Data-rich dashboards can be built without overwhelming the user by using progressive disclosure, timeline views, and visual hierarchy. The current layout dumps everything at once instead of telling a story.",
+      "content": "The dashboard needs a timeline-based UI \u2014 a visual narrative of the sprint's progression over time, not just a static grid of current state. Data-rich dashboards can be built without overwhelming the user by using progressive disclosure, timeline views, and visual hierarchy. The current layout dumps everything at once instead of telling a story.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -555,7 +555,7 @@
       "id": "f006",
       "type": "constraint",
       "topic": "ux-pattern",
-      "content": "New information (latest claims, events, compilations) should populate from the top of the timeline, not the bottom. Reverse chronological order — newest first, like a social feed or activity log. The user shouldn't have to scroll to see what just changed.",
+      "content": "New information (latest claims, events, compilations) should populate from the top of the timeline, not the bottom. Reverse chronological order \u2014 newest first, like a social feed or activity log. The user shouldn't have to scroll to see what just changed.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -577,7 +577,7 @@
       "id": "r009",
       "type": "factual",
       "topic": "quality",
-      "content": "3 of 4 'weak evidence' compiler warnings are false alarms. Topics audience, scope, and quality consist entirely of constraint/feedback claims whose natural evidence tier is 'stated'. Constraints are stakeholder decisions, not testable hypotheses — 'stated' is their correct and final tier. The compiler's evidence tier system was designed for testable claims, not definitional boundaries.",
+      "content": "3 of 4 'weak evidence' compiler warnings are false alarms. Topics audience, scope, and quality consist entirely of constraint/feedback claims whose natural evidence tier is 'stated'. Constraints are stakeholder decisions, not testable hypotheses \u2014 'stated' is their correct and final tier. The compiler's evidence tier system was designed for testable claims, not definitional boundaries.",
       "source": {
         "origin": "research",
         "artifact": "research/evidence-gap-analysis.md",
@@ -688,7 +688,7 @@
       "id": "r013",
       "type": "factual",
       "topic": "architecture",
-      "content": "Wheat command suite expanded from 10 to 17 commands organized in 3 tiers: Tier 1 (Sprint Lifecycle) has 10 original commands for the define→research→prototype→evaluate→ship pipeline. Tier 2 (Quality Assurance) adds 4 new commands (/challenge, /blind-spot, /witness, /calibrate) for adversarial testing and corroboration. Tier 3 (Operations) adds 3 new commands (/replay, /handoff, /merge) for multi-sprint and multi-person workflows.",
+      "content": "Wheat command suite expanded from 10 to 17 commands organized in 3 tiers: Tier 1 (Sprint Lifecycle) has 10 original commands for the define\u2192research\u2192prototype\u2192evaluate\u2192ship pipeline. Tier 2 (Quality Assurance) adds 4 new commands (/challenge, /blind-spot, /witness, /calibrate) for adversarial testing and corroboration. Tier 3 (Operations) adds 3 new commands (/replay, /handoff, /merge) for multi-sprint and multi-person workflows.",
       "source": {
         "origin": "research",
         "artifact": "research/command-suite-expansion.md",
@@ -754,7 +754,7 @@
       "id": "r016",
       "type": "recommendation",
       "topic": "architecture",
-      "content": "The Tier 2 QA commands create three feedback loops: (1) self-correction (/challenge → conflict → /resolve), (2) external validation (/witness → corroboration count), (3) meta-learning (/calibrate → scores predictions against production → validates whether evidence tiers predict accuracy). The /calibrate loop is unique — it's the only command that tests whether Wheat itself works.",
+      "content": "The Tier 2 QA commands create three feedback loops: (1) self-correction (/challenge \u2192 conflict \u2192 /resolve), (2) external validation (/witness \u2192 corroboration count), (3) meta-learning (/calibrate \u2192 scores predictions against production \u2192 validates whether evidence tiers predict accuracy). The /calibrate loop is unique \u2014 it's the only command that tests whether Wheat itself works.",
       "source": {
         "origin": "research",
         "artifact": "research/command-suite-expansion.md",
@@ -776,7 +776,7 @@
       "id": "r017",
       "type": "factual",
       "topic": "accessibility",
-      "content": "The dashboard's --text-dim color (#505a6e on #0a0e1a) has a contrast ratio of 2.78:1, failing WCAG 2.2 AA minimum of 4.5:1 for normal text and 3:1 for UI components. This color is used for metadata labels, tags, phase subtitles, and the 'Now' timestamp — all informational text that becomes unreadable for users with low vision or contrast sensitivity.",
+      "content": "The dashboard's --text-dim color (#505a6e on #0a0e1a) has a contrast ratio of 2.78:1, failing WCAG 2.2 AA minimum of 4.5:1 for normal text and 3:1 for UI components. This color is used for metadata labels, tags, phase subtitles, and the 'Now' timestamp \u2014 all informational text that becomes unreadable for users with low vision or contrast sensitivity.",
       "source": {
         "origin": "research",
         "artifact": "research/accessibility.md",
@@ -798,7 +798,7 @@
       "id": "r018",
       "type": "risk",
       "topic": "accessibility",
-      "content": "The dashboard has zero ARIA landmarks or semantic HTML. All structure uses <div> elements — no <main>, <header>, <nav>, no role attributes. Screen reader users cannot navigate by region, skip to main content, or understand the page structure. This violates WCAG 2.2 SC 1.3.1 (Info and Relationships) and makes the dashboard effectively unusable with assistive technology.",
+      "content": "The dashboard has zero ARIA landmarks or semantic HTML. All structure uses <div> elements \u2014 no <main>, <header>, <nav>, no role attributes. Screen reader users cannot navigate by region, skip to main content, or understand the page structure. This violates WCAG 2.2 SC 1.3.1 (Info and Relationships) and makes the dashboard effectively unusable with assistive technology.",
       "source": {
         "origin": "research",
         "artifact": "research/accessibility.md",
@@ -821,7 +821,7 @@
       "id": "r019",
       "type": "risk",
       "topic": "accessibility",
-      "content": "Claim rows use onclick handlers on <div> elements with no keyboard support. No tabindex, no role='button', no Enter/Space key handlers. Keyboard-only users cannot expand claim details. This violates WCAG 2.2 SC 2.1.1 (Keyboard) — all functionality must be operable via keyboard.",
+      "content": "Claim rows use onclick handlers on <div> elements with no keyboard support. No tabindex, no role='button', no Enter/Space key handlers. Keyboard-only users cannot expand claim details. This violates WCAG 2.2 SC 2.1.1 (Keyboard) \u2014 all functionality must be operable via keyboard.",
       "source": {
         "origin": "research",
         "artifact": "research/accessibility.md",
@@ -843,7 +843,7 @@
       "id": "r020",
       "type": "risk",
       "topic": "accessibility",
-      "content": "SSE-driven DOM updates happen silently — no aria-live regions announce changes to screen readers. When new claims arrive or the compiler status changes, sighted users see animations but screen reader users get zero notification. Adding aria-live='polite' to the scoreboard and timeline would fix this without disrupting the visual experience.",
+      "content": "SSE-driven DOM updates happen silently \u2014 no aria-live regions announce changes to screen readers. When new claims arrive or the compiler status changes, sighted users see animations but screen reader users get zero notification. Adding aria-live='polite' to the scoreboard and timeline would fix this without disrupting the visual experience.",
       "source": {
         "origin": "research",
         "artifact": "research/accessibility.md",
@@ -911,7 +911,7 @@
       "id": "p009",
       "type": "factual",
       "topic": "accessibility",
-      "content": "All 5 WCAG 2.2 AA fixes implemented on the live dashboard in ~25 lines of changes: (1) --text-dim raised from #505a6e to #7a839a — now 5.08:1 on --bg, 4.68:1 on --surface (both pass AA). (2) Semantic landmarks added: <header> for topbar, <main> for layout, role='status' on scoreboard, role='region' on timeline. (3) Keyboard support: claim rows have tabindex='0', role='button', aria-expanded, Enter/Space keydown handler. (4) aria-live='polite' on scoreboard and timeline — screen readers announce SSE updates. (5) :focus-visible outlines on all interactive elements. Zero visual regression — design unchanged for sighted users.",
+      "content": "All 5 WCAG 2.2 AA fixes implemented on the live dashboard in ~25 lines of changes: (1) --text-dim raised from #505a6e to #7a839a \u2014 now 5.08:1 on --bg, 4.68:1 on --surface (both pass AA). (2) Semantic landmarks added: <header> for topbar, <main> for layout, role='status' on scoreboard, role='region' on timeline. (3) Keyboard support: claim rows have tabindex='0', role='button', aria-expanded, Enter/Space keydown handler. (4) aria-live='polite' on scoreboard and timeline \u2014 screen readers announce SSE updates. (5) :focus-visible outlines on all interactive elements. Zero visual regression \u2014 design unchanged for sighted users.",
       "source": {
         "origin": "prototype",
         "artifact": "prototypes/live-dashboard/",
@@ -936,7 +936,7 @@
       "id": "e001",
       "type": "factual",
       "topic": "architecture",
-      "content": "Compiler scales linearly: 42 claims in 45ms, 100 in 44ms, 250 in 65ms, 500 in 50ms, 1000 in 59ms. Sub-60ms at 1000 claims means the feedback loop stays instant even for large sprints. The 7-pass pipeline has no exponential blowup — conflict detection is the only O(n^2) pass but stays fast due to sparse conflict graphs.",
+      "content": "Compiler scales linearly: 42 claims in 45ms, 100 in 44ms, 250 in 65ms, 500 in 50ms, 1000 in 59ms. Sub-60ms at 1000 claims means the feedback loop stays instant even for large sprints. The 7-pass pipeline has no exponential blowup \u2014 conflict detection is the only O(n^2) pass but stays fast due to sparse conflict graphs.",
       "source": {
         "origin": "evaluation",
         "artifact": "evidence/sprint-evaluation.html",
@@ -1025,7 +1025,7 @@
       "id": "e005",
       "type": "factual",
       "topic": "dogfooding",
-      "content": "The sprint successfully dogfoods itself: 20/42 claims are self-referential (reference the dashboard, Wheat, or the sprint itself). 16 wheat-format git commits trace the full event log. 4 of 5 phases exercised (define, research, prototype, feedback — evaluate now being added). 8 topics covered, 8 artifacts generated, 1 conflict auto-resolved. The visualization demonstrates the framework by being a product of it — constraint d001 is satisfied.",
+      "content": "The sprint successfully dogfoods itself: 20/42 claims are self-referential (reference the dashboard, Wheat, or the sprint itself). 16 wheat-format git commits trace the full event log. 4 of 5 phases exercised (define, research, prototype, feedback \u2014 evaluate now being added). 8 topics covered, 8 artifacts generated, 1 conflict auto-resolved. The visualization demonstrates the framework by being a product of it \u2014 constraint d001 is satisfied.",
       "source": {
         "origin": "evaluation",
         "artifact": "evidence/sprint-evaluation.html",
@@ -1048,7 +1048,7 @@
       "id": "e006",
       "type": "factual",
       "topic": "quality",
-      "content": "Evidence distribution across 40 active claims: stated=11 (27.5%), web=17 (42.5%), documented=4 (10%), tested=9 (22.5%), production=0. The tested tier is the highest reached. 5 of 8 topics have tested-level evidence. The constraint-dominated topics (audience, scope) correctly remain at stated. The quality topic remains at web — the only genuine evidence gap.",
+      "content": "Evidence distribution across 40 active claims: stated=11 (27.5%), web=17 (42.5%), documented=4 (10%), tested=9 (22.5%), production=0. The tested tier is the highest reached. 5 of 8 topics have tested-level evidence. The constraint-dominated topics (audience, scope) correctly remain at stated. The quality topic remains at web \u2014 the only genuine evidence gap.",
       "source": {
         "origin": "evaluation",
         "artifact": "evidence/sprint-evaluation.html",
@@ -1070,7 +1070,7 @@
       "id": "f007",
       "type": "feedback",
       "topic": "quality",
-      "content": "Stakeholder loves the Samurai Jack-themed presentation, specifically the 'Compiled by Wheat — gotta get back, back to the past' tagline. The thematic approach (kanji watermarks, brush-stroke dividers, woodblock panel aesthetic) resonates — personality in output artifacts makes the framework more memorable and shareable. This validates the 'I'll know it when I see it' quality bar (d005).",
+      "content": "Stakeholder loves the Samurai Jack-themed presentation, specifically the 'Compiled by Wheat \u2014 gotta get back, back to the past' tagline. The thematic approach (kanji watermarks, brush-stroke dividers, woodblock panel aesthetic) resonates \u2014 personality in output artifacts makes the framework more memorable and shareable. This validates the 'I'll know it when I see it' quality bar (d005).",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -1115,7 +1115,7 @@
       "id": "x002",
       "type": "risk",
       "topic": "ux-pattern",
-      "content": "The timeline-first UI assumes claims arrive chronologically with clear phase boundaries. In practice, sprints are messy: researchers revisit define-phase assumptions, prototypes generate new research questions, feedback arrives mid-prototype. The clean phase→phase timeline may misrepresent the actual nonlinear workflow, giving new users a false impression of Wheat's linearity.",
+      "content": "The timeline-first UI assumes claims arrive chronologically with clear phase boundaries. In practice, sprints are messy: researchers revisit define-phase assumptions, prototypes generate new research questions, feedback arrives mid-prototype. The clean phase\u2192phase timeline may misrepresent the actual nonlinear workflow, giving new users a false impression of Wheat's linearity.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1137,7 +1137,7 @@
       "id": "w001",
       "type": "factual",
       "topic": "architecture",
-      "content": "External corroboration for p001: SSE with zero-dependency Node.js is the established pattern for real-time dashboards. DigitalOcean, dev.to, and multiple 2024-2025 tutorials confirm native http + EventSource as the standard approach — no Express or socket.io needed. The 133-line server size is consistent with community examples (80-150 lines typical).",
+      "content": "External corroboration for p001: SSE with zero-dependency Node.js is the established pattern for real-time dashboards. DigitalOcean, dev.to, and multiple 2024-2025 tutorials confirm native http + EventSource as the standard approach \u2014 no Express or socket.io needed. The 133-line server size is consistent with community examples (80-150 lines typical).",
       "source": {
         "origin": "witness",
         "artifact": null,
@@ -1165,7 +1165,7 @@
       "id": "p010",
       "type": "factual",
       "topic": "accessibility",
-      "content": "Google Fonts @import removed from both templates (explainer.html, dashboard.html). Replaced with system font stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif. Zero external requests. Resolves r022 risk and strengthens d002 self-contained constraint. All generated HTML artifacts were already clean — only the source templates had the import.",
+      "content": "Google Fonts @import removed from both templates (explainer.html, dashboard.html). Replaced with system font stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif. Zero external requests. Resolves r022 risk and strengthens d002 self-contained constraint. All generated HTML artifacts were already clean \u2014 only the source templates had the import.",
       "source": {
         "origin": "prototype",
         "artifact": "templates/",
@@ -1188,7 +1188,7 @@
       "id": "x003",
       "type": "risk",
       "topic": "output-format",
-      "content": "The '7/7 self-contained' verification (e003) is a point-in-time snapshot — every new HTML artifact generated by future slash commands could reintroduce external dependencies if templates aren't checked. The explainer template had Google Fonts until p010 fixed it. There is no automated guard: no pre-commit hook or compiler pass that scans output HTML for external URLs. Self-containment could silently regress.",
+      "content": "The '7/7 self-contained' verification (e003) is a point-in-time snapshot \u2014 every new HTML artifact generated by future slash commands could reintroduce external dependencies if templates aren't checked. The explainer template had Google Fonts until p010 fixed it. There is no automated guard: no pre-commit hook or compiler pass that scans output HTML for external URLs. Self-containment could silently regress.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1240,7 +1240,7 @@
       "id": "x004",
       "type": "risk",
       "topic": "architecture",
-      "content": "The scalability benchmark (e001: 59ms at 1000 claims) measures compilation time only — it ignores the full loop cost: file I/O to read claims.json (grows linearly with file size), JSON.parse (superlinear for large strings), writing compilation.json, and the browser re-rendering the dashboard DOM. At 1000 claims the JSON file would be ~500KB and the dashboard would have 1000+ DOM nodes. The bottleneck shifts from compiler to I/O and rendering well before 1000 claims.",
+      "content": "The scalability benchmark (e001: 59ms at 1000 claims) measures compilation time only \u2014 it ignores the full loop cost: file I/O to read claims.json (grows linearly with file size), JSON.parse (superlinear for large strings), writing compilation.json, and the browser re-rendering the dashboard DOM. At 1000 claims the JSON file would be ~500KB and the dashboard would have 1000+ DOM nodes. The bottleneck shifts from compiler to I/O and rendering well before 1000 claims.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1263,7 +1263,7 @@
       "id": "x005",
       "type": "risk",
       "topic": "ux-pattern",
-      "content": "The timeline-first UI (p006) assumes a single-user, single-session workflow. If multiple contributors run /research or /prototype concurrently (e.g. pair programming or async collaboration), the timeline will interleave claims from different people with no attribution. There's no claim-level author tracking — the timeline shows what happened but not who did it, making collaborative sprints opaque.",
+      "content": "The timeline-first UI (p006) assumes a single-user, single-session workflow. If multiple contributors run /research or /prototype concurrently (e.g. pair programming or async collaboration), the timeline will interleave claims from different people with no attribution. There's no claim-level author tracking \u2014 the timeline shows what happened but not who did it, making collaborative sprints opaque.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1309,7 +1309,7 @@
       "id": "w003",
       "type": "factual",
       "topic": "ux-pattern",
-      "content": "External corroboration for p003: AST Explorer (astexplorer.net) is the canonical example of the split-pane input→output pattern for code visualization. Left pane for source input, right pane for parsed output, real-time updates as you type. The pattern is widely adopted: TypeScript AST Viewer, SQL Parser, Scalameta all use the same layout. Wheat's claims→compilation split-pane follows this established convention.",
+      "content": "External corroboration for p003: AST Explorer (astexplorer.net) is the canonical example of the split-pane input\u2192output pattern for code visualization. Left pane for source input, right pane for parsed output, real-time updates as you type. The pattern is widely adopted: TypeScript AST Viewer, SQL Parser, Scalameta all use the same layout. Wheat's claims\u2192compilation split-pane follows this established convention.",
       "source": {
         "origin": "witness",
         "artifact": null,
@@ -1337,7 +1337,7 @@
       "id": "w004",
       "type": "factual",
       "topic": "architecture",
-      "content": "External corroboration for p004: Node.js GitHub issue #47058 documents benchmarks showing fs.watch is reliable for single-file watching on macOS. Community consensus is that chokidar is only needed for recursive directory watching or cross-platform edge cases — for a single file like claims.json, native fs.watch with debounce is the recommended zero-dependency approach.",
+      "content": "External corroboration for p004: Node.js GitHub issue #47058 documents benchmarks showing fs.watch is reliable for single-file watching on macOS. Community consensus is that chokidar is only needed for recursive directory watching or cross-platform edge cases \u2014 for a single file like claims.json, native fs.watch with debounce is the recommended zero-dependency approach.",
       "source": {
         "origin": "witness",
         "artifact": null,
@@ -1365,7 +1365,7 @@
       "id": "w005",
       "type": "factual",
       "topic": "dogfooding",
-      "content": "External corroboration for p005: The self-referential dogfooding pattern is well-established. Keen IO built 'analytics for your analytics' — their Native Analytics dashboard displayed by their own analytics platform. GitLab dogfoods their Insights visualization tool internally. Bubble builds their entire website on their own platform. Wheat's 'dashboard that displays claims about itself' follows this proven pattern of tools demonstrating their own capabilities.",
+      "content": "External corroboration for p005: The self-referential dogfooding pattern is well-established. Keen IO built 'analytics for your analytics' \u2014 their Native Analytics dashboard displayed by their own analytics platform. GitLab dogfoods their Insights visualization tool internally. Bubble builds their entire website on their own platform. Wheat's 'dashboard that displays claims about itself' follows this proven pattern of tools demonstrating their own capabilities.",
       "source": {
         "origin": "witness",
         "artifact": null,
@@ -1423,7 +1423,7 @@
       "id": "w007",
       "type": "factual",
       "topic": "ux-pattern",
-      "content": "External corroboration for p007: Atlassian, Sigma Computing, and Datawrapper all document categorical color coding as the standard data visualization practice. Best practice is 5-7 distinct hues for categorical grouping — Wheat's 5-phase color system (amber, blue, green, purple, cyan) falls exactly in this range. Consistent color-to-category mapping across a dashboard is explicitly recommended for visual grouping without labels.",
+      "content": "External corroboration for p007: Atlassian, Sigma Computing, and Datawrapper all document categorical color coding as the standard data visualization practice. Best practice is 5-7 distinct hues for categorical grouping \u2014 Wheat's 5-phase color system (amber, blue, green, purple, cyan) falls exactly in this range. Consistent color-to-category mapping across a dashboard is explicitly recommended for visual grouping without labels.",
       "source": {
         "origin": "witness",
         "artifact": null,
@@ -1452,7 +1452,7 @@
       "id": "w008",
       "type": "factual",
       "topic": "output-format",
-      "content": "External corroboration for p008: Self-contained single-file HTML is an established distribution pattern. Multiple tools exist specifically for this (vite-plugin-singlefile, Inliner.js, HtmlPackager, webpage2html). Use cases include reports, presentations, and offline-first apps — exactly Wheat's use case. The approach of inlining all CSS/JS with zero external dependencies is the standard solution for portable, shareable HTML artifacts.",
+      "content": "External corroboration for p008: Self-contained single-file HTML is an established distribution pattern. Multiple tools exist specifically for this (vite-plugin-singlefile, Inliner.js, HtmlPackager, webpage2html). Use cases include reports, presentations, and offline-first apps \u2014 exactly Wheat's use case. The approach of inlining all CSS/JS with zero external dependencies is the standard solution for portable, shareable HTML artifacts.",
       "source": {
         "origin": "witness",
         "artifact": null,
@@ -1509,7 +1509,7 @@
       "id": "w010",
       "type": "factual",
       "topic": "architecture",
-      "content": "External corroboration for e001: Benchmarks from esbuild/SWC/Babel comparisons confirm that lightweight Node.js build pipelines processing structured data (JSON, AST) achieve sub-100ms times for thousands of items. The wheat compiler's 59ms at 1000 claims is consistent with expected performance for a 7-pass pipeline over in-memory JSON — no exotic optimization needed, just linear traversal.",
+      "content": "External corroboration for e001: Benchmarks from esbuild/SWC/Babel comparisons confirm that lightweight Node.js build pipelines processing structured data (JSON, AST) achieve sub-100ms times for thousands of items. The wheat compiler's 59ms at 1000 claims is consistent with expected performance for a 7-pass pipeline over in-memory JSON \u2014 no exotic optimization needed, just linear traversal.",
       "source": {
         "origin": "witness",
         "artifact": null,
@@ -1565,7 +1565,7 @@
       "id": "x006",
       "type": "risk",
       "topic": "architecture",
-      "content": "The compiler's 7-pass pipeline (validate→types→sort→conflicts→resolve→coverage→readiness) runs all passes sequentially even when earlier passes fail. Validation errors in pass 1 skip later passes via conditional, but there's no early-exit for warnings — a claim set with 50 warnings still runs the full pipeline. At scale this is fine (sub-60ms), but architecturally it's a latent coupling that could bite if passes become expensive.",
+      "content": "The compiler's 7-pass pipeline (validate\u2192types\u2192sort\u2192conflicts\u2192resolve\u2192coverage\u2192readiness) runs all passes sequentially even when earlier passes fail. Validation errors in pass 1 skip later passes via conditional, but there's no early-exit for warnings \u2014 a claim set with 50 warnings still runs the full pipeline. At scale this is fine (sub-60ms), but architecturally it's a latent coupling that could bite if passes become expensive.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1587,7 +1587,7 @@
       "id": "x007",
       "type": "risk",
       "topic": "quality",
-      "content": "The 'I'll know it when I see it' success criterion (d005) is unfalsifiable — any outcome can be retroactively declared a success or failure. This means the quality topic can never reach 'tested' evidence tier through objective means. The Samurai Jack feedback (f007) validates subjective quality but sets a dangerous precedent: novelty (themed presentations) substitutes for rigor.",
+      "content": "The 'I'll know it when I see it' success criterion (d005) is unfalsifiable \u2014 any outcome can be retroactively declared a success or failure. This means the quality topic can never reach 'tested' evidence tier through objective means. The Samurai Jack feedback (f007) validates subjective quality but sets a dangerous precedent: novelty (themed presentations) substitutes for rigor.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1610,7 +1610,7 @@
       "id": "x008",
       "type": "risk",
       "topic": "accessibility",
-      "content": "WCAG 2.2 AA compliance was verified manually against 13 checks (e004), but there's no automated accessibility testing in the pipeline. Tools like axe-core, Pa11y, or Lighthouse can catch regressions automatically. Without CI-integrated a11y testing, the WCAG fixes (p009) could regress silently — same problem as x003 but for accessibility instead of self-containment.",
+      "content": "WCAG 2.2 AA compliance was verified manually against 13 checks (e004), but there's no automated accessibility testing in the pipeline. Tools like axe-core, Pa11y, or Lighthouse can catch regressions automatically. Without CI-integrated a11y testing, the WCAG fixes (p009) could regress silently \u2014 same problem as x003 but for accessibility instead of self-containment.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1633,7 +1633,7 @@
       "id": "r023",
       "type": "factual",
       "topic": "architecture",
-      "content": "The --next flag's priority system (P0-P5) is a static heuristic — it doesn't learn from user behavior. If a user consistently ignores P4-CORROBORATION suggestions, --next keeps recommending them. A smarter system would track which actions users actually execute and weight recommendations accordingly. The current implementation is a good v1 but lacks adaptive feedback.",
+      "content": "The --next flag's priority system (P0-P5) is a static heuristic \u2014 it doesn't learn from user behavior. If a user consistently ignores P4-CORROBORATION suggestions, --next keeps recommending them. A smarter system would track which actions users actually execute and weight recommendations accordingly. The current implementation is a good v1 but lacks adaptive feedback.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1656,7 +1656,7 @@
       "id": "r024",
       "type": "recommendation",
       "topic": "architecture",
-      "content": "The compiler should support a --watch mode that combines fs.watch + auto-compile + --next into a single long-running process. Currently the dev loop is: edit claims.json → manually run compiler → read output. A --watch mode would auto-compile on save and print the next suggested action, creating a tighter feedback loop than the current manual workflow.",
+      "content": "The compiler should support a --watch mode that combines fs.watch + auto-compile + --next into a single long-running process. Currently the dev loop is: edit claims.json \u2192 manually run compiler \u2192 read output. A --watch mode would auto-compile on save and print the next suggested action, creating a tighter feedback loop than the current manual workflow.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1678,7 +1678,7 @@
       "id": "r025",
       "type": "factual",
       "topic": "dogfooding",
-      "content": "The sprint's git log is itself a machine-readable event stream: every wheat commit follows the pattern 'wheat: /<command> <summary> — added <IDs>'. This means git log --oneline claims.json can be parsed to reconstruct the sprint timeline, identify command frequency, and measure velocity. The git log IS the sprint's activity log — no separate event store needed.",
+      "content": "The sprint's git log is itself a machine-readable event stream: every wheat commit follows the pattern 'wheat: /<command> <summary> \u2014 added <IDs>'. This means git log --oneline claims.json can be parsed to reconstruct the sprint timeline, identify command frequency, and measure velocity. The git log IS the sprint's activity log \u2014 no separate event store needed.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1724,7 +1724,7 @@
       "id": "r027",
       "type": "recommendation",
       "topic": "ux-pattern",
-      "content": "The dashboard should support claim filtering by topic, type, evidence tier, and phase. At 50+ claims, scrolling the full timeline becomes unwieldy. A filter bar at the top (topic chips, type dropdown, evidence tier slider) would enable focused exploration without losing the timeline context. This is standard dashboard UX — every analytics tool has faceted filtering.",
+      "content": "The dashboard should support claim filtering by topic, type, evidence tier, and phase. At 50+ claims, scrolling the full timeline becomes unwieldy. A filter bar at the top (topic chips, type dropdown, evidence tier slider) would enable focused exploration without losing the timeline context. This is standard dashboard UX \u2014 every analytics tool has faceted filtering.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1818,7 +1818,7 @@
       "id": "r030",
       "type": "recommendation",
       "topic": "output-format",
-      "content": "The brief should support incremental updates — currently /brief regenerates the entire document from scratch. A diff-aware brief would highlight what changed since the last compilation: new claims added, conflicts resolved, evidence upgraded. This would make the brief useful as a living document during the sprint, not just a final artifact.",
+      "content": "The brief should support incremental updates \u2014 currently /brief regenerates the entire document from scratch. A diff-aware brief would highlight what changed since the last compilation: new claims added, conflicts resolved, evidence upgraded. This would make the brief useful as a living document during the sprint, not just a final artifact.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1840,7 +1840,7 @@
       "id": "x009",
       "type": "risk",
       "topic": "architecture",
-      "content": "The compiler's conflict detection relies on claims explicitly declaring conflicts_with arrays. This is manual and error-prone — if two claims contradict each other but neither author marks the conflict, the compiler silently treats both as valid. Semantic conflict detection (comparing claim content for contradictions) would catch implicit conflicts but requires NLP or heuristic content analysis.",
+      "content": "The compiler's conflict detection relies on claims explicitly declaring conflicts_with arrays. This is manual and error-prone \u2014 if two claims contradict each other but neither author marks the conflict, the compiler silently treats both as valid. Semantic conflict detection (comparing claim content for contradictions) would catch implicit conflicts but requires NLP or heuristic content analysis.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1862,7 +1862,7 @@
       "id": "r031",
       "type": "factual",
       "topic": "quality",
-      "content": "The evidence tier hierarchy (stated→web→documented→tested→production) maps to the scientific method's evidence pyramid: anecdotal→observational→documented→experimental→longitudinal. This isn't accidental — Wheat's tier system is a lightweight application of epistemological rigor to decision-making. The /calibrate command closes the loop by checking predictions against production reality.",
+      "content": "The evidence tier hierarchy (stated\u2192web\u2192documented\u2192tested\u2192production) maps to the scientific method's evidence pyramid: anecdotal\u2192observational\u2192documented\u2192experimental\u2192longitudinal. This isn't accidental \u2014 Wheat's tier system is a lightweight application of epistemological rigor to decision-making. The /calibrate command closes the loop by checking predictions against production reality.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1884,7 +1884,7 @@
       "id": "r032",
       "type": "recommendation",
       "topic": "ux-pattern",
-      "content": "The dashboard should show a 'sprint health' indicator — a single composite score combining: evidence coverage (% of topics at tested+), conflict status (0 unresolved = green), corroboration ratio (% of tested claims with witnesses), and phase progression. This gives stakeholders a one-glance answer to 'how confident should I be in these findings?'",
+      "content": "The dashboard should show a 'sprint health' indicator \u2014 a single composite score combining: evidence coverage (% of topics at tested+), conflict status (0 unresolved = green), corroboration ratio (% of tested claims with witnesses), and phase progression. This gives stakeholders a one-glance answer to 'how confident should I be in these findings?'",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1906,7 +1906,7 @@
       "id": "r033",
       "type": "factual",
       "topic": "accessibility",
-      "content": "The WCAG 2.2 AA fixes (p009) added ~25 lines of code for 13 passing checks. This is a remarkably low cost-per-fix ratio: ~2 lines per accessibility check. The fixes are also zero-overhead at runtime — semantic HTML, ARIA attributes, and CSS focus styles add no JavaScript execution cost. Accessibility was essentially free in this case.",
+      "content": "The WCAG 2.2 AA fixes (p009) added ~25 lines of code for 13 passing checks. This is a remarkably low cost-per-fix ratio: ~2 lines per accessibility check. The fixes are also zero-overhead at runtime \u2014 semantic HTML, ARIA attributes, and CSS focus styles add no JavaScript execution cost. Accessibility was essentially free in this case.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1928,7 +1928,7 @@
       "id": "x010",
       "type": "risk",
       "topic": "dogfooding",
-      "content": "The sprint's self-referential nature creates a selection bias in evidence: most 'tested' claims are about the dashboard/compiler because that's what we built and could measure. Claims about user experience, teaching effectiveness, and stakeholder perception remain at 'stated' tier because they require real users — which this sprint doesn't have. The evidence distribution flatters the technical claims while leaving UX claims unvalidated.",
+      "content": "The sprint's self-referential nature creates a selection bias in evidence: most 'tested' claims are about the dashboard/compiler because that's what we built and could measure. Claims about user experience, teaching effectiveness, and stakeholder perception remain at 'stated' tier because they require real users \u2014 which this sprint doesn't have. The evidence distribution flatters the technical claims while leaving UX claims unvalidated.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -1996,7 +1996,7 @@
       "id": "e007",
       "type": "risk",
       "topic": "architecture",
-      "content": "fs.watch(file) on macOS silently dies when the file is atomically replaced (new inode). writeFileSync and git operations both do atomic replacement. The watcher in wheat-server.js was watching claims.json directly, which meant it would stop detecting changes after any git operation or compiler write. This contradicts p004's claim that fs.watch is reliable — it's reliable for in-place edits but not for atomic replacements.",
+      "content": "fs.watch(file) on macOS silently dies when the file is atomically replaced (new inode). writeFileSync and git operations both do atomic replacement. The watcher in wheat-server.js was watching claims.json directly, which meant it would stop detecting changes after any git operation or compiler write. This contradicts p004's claim that fs.watch is reliable \u2014 it's reliable for in-place edits but not for atomic replacements.",
       "source": {
         "origin": "evaluation",
         "artifact": "prototypes/live-dashboard/wheat-server.js",
@@ -2069,7 +2069,7 @@
       "id": "w014",
       "type": "factual",
       "topic": "dogfooding",
-      "content": "External corroboration for e005: The 20/48 self-referential claim ratio (~42%) is unusually high for a dogfooding sprint but expected given the meta-nature of this specific project. GitLab's internal dogfooding of Insights (their visualization tool) shows a similar pattern — the tool's own usage data becomes the demo data. Self-reference is a feature, not an accident, in meta-tooling.",
+      "content": "External corroboration for e005: The 20/48 self-referential claim ratio (~42%) is unusually high for a dogfooding sprint but expected given the meta-nature of this specific project. GitLab's internal dogfooding of Insights (their visualization tool) shows a similar pattern \u2014 the tool's own usage data becomes the demo data. Self-reference is a feature, not an accident, in meta-tooling.",
       "source": {
         "origin": "witness",
         "artifact": null,
@@ -2141,7 +2141,7 @@
       "id": "r038",
       "type": "factual",
       "topic": "output-format",
-      "content": "The sprint produced 4 distinct output formats from the same claim set: Markdown (brief.md with PDF frontmatter), PDF (brief.pdf via md-to-pdf), HTML dashboard (dark theme, interactive), and HTML presentation (Samurai Jack themed, scroll-snap). The compiler's Bran IR is format-agnostic — the same compilation.json feeds all 4 renderers. Adding new output formats requires zero changes to the compiler.",
+      "content": "The sprint produced 4 distinct output formats from the same claim set: Markdown (brief.md with PDF frontmatter), PDF (brief.pdf via md-to-pdf), HTML dashboard (dark theme, interactive), and HTML presentation (Samurai Jack themed, scroll-snap). The compiler's Bran IR is format-agnostic \u2014 the same compilation.json feeds all 4 renderers. Adding new output formats requires zero changes to the compiler.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -2207,7 +2207,7 @@
       "id": "f008",
       "type": "feedback",
       "topic": "architecture",
-      "content": "The fs.watch inode bug (e007) reveals that p004's 'fs.watch reliable' claim was only true for a specific write pattern (in-place edits). Atomic file replacement — the pattern used by writeFileSync, git, and most editors — breaks it silently. The directory-watch fix (p012) is the correct approach. This is exactly the kind of bug /challenge is designed to surface.",
+      "content": "The fs.watch inode bug (e007) reveals that p004's 'fs.watch reliable' claim was only true for a specific write pattern (in-place edits). Atomic file replacement \u2014 the pattern used by writeFileSync, git, and most editors \u2014 breaks it silently. The directory-watch fix (p012) is the correct approach. This is exactly the kind of bug /challenge is designed to surface.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -2251,7 +2251,7 @@
       "id": "r041",
       "type": "recommendation",
       "topic": "dogfooding",
-      "content": "The sprint should include a 'cold start' example — a minimal claims.json with 3-5 seed claims and a README that walks a new developer through running /init, /research, /prototype in sequence. This addresses x001 (cold-start risk) by ensuring the dashboard always has something to show, even on first use.",
+      "content": "The sprint should include a 'cold start' example \u2014 a minimal claims.json with 3-5 seed claims and a README that walks a new developer through running /init, /research, /prototype in sequence. This addresses x001 (cold-start risk) by ensuring the dashboard always has something to show, even on first use.",
       "source": {
         "origin": "research",
         "artifact": null,
@@ -2273,21 +2273,29 @@
       "id": "e009",
       "type": "factual",
       "topic": "quality",
-      "content": "Sprint reached 99 claims across 8 topics with 0 unresolved conflicts, 2 resolved conflicts (p001>r008, e007>p004), 10+ corroborated tested claims, and 5 adversarial challenges. The evidence distribution broadened significantly from 48 to 99 claims. The /calibrate loop remains untested — no production data exists to validate predictions against reality.",
-      "source": { "origin": "evaluation", "artifact": null, "connector": null },
+      "content": "Sprint reached 99 claims across 8 topics with 0 unresolved conflicts, 2 resolved conflicts (p001>r008, e007>p004), 10+ corroborated tested claims, and 5 adversarial challenges. The evidence distribution broadened significantly from 48 to 99 claims. The /calibrate loop remains untested \u2014 no production data exists to validate predictions against reality.",
+      "source": {
+        "origin": "evaluation",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T18:40:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["milestone", "99-claims", "sprint-summary"]
+      "tags": [
+        "milestone",
+        "99-claims",
+        "sprint-summary"
+      ]
     },
     {
       "id": "f009",
       "type": "feedback",
       "topic": "quality",
-      "content": "Stakeholder review identified three determinism leaks in wheat-compiler.js that violated the 'pure function / bitwise replay' invariant: (1) compiled_at embeds wall-clock time — two compiles of identical input produce different output; (2) certificate hash used JSON.stringify which is not canonical — reordered keys change the hash; (3) sortByEvidenceTier tiebreak used optional timestamp strings — missing/inconsistent timestamps made sort order depend on array insertion order. All three fixed: canonical JSON (sorted keys, recursive) for hashing, lexicographic claim ID for sort tiebreak, compiled_at documented as non-deterministic metadata excluded from certificate.",
+      "content": "Stakeholder review identified three determinism leaks in wheat-compiler.js that violated the 'pure function / bitwise replay' invariant: (1) compiled_at embeds wall-clock time \u2014 two compiles of identical input produce different output; (2) certificate hash used JSON.stringify which is not canonical \u2014 reordered keys change the hash; (3) sortByEvidenceTier tiebreak used optional timestamp strings \u2014 missing/inconsistent timestamps made sort order depend on array insertion order. All three fixed: canonical JSON (sorted keys, recursive) for hashing, lexicographic claim ID for sort tiebreak, compiled_at documented as non-deterministic metadata excluded from certificate.",
       "source": {
         "origin": "stakeholder",
         "artifact": "wheat-compiler.js",
@@ -2299,167 +2307,275 @@
       "timestamp": "2026-03-11T19:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["determinism", "compiler", "bug-fix", "code-review"]
+      "tags": [
+        "determinism",
+        "compiler",
+        "bug-fix",
+        "code-review"
+      ]
     },
     {
       "id": "r042",
       "type": "factual",
       "topic": "architecture",
       "content": "The optimal replay architecture is pre-computed frames: an array where frames[i] is the full sprint state at commit i, embedded as inline JSON in a self-contained HTML file. A stateless render(frame) function updates the DOM on each frame change, and a controller manages currentFrame/playing/speed. This is the pattern used by Bostock's Bar Chart Race, COVID time-series dashboards, and Observable's Scrubber component. For ~30 frames x ~100 claims, inline data is well under 1MB.",
-      "source": { "origin": "research", "artifact": "research/replay-ui.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/replay-ui.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T19:30:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["replay", "architecture", "frames", "observable"]
+      "tags": [
+        "replay",
+        "architecture",
+        "frames",
+        "observable"
+      ]
     },
     {
       "id": "r043",
       "type": "factual",
       "topic": "ux-pattern",
-      "content": "Timeline scrubbing UI requires three components: (1) an <input type='range'> with step=1 for discrete frame snapping, (2) a play/pause button driving a requestAnimationFrame loop, and (3) auto-pause on user scrub interaction. The range input needs appearance:none with custom thumb/track styling and a JS-driven gradient for progress fill — no pure CSS cross-browser solution exists for partial track fill.",
-      "source": { "origin": "research", "artifact": "research/replay-ui.md", "connector": null },
+      "content": "Timeline scrubbing UI requires three components: (1) an <input type='range'> with step=1 for discrete frame snapping, (2) a play/pause button driving a requestAnimationFrame loop, and (3) auto-pause on user scrub interaction. The range input needs appearance:none with custom thumb/track styling and a JS-driven gradient for progress fill \u2014 no pure CSS cross-browser solution exists for partial track fill.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/replay-ui.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T19:30:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["replay", "scrubber", "ux", "range-input"]
+      "tags": [
+        "replay",
+        "scrubber",
+        "ux",
+        "range-input"
+      ]
     },
     {
       "id": "r044",
       "type": "factual",
       "topic": "architecture",
-      "content": "For animating claim state changes between frames, CSS transitions (opacity, transform, background-color) handle most cases. The FLIP technique (First-Last-Invert-Play) is required when claims reorder between frames — measure positions before DOM change, apply inverse transform, then animate to new positions. The View Transitions API (baseline Oct 2025) can automate FLIP-like morphing but needs a CSS-transition fallback for older browsers.",
-      "source": { "origin": "research", "artifact": "research/replay-ui.md", "connector": null },
+      "content": "For animating claim state changes between frames, CSS transitions (opacity, transform, background-color) handle most cases. The FLIP technique (First-Last-Invert-Play) is required when claims reorder between frames \u2014 measure positions before DOM change, apply inverse transform, then animate to new positions. The View Transitions API (baseline Oct 2025) can automate FLIP-like morphing but needs a CSS-transition fallback for older browsers.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/replay-ui.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T19:30:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["replay", "animation", "FLIP", "css-transitions"]
+      "tags": [
+        "replay",
+        "animation",
+        "FLIP",
+        "css-transitions"
+      ]
     },
     {
       "id": "r045",
       "type": "recommendation",
       "topic": "architecture",
       "content": "Claim diffs between frames should use simple set operations (not a generic JSON diff library): new IDs = added (green), missing IDs = removed (red), same ID with changed evidence/status = upgraded (amber). Display as inline badges on each claim plus a summary bar per frame ('Frame 7: +3 claims, 1 upgraded'). This is cheaper and more readable than rendering arbitrary JSON diffs.",
-      "source": { "origin": "research", "artifact": "research/replay-ui.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/replay-ui.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T19:30:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["replay", "diff", "claim-delta"]
+      "tags": [
+        "replay",
+        "diff",
+        "claim-delta"
+      ]
     },
     {
       "id": "r046",
       "type": "recommendation",
       "topic": "architecture",
       "content": "Frame data should be generated by the existing /replay pipeline: extract claims.json at each git commit via 'git show <hash>:claims.json', recompile each with 'node wheat-compiler.js --input', compute deltas with '--diff', then bake the full frame array into the HTML template as a const FRAMES = [...] script block. This reuses the compiler's diffCompilations() function rather than inventing a new diff layer.",
-      "source": { "origin": "research", "artifact": "research/replay-ui.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/replay-ui.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T19:30:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["replay", "data-pipeline", "compiler-reuse"]
+      "tags": [
+        "replay",
+        "data-pipeline",
+        "compiler-reuse"
+      ]
     },
     {
       "id": "r047",
       "type": "risk",
       "topic": "architecture",
       "content": "Git-based frame extraction ('git show <hash>:claims.json') requires a git repo at generation time. Archived sprints on orphan branches or tags work fine, but if claims.json was force-pushed or rebased, historical frames may be lost. The generated HTML is self-contained and survives repo deletion, but the generation step is repo-dependent.",
-      "source": { "origin": "research", "artifact": "research/replay-ui.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/replay-ui.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T19:30:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["replay", "risk", "git-dependency"]
+      "tags": [
+        "replay",
+        "risk",
+        "git-dependency"
+      ]
     },
     {
       "id": "x011",
       "type": "factual",
       "topic": "architecture",
       "content": "In the actual Wheat sprint git history, 9 of 32 claims-touching commits (28%) are batch commits adding >5 claims each. These 9 commits account for ~66 of ~99 total claims (67%). The remaining 23 commits average 1.4 claims each. Frame-per-commit replay would show 72% of frames contributing only 33% of the content.",
-      "source": { "origin": "challenge", "artifact": null, "connector": null },
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T20:00:00Z",
-      "conflicts_with": ["r042"],
+      "conflicts_with": [
+        "r042"
+      ],
       "resolved_by": null,
-      "tags": ["replay", "challenge", "batch-commits", "pacing"]
+      "tags": [
+        "replay",
+        "challenge",
+        "batch-commits",
+        "pacing"
+      ]
     },
     {
       "id": "x012",
       "type": "risk",
       "topic": "architecture",
-      "content": "The frame-per-commit model creates severely uneven replay pacing: 14 single-claim witness commits produce near-identical frames (viewer sees almost no change), while 3 'batch' and 'speedrun' commits each jump by 9-11 claims across multiple topics simultaneously. The viewer experience alternates between tedious stasis and incomprehensible jumps — the opposite of the 'teaches by showing itself in action' design goal (d001).",
-      "source": { "origin": "challenge", "artifact": null, "connector": null },
+      "content": "The frame-per-commit model creates severely uneven replay pacing: 14 single-claim witness commits produce near-identical frames (viewer sees almost no change), while 3 'batch' and 'speedrun' commits each jump by 9-11 claims across multiple topics simultaneously. The viewer experience alternates between tedious stasis and incomprehensible jumps \u2014 the opposite of the 'teaches by showing itself in action' design goal (d001).",
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
-      "status": "active",
+      "status": "resolved",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T20:00:00Z",
-      "conflicts_with": ["r042"],
-      "resolved_by": null,
-      "tags": ["replay", "challenge", "ux", "pacing", "uneven-frames"]
+      "conflicts_with": [
+        "r042"
+      ],
+      "resolved_by": "e010",
+      "tags": [
+        "replay",
+        "challenge",
+        "ux",
+        "pacing",
+        "uneven-frames"
+      ]
     },
     {
       "id": "x013",
       "type": "risk",
       "topic": "architecture",
-      "content": "Batch commits conflate unrelated research steps: commit a9920d1 adds witness w012, research r028-r035 (8 claims across multiple topics), and challenges x006-x010 in a single frame. A viewer cannot distinguish which findings came from which investigation. The narrative thread — the 'why did the researcher look at this next' story — is lost when heterogeneous claim types are lumped into one frame.",
-      "source": { "origin": "challenge", "artifact": null, "connector": null },
+      "content": "Batch commits conflate unrelated research steps: commit a9920d1 adds witness w012, research r028-r035 (8 claims across multiple topics), and challenges x006-x010 in a single frame. A viewer cannot distinguish which findings came from which investigation. The narrative thread \u2014 the 'why did the researcher look at this next' story \u2014 is lost when heterogeneous claim types are lumped into one frame.",
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
-      "status": "active",
+      "status": "resolved",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T20:00:00Z",
-      "conflicts_with": ["r042"],
-      "resolved_by": null,
-      "tags": ["replay", "challenge", "narrative", "batch-conflation"]
+      "conflicts_with": [
+        "r042"
+      ],
+      "resolved_by": "e010",
+      "tags": [
+        "replay",
+        "challenge",
+        "narrative",
+        "batch-conflation"
+      ]
     },
     {
       "id": "x014",
       "type": "recommendation",
       "topic": "architecture",
       "content": "Alternative to frame-per-commit: claim-level framing, where each frame adds exactly one claim (or one small logical group). The /replay pipeline would decompose batch commits into individual claim additions ordered by ID, producing ~99 frames instead of ~32. Pros: smooth pacing, clear narrative per frame, each step is digestible. Cons: loses the actual git history granularity, synthetic ordering within batches may not reflect real research sequence, higher frame count increases data size (~3x).",
-      "source": { "origin": "challenge", "artifact": null, "connector": null },
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
-      "status": "active",
+      "status": "superseded",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T20:00:00Z",
       "conflicts_with": [],
-      "resolved_by": null,
-      "tags": ["replay", "alternative", "claim-level-frames", "tradeoff"]
+      "resolved_by": "x015",
+      "tags": [
+        "replay",
+        "alternative",
+        "claim-level-frames",
+        "tradeoff"
+      ]
     },
     {
       "id": "x015",
       "type": "recommendation",
       "topic": "architecture",
-      "content": "Hybrid framing approach: use commit-level frames as the primary timeline but allow sub-frame stepping within batch commits. The scrubber shows 32 major stops (commits), but clicking a batch frame expands it into sub-steps (one per claim). Implementation: frames[] becomes a tree — each frame has an optional 'substeps' array. The controller supports fractional indices (frame 7.3 = commit 7, claim 3). This preserves git fidelity while solving the pacing problem, at the cost of more complex scrubber UI.",
-      "source": { "origin": "challenge", "artifact": null, "connector": null },
+      "content": "Hybrid framing approach: use commit-level frames as the primary timeline but allow sub-frame stepping within batch commits. The scrubber shows 32 major stops (commits), but clicking a batch frame expands it into sub-steps (one per claim). Implementation: frames[] becomes a tree \u2014 each frame has an optional 'substeps' array. The controller supports fractional indices (frame 7.3 = commit 7, claim 3). This preserves git fidelity while solving the pacing problem, at the cost of more complex scrubber UI.",
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T20:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["replay", "alternative", "hybrid-frames", "sub-stepping"]
+      "tags": [
+        "replay",
+        "alternative",
+        "hybrid-frames",
+        "sub-stepping"
+      ]
     },
     {
       "id": "w015",
       "type": "factual",
       "topic": "ux-pattern",
-      "content": "External sources provide partial support for r043. Bostock's Observable Scrubber confirms: (1) it uses <input type='range'> driven by an array of discrete values (analogous to step=1), (2) it auto-pauses when the user interacts with the slider, and (3) playback resumes via a play button. However, Bostock's Scrubber uses setInterval-based timing rather than requestAnimationFrame — Observable's reactive runtime handles frame scheduling separately. Daniel Wilson's Web Animations API scrubbing pattern (danielcwilson.com) uses requestAnimationFrame to sync a range slider with animation.currentTime, and pauses on user drag via input/change events — matching r043's rAF + auto-pause claims. MDN's custom video player pattern uses <progress> (not <input type='range'>) with timeupdate events and does NOT auto-pause on scrub. r043 missed a fourth component present in both Bostock and Wilson patterns: a frame counter or text label showing the current position (e.g., 'frame 12 of 45' or elapsed time), which aids orientation during scrubbing.",
+      "content": "External sources provide partial support for r043. Bostock's Observable Scrubber confirms: (1) it uses <input type='range'> driven by an array of discrete values (analogous to step=1), (2) it auto-pauses when the user interacts with the slider, and (3) playback resumes via a play button. However, Bostock's Scrubber uses setInterval-based timing rather than requestAnimationFrame \u2014 Observable's reactive runtime handles frame scheduling separately. Daniel Wilson's Web Animations API scrubbing pattern (danielcwilson.com) uses requestAnimationFrame to sync a range slider with animation.currentTime, and pauses on user drag via input/change events \u2014 matching r043's rAF + auto-pause claims. MDN's custom video player pattern uses <progress> (not <input type='range'>) with timeupdate events and does NOT auto-pause on scrub. r043 missed a fourth component present in both Bostock and Wilson patterns: a frame counter or text label showing the current position (e.g., 'frame 12 of 45' or elapsed time), which aids orientation during scrubbing.",
       "source": {
         "origin": "witness",
         "artifact": null,
@@ -2474,49 +2590,264 @@
       "timestamp": "2026-03-11T20:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["replay", "scrubber", "witness", "observable"]
+      "tags": [
+        "replay",
+        "scrubber",
+        "witness",
+        "observable"
+      ]
     },
     {
       "id": "p013",
       "type": "factual",
       "topic": "architecture",
       "content": "build-replay.js successfully extracts 35 frames from git history, compiles each with wheat-compiler.js --input, computes deltas with --diff, auto-detects 15 milestones (phase transitions, evidence jumps, new topics), and generates a self-contained output/replay.html with inline FRAMES data. The pipeline reuses the existing compiler infrastructure as predicted by r046.",
-      "source": { "origin": "prototype", "artifact": "build-replay.js", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T20:30:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["replay", "frame-extraction", "build-tool"]
+      "tags": [
+        "replay",
+        "frame-extraction",
+        "build-tool"
+      ]
     },
     {
       "id": "p014",
       "type": "factual",
       "topic": "ux-pattern",
       "content": "Replay viewer prototype implements four-panel layout (scrubber + claims list + coverage map + stats), play/pause/speed control (1x/2x/4x), range slider with step=1 frame snapping, keyboard shortcuts (arrows/space/home/end), CSS transitions for claim appear/remove/upgrade, and milestone markers on the timeline. All self-contained in a single HTML file with no external dependencies.",
-      "source": { "origin": "prototype", "artifact": "output/replay.html", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "output/replay.html",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T20:30:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["replay", "viewer", "self-contained"]
+      "tags": [
+        "replay",
+        "viewer",
+        "self-contained"
+      ]
     },
     {
       "id": "p015",
       "type": "risk",
       "topic": "architecture",
       "content": "The challenge findings from x011-x013 are confirmed in the prototype: batch commits (28% of frames) create visible pacing jumps where 10+ claims appear simultaneously while single-witness commits show minimal change. The hybrid framing approach (x015) would improve this but is not yet implemented.",
-      "source": { "origin": "prototype", "artifact": "output/replay.html", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "output/replay.html",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T20:30:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["replay", "pacing", "batch-commits"]
+      "tags": [
+        "replay",
+        "pacing",
+        "batch-commits"
+      ]
+    },
+    {
+      "id": "e010",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Resolution: hybrid framing (x015) adopted as the replay frame model. Commit-level frames remain the primary timeline (preserving git fidelity per r042), but batch commits with >3 claims expand into sub-frames (one per claim) for smooth pacing. This resolves the uneven pacing risk (x012) and narrative conflation risk (x013) confirmed by prototype testing (p015), while keeping r042's core architecture (pre-computed frames, stateless render, controller) intact. Pure claim-level framing (x014) is superseded \u2014 it solved pacing but sacrificed git history correspondence. The threshold of >3 claims balances expansion granularity against scrubber complexity.",
+      "source": {
+        "origin": "resolve",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T21:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "resolution",
+        "hybrid-frames",
+        "pacing",
+        "architecture"
+      ]
+    },
+    {
+      "id": "x016",
+      "type": "risk",
+      "topic": "ux-pattern",
+      "content": "Animation timing bug at higher playback speeds: staggered claim-enter animations use the claim's index within its topic group (idx * 50ms) as delay, not its index among only-new claims. A new claim at position 15 in a 20-claim topic gets 750ms delay + 300ms animation = 1050ms total, but at 2x speed the next frame replaces innerHTML after 500ms, cutting off the animation. At 4x speed (250ms interval) even claims at position 5+ (250ms delay) are truncated. The issue is in renderClaims: delay should index only across isNew claims, and total animation budget should be capped to the frame interval.",
+      "source": {
+        "origin": "challenge",
+        "artifact": "output/replay.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T21:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "animation",
+        "timing",
+        "speed",
+        "edge-case"
+      ]
+    },
+    {
+      "id": "x017",
+      "type": "risk",
+      "topic": "ux-pattern",
+      "content": "Empty-delta frames display a bare 'Frame N:' label in the delta bar with no additional text. When a commit touches claims.json but produces zero claim-level changes (e.g., metadata-only edits, whitespace changes, or compiler re-runs), the delta bar renders only the frame number prefix with no items after it. The renderDelta function only checks for !delta (null) to show 'Initial state', but a non-null delta with all-empty arrays falls through to display nothing. Should show 'No claim changes' or similar.",
+      "source": {
+        "origin": "challenge",
+        "artifact": "output/replay.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T21:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "empty-delta",
+        "ux",
+        "edge-case"
+      ]
+    },
+    {
+      "id": "x018",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "Replay HTML file size is ~763KB for 35 frames due to full claim snapshots embedded per frame. Each frame includes the complete claims array at that point in time, so a claim added at frame 5 is repeated verbatim in frames 5-35 (30 copies). With ~99 claims averaging ~200 bytes each, this adds ~600KB of redundant data. Delta encoding (storing only the initial snapshot + per-frame diffs) could reduce payload by ~70%. For a self-contained teaching tool, 763KB is still loadable but will grow linearly with sprint length \u2014 a 100-frame sprint could exceed 2MB.",
+      "source": {
+        "origin": "challenge",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T21:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "file-size",
+        "optimization",
+        "scalability"
+      ]
+    },
+    {
+      "id": "x019",
+      "type": "risk",
+      "topic": "ux-pattern",
+      "content": "Milestone marker positioning divides by zero when FRAMES.length is 1: the expression (i / (FRAMES.length - 1)) * 100 produces NaN%, which would set the marker's CSS left to 'NaN%'. This is a degenerate edge case (a sprint with only one commit touching claims.json) but would produce a mispositioned or invisible milestone marker. The same division-by-zero affects updateScrubberFill. Guard with: if FRAMES.length <= 1, set pct to 0.",
+      "source": {
+        "origin": "challenge",
+        "artifact": "output/replay.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T21:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "division-by-zero",
+        "single-frame",
+        "edge-case"
+      ]
+    },
+    {
+      "id": "p016",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Hybrid framing implemented in build-replay.js: batch commits (>3 new claims) are automatically split into sub-frames that add 1-3 claims each, grouped by topic for narrative coherence. Each sub-frame carries subframe:true, parentFrame index, subIndex, and subTotal metadata. Non-batch commits pass through unchanged with subframe:false. The BATCH_THRESHOLD=3 constant controls the cutoff. Sub-frames share the same commit metadata but show incremental claim additions, solving the choppy pacing identified in x011-x013.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T21:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "hybrid-framing",
+        "sub-frames",
+        "batch-commits"
+      ]
+    },
+    {
+      "id": "p017",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "Hybrid framing UI adds: (1) a BATCH badge with dot-progress indicator showing sub-frame position within a batch commit, (2) a 'Next Commit' button (also N key) to skip remaining sub-frames and jump to the next git commit, (3) P key to jump to previous commit, (4) purple batch-region markers on the scrubber track showing where batch expansions occur. During auto-play, sub-frames step normally at the selected speed; the skip button provides a manual escape hatch for users who want commit-level granularity.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T21:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "hybrid-framing",
+        "ui",
+        "scrubber"
+      ]
+    },
+    {
+      "id": "p018",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "Sub-framing increases total frame count proportional to batch size \u2014 a commit adding 12 claims across 4 topics generates ~4-6 sub-frames instead of 1. For the current sprint (~35 commits, ~5 batch commits), this expands from ~35 frames to ~50-60 frames. The additional frames increase replay.html file size by roughly 40-70% due to duplicated intermediate claim arrays in each sub-frame's claims[] property. Mitigation: a future optimization could store only claim IDs in sub-frames and reconstruct from a shared claim dictionary, reducing the per-sub-frame overhead to ~100 bytes instead of ~2KB.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T21:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "hybrid-framing",
+        "file-size",
+        "optimization"
+      ]
     }
   ]
 }
