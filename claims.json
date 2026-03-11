@@ -2,7 +2,9 @@
   "meta": {
     "question": "How can we build a live visualization of Wheat that teaches the framework by showing itself in action?",
     "initiated": "2026-03-11",
-    "audience": ["developer learning Wheat"],
+    "audience": [
+      "developer learning Wheat"
+    ],
     "phase": "evaluate",
     "connectors": []
   },
@@ -12,714 +14,1124 @@
       "type": "constraint",
       "topic": "dogfooding",
       "content": "The visualization must be built through the Wheat pipeline itself — claims, compiler, then artifact. It should demonstrate the system by being a product of it.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "define",
       "timestamp": "2026-03-11T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["meta", "self-referential"]
+      "tags": [
+        "meta",
+        "self-referential"
+      ]
     },
     {
       "id": "d002",
       "type": "constraint",
       "topic": "output-format",
       "content": "Output must be self-contained HTML (inline CSS/JS, no external dependencies) that can be opened directly in a browser.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "define",
       "timestamp": "2026-03-11T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["html", "portable"]
+      "tags": [
+        "html",
+        "portable"
+      ]
     },
     {
       "id": "d003",
       "type": "constraint",
       "topic": "audience",
       "content": "Target audience is a single developer seeing Wheat for the first time. The visualization should be self-explanatory without external docs.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "define",
       "timestamp": "2026-03-11T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["ux", "onboarding"]
+      "tags": [
+        "ux",
+        "onboarding"
+      ]
     },
     {
       "id": "d004",
       "type": "constraint",
       "topic": "scope",
       "content": "Full creative freedom — no budget, timeline, or tech constraints beyond self-contained HTML. Go as ambitious as needed.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "define",
       "timestamp": "2026-03-11T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["freedom"]
+      "tags": [
+        "freedom"
+      ]
     },
     {
       "id": "d005",
       "type": "constraint",
       "topic": "quality",
       "content": "Success criteria is subjective — 'I'll know it when I see it.' The artifact must be visually compelling enough to sell itself on first impression.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "define",
       "timestamp": "2026-03-11T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["quality", "wow-factor"]
+      "tags": [
+        "quality",
+        "wow-factor"
+      ]
     },
     {
       "id": "r001",
       "type": "recommendation",
       "topic": "architecture",
       "content": "Use a tiny Node.js server (~80 lines, zero dependencies) with Server-Sent Events (SSE) to push compilation updates to the browser in real time. SSE beats WebSockets here: one-way data flow, auto-reconnect built into the browser, and zero npm dependencies.",
-      "source": { "origin": "research", "artifact": "research/live-ui-architecture.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "superseded",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": "f001",
-      "tags": ["sse", "server", "real-time"]
+      "tags": [
+        "sse",
+        "server",
+        "real-time"
+      ]
     },
     {
       "id": "r002",
       "type": "factual",
       "topic": "architecture",
       "content": "Node.js fs.watch uses OS-level file notifications (FSEvents on macOS, inotify on Linux). For watching a single file like claims.json, it is sufficient without chokidar. Zero dependencies needed.",
-      "source": { "origin": "research", "artifact": "research/live-ui-architecture.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["file-watching", "fs.watch"]
+      "tags": [
+        "file-watching",
+        "fs.watch"
+      ]
     },
     {
       "id": "r003",
       "type": "factual",
       "topic": "architecture",
       "content": "Browser-only approaches (File System Access API) are not viable: Chrome-only, require manual file picker every session, and still need a server to trigger CLI commands. A server is unavoidable.",
-      "source": { "origin": "research", "artifact": "research/live-ui-architecture.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["browser-api", "limitation"]
+      "tags": [
+        "browser-api",
+        "limitation"
+      ]
     },
     {
       "id": "r004",
       "type": "recommendation",
       "topic": "ux-pattern",
       "content": "Use AST Explorer's pattern: input on left (claims flowing in), compiled output on right (compilation result), updating in real time as data changes. This is the closest proven analogue to showing claims.json -> compiler -> compilation.json.",
-      "source": { "origin": "research", "artifact": "research/live-ui-architecture.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["split-pane", "ast-explorer"]
+      "tags": [
+        "split-pane",
+        "ast-explorer"
+      ]
     },
     {
       "id": "r005",
       "type": "recommendation",
       "topic": "ux-pattern",
       "content": "For the compiler passes, use a linear pipeline stepper (like GitHub Actions) — stages shown left-to-right with status icons (pending/running/done/error). Color coding: green=pass, yellow=running, red=fail, grey=pending.",
-      "source": { "origin": "research", "artifact": "research/live-ui-architecture.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["pipeline-viz", "github-actions"]
+      "tags": [
+        "pipeline-viz",
+        "github-actions"
+      ]
     },
     {
       "id": "r006",
       "type": "recommendation",
       "topic": "ux-pattern",
       "content": "Next.js HMR pattern: server sends lightweight notification with just a hash, browser fetches full data only when needed. For Wheat: SSE sends {event:'update', hash:'abc'}, client fetches /compilation.json. Avoids sending large payloads over SSE.",
-      "source": { "origin": "research", "artifact": "research/live-ui-architecture.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["hmr-pattern", "efficiency"]
+      "tags": [
+        "hmr-pattern",
+        "efficiency"
+      ]
     },
     {
       "id": "r007",
       "type": "risk",
       "topic": "output-format",
       "content": "A live-updating UI requires a running server, which conflicts with the 'self-contained HTML' constraint (d002). Resolution: the server is the dev experience; the HTML it serves is still self-contained. Two artifacts: wheat-server.js (dev tool) + output HTML (portable artifact).",
-      "source": { "origin": "research", "artifact": "research/live-ui-architecture.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["tension", "server-vs-static"]
+      "tags": [
+        "tension",
+        "server-vs-static"
+      ]
     },
     {
       "id": "r008",
       "type": "estimate",
       "topic": "architecture",
       "content": "The entire live server can be built with zero npm dependencies — Node.js core http + fs modules only. Estimated ~80-100 lines for: static file serving, SSE endpoint, file watcher, and compiler auto-run.",
-      "source": { "origin": "research", "artifact": "research/live-ui-architecture.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
-      "conflicts_with": ["p001"],
+      "conflicts_with": [
+        "p001"
+      ],
       "resolved_by": null,
-      "tags": ["zero-deps", "size-estimate"]
+      "tags": [
+        "zero-deps",
+        "size-estimate"
+      ]
     },
     {
       "id": "p001",
       "type": "factual",
       "topic": "architecture",
       "content": "Working prototype: wheat-server.js is 133 lines (not ~80 as estimated). Still zero npm dependencies. Includes: HTTP server, SSE endpoint, fs.watch on claims.json, auto-compile, static file serving, git log endpoint.",
-      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T02:00:00Z",
-      "conflicts_with": ["r008"],
+      "conflicts_with": [
+        "r008"
+      ],
       "resolved_by": null,
-      "tags": ["server", "line-count", "zero-deps"]
+      "tags": [
+        "server",
+        "line-count",
+        "zero-deps"
+      ]
     },
     {
       "id": "p002",
       "type": "factual",
       "topic": "architecture",
       "content": "SSE auto-reconnect confirmed working: EventSource reconnects automatically when server restarts, no client-side retry logic needed. Browser handles it natively.",
-      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T02:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["sse", "reconnect", "confirmed"]
+      "tags": [
+        "sse",
+        "reconnect",
+        "confirmed"
+      ]
     },
     {
       "id": "p003",
       "type": "factual",
       "topic": "ux-pattern",
       "content": "Split-pane layout works: left panel shows claims grouped by phase with type/evidence badges, right panel shows compiled output (coverage bars, conflicts, warnings, git log, certificate). Compiler stepper animates across the top on each update.",
-      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T02:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["split-pane", "layout", "confirmed"]
+      "tags": [
+        "split-pane",
+        "layout",
+        "confirmed"
+      ]
     },
     {
       "id": "p004",
       "type": "factual",
       "topic": "architecture",
       "content": "fs.watch fires reliably on macOS for claims.json edits. 150ms debounce is sufficient to avoid double-fires. Compiler runs in ~50ms for 13 claims — instant feedback loop.",
-      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
+        "connector": null
+      },
       "evidence": "tested",
-      "status": "active",
+      "status": "superseded",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T02:00:00Z",
-      "conflicts_with": [],
-      "resolved_by": null,
-      "tags": ["fs.watch", "latency", "debounce"]
+      "conflicts_with": [
+        "e007"
+      ],
+      "resolved_by": "e007",
+      "tags": [
+        "fs.watch",
+        "latency",
+        "debounce"
+      ]
     },
     {
       "id": "p005",
       "type": "factual",
       "topic": "dogfooding",
       "content": "The live dashboard successfully visualizes its own sprint. As prototype claims were added to claims.json, the dashboard updated in real time showing the new claims, updated coverage bars, and re-animated compiler stepper. Self-referential loop confirmed working.",
-      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T02:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["dogfood", "meta", "self-referential"]
+      "tags": [
+        "dogfood",
+        "meta",
+        "self-referential"
+      ]
     },
     {
       "id": "f001",
       "type": "feedback",
       "topic": "architecture",
       "content": "User prefers the static file:// dashboard (output/dashboard.html) over the live SSE server (localhost:3141). The SSE server doesn't add enough value — most interaction is reading the current state, which the static HTML already shows well. The live server is over-engineered for the actual use pattern.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "feedback",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["user-feedback", "static-vs-live"]
+      "tags": [
+        "user-feedback",
+        "static-vs-live"
+      ]
     },
     {
       "id": "f002",
       "type": "feedback",
       "topic": "output-format",
       "content": "The self-contained HTML approach (file:// openable, no server needed) is actually the right call for this use case. The /status command already regenerates the dashboard on demand — that's sufficient. Real-time SSE updates are cool but unnecessary.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "feedback",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["user-feedback", "simplicity"]
+      "tags": [
+        "user-feedback",
+        "simplicity"
+      ]
     },
     {
       "id": "f003",
       "type": "feedback",
       "topic": "architecture",
       "content": "The live SSE server IS valuable as a dev-time tool — watching claims update in real time during a sprint is useful. The earlier preference for static (f001) was about the final artifact, not the dev experience. Both have a role: live server for working, static HTML for sharing.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "feedback",
       "timestamp": "2026-03-11T04:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["user-feedback", "nuance", "dev-experience"]
+      "tags": [
+        "user-feedback",
+        "nuance",
+        "dev-experience"
+      ]
     },
     {
       "id": "f004",
       "type": "feedback",
       "topic": "quality",
       "content": "The live dashboard UI (localhost:3141) is too rudimentary — functional but not sleek. Needs a UX polish pass: the layout, typography, and visual hierarchy should feel as polished as the static /status dashboard, not like a debug tool.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "feedback",
       "timestamp": "2026-03-11T04:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["user-feedback", "ux-polish", "quality-bar"]
+      "tags": [
+        "user-feedback",
+        "ux-polish",
+        "quality-bar"
+      ]
     },
     {
       "id": "f005",
       "type": "feedback",
       "topic": "ux-pattern",
       "content": "The dashboard needs a timeline-based UI — a visual narrative of the sprint's progression over time, not just a static grid of current state. Data-rich dashboards can be built without overwhelming the user by using progressive disclosure, timeline views, and visual hierarchy. The current layout dumps everything at once instead of telling a story.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "feedback",
       "timestamp": "2026-03-11T05:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["user-feedback", "timeline", "data-density", "progressive-disclosure"]
+      "tags": [
+        "user-feedback",
+        "timeline",
+        "data-density",
+        "progressive-disclosure"
+      ]
     },
     {
       "id": "p006",
       "type": "factual",
       "topic": "ux-pattern",
       "content": "Timeline-first dashboard prototype built: vertical timeline as primary UI spine, claims as expandable nodes grouped by phase (define/research/prototype/evaluate/feedback), progressive disclosure via click-to-expand detail panels. Compact scoreboard replaces the old card grid. Coverage shown as inline topic chips with evidence-tier colored dots. Conflict resolutions and warnings appear as inline timeline events. 'Now' node pulses at the bottom showing live watching state.",
-      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T06:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["timeline", "progressive-disclosure", "narrative-ui"]
+      "tags": [
+        "timeline",
+        "progressive-disclosure",
+        "narrative-ui"
+      ]
     },
     {
       "id": "p007",
       "type": "factual",
       "topic": "ux-pattern",
       "content": "Phase-colored visual system confirmed effective: each sprint phase gets a distinct color (define=amber, research=blue, prototype=green, evaluate=purple, feedback=cyan) applied consistently to timeline dots, claim IDs, phase headers, and claim dot accents. Creates instant visual grouping without labels.",
-      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T06:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["color-system", "phase-coding", "visual-hierarchy"]
+      "tags": [
+        "color-system",
+        "phase-coding",
+        "visual-hierarchy"
+      ]
     },
     {
       "id": "f006",
       "type": "constraint",
       "topic": "ux-pattern",
       "content": "New information (latest claims, events, compilations) should populate from the top of the timeline, not the bottom. Reverse chronological order — newest first, like a social feed or activity log. The user shouldn't have to scroll to see what just changed.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "feedback",
       "timestamp": "2026-03-11T07:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["user-feedback", "reverse-chrono", "scroll-position"]
+      "tags": [
+        "user-feedback",
+        "reverse-chrono",
+        "scroll-position"
+      ]
     },
     {
       "id": "r009",
       "type": "factual",
       "topic": "quality",
       "content": "3 of 4 'weak evidence' compiler warnings are false alarms. Topics audience, scope, and quality consist entirely of constraint/feedback claims whose natural evidence tier is 'stated'. Constraints are stakeholder decisions, not testable hypotheses — 'stated' is their correct and final tier. The compiler's evidence tier system was designed for testable claims, not definitional boundaries.",
-      "source": { "origin": "research", "artifact": "research/evidence-gap-analysis.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/evidence-gap-analysis.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T08:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["evidence-analysis", "false-alarm", "constraint-semantics"]
+      "tags": [
+        "evidence-analysis",
+        "false-alarm",
+        "constraint-semantics"
+      ]
     },
     {
       "id": "r010",
       "type": "factual",
       "topic": "output-format",
       "content": "The output-format topic is the only real evidence gap among the 4 warnings. It has a risk claim (r007) at web tier about server-vs-static tension. This is upgradeable to 'tested' by verifying that output/dashboard.html works as self-contained HTML: opens via file://, zero external network requests, all CSS/JS inline, works offline.",
-      "source": { "origin": "research", "artifact": "research/evidence-gap-analysis.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/evidence-gap-analysis.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T08:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["evidence-gap", "output-format", "upgradeable"]
+      "tags": [
+        "evidence-gap",
+        "output-format",
+        "upgradeable"
+      ]
     },
     {
       "id": "r011",
       "type": "risk",
       "topic": "quality",
       "content": "The compiler's W_WEAK_EVIDENCE warning system has a semantic blind spot: it treats all claim types equally, but constraint claims (type: constraint, feedback) are inherently 'stated' tier and cannot be upgraded. This creates persistent false-positive warnings on constraint-heavy topics, reducing signal-to-noise ratio for future sprints.",
-      "source": { "origin": "research", "artifact": "research/evidence-gap-analysis.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/evidence-gap-analysis.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T08:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["compiler-gap", "false-positive", "signal-noise"]
+      "tags": [
+        "compiler-gap",
+        "false-positive",
+        "signal-noise"
+      ]
     },
     {
       "id": "r012",
       "type": "recommendation",
       "topic": "architecture",
       "content": "The compiler should add constraint-aware coverage analysis: topics where >50% of claims are type 'constraint' or 'feedback' should not emit W_WEAK_EVIDENCE. Instead, emit W_CONSTRAINT_ONLY as an informational note. This preserves the warning for genuinely under-researched topics while silencing noise on definitional ones.",
-      "source": { "origin": "research", "artifact": "research/evidence-gap-analysis.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/evidence-gap-analysis.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T08:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["compiler-improvement", "constraint-aware", "coverage-analysis"]
+      "tags": [
+        "compiler-improvement",
+        "constraint-aware",
+        "coverage-analysis"
+      ]
     },
     {
       "id": "p008",
       "type": "factual",
       "topic": "output-format",
       "content": "All 4 static HTML artifacts (output/dashboard.html, output/problem-statement.html, research/live-ui-architecture.html, research/evidence-gap-analysis.html) verified fully self-contained: zero external URLs, zero <script src=>, zero <link href=>, zero <img src=> pointing to external resources. All CSS and JS are inline. Every file opens correctly via file:// protocol with no network requests. The self-contained HTML constraint (d002) is confirmed satisfied.",
-      "source": { "origin": "prototype", "artifact": "prototypes/output-format-test/", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/output-format-test/",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T09:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["self-contained", "file-protocol", "offline", "zero-external-deps"]
+      "tags": [
+        "self-contained",
+        "file-protocol",
+        "offline",
+        "zero-external-deps"
+      ]
     },
     {
       "id": "r013",
       "type": "factual",
       "topic": "architecture",
       "content": "Wheat command suite expanded from 10 to 17 commands organized in 3 tiers: Tier 1 (Sprint Lifecycle) has 10 original commands for the define→research→prototype→evaluate→ship pipeline. Tier 2 (Quality Assurance) adds 4 new commands (/challenge, /blind-spot, /witness, /calibrate) for adversarial testing and corroboration. Tier 3 (Operations) adds 3 new commands (/replay, /handoff, /merge) for multi-sprint and multi-person workflows.",
-      "source": { "origin": "research", "artifact": "research/command-suite-expansion.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/command-suite-expansion.md",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T10:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["command-suite", "architecture", "three-tiers"]
+      "tags": [
+        "command-suite",
+        "architecture",
+        "three-tiers"
+      ]
     },
     {
       "id": "r014",
       "type": "factual",
       "topic": "architecture",
       "content": "Compiler grew from ~430 lines (v0.1.0) to 685 lines (v0.2.0) with 9 new capabilities: --input/--output flags, --diff mode, source diversity tracking, type diversity tracking, corroboration system, constraint-aware coverage (W_CONSTRAINT_ONLY), wheat.config.json support, burn-residue safety check, and module exports for library usage. Still zero npm dependencies.",
-      "source": { "origin": "research", "artifact": "research/command-suite-expansion.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/command-suite-expansion.md",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T10:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["compiler", "v0.2.0", "capabilities"]
+      "tags": [
+        "compiler",
+        "v0.2.0",
+        "capabilities"
+      ]
     },
     {
       "id": "r015",
       "type": "factual",
       "topic": "architecture",
       "content": "Claim ID namespace expanded from 5 to 9 prefixes: original d### (define), r### (research), p### (prototype), e### (evaluate), f### (feedback); new x### (challenge), w### (witness), cal### (calibrate); plus burn- synthetic prefix rejected by compiler safety check.",
-      "source": { "origin": "research", "artifact": "research/command-suite-expansion.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/command-suite-expansion.md",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T10:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["claim-ids", "namespace", "prefixes"]
+      "tags": [
+        "claim-ids",
+        "namespace",
+        "prefixes"
+      ]
     },
     {
       "id": "r016",
       "type": "recommendation",
       "topic": "architecture",
       "content": "The Tier 2 QA commands create three feedback loops: (1) self-correction (/challenge → conflict → /resolve), (2) external validation (/witness → corroboration count), (3) meta-learning (/calibrate → scores predictions against production → validates whether evidence tiers predict accuracy). The /calibrate loop is unique — it's the only command that tests whether Wheat itself works.",
-      "source": { "origin": "research", "artifact": "research/command-suite-expansion.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/command-suite-expansion.md",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T10:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["feedback-loops", "self-correction", "meta-learning"]
+      "tags": [
+        "feedback-loops",
+        "self-correction",
+        "meta-learning"
+      ]
     },
     {
       "id": "r017",
       "type": "factual",
       "topic": "accessibility",
       "content": "The dashboard's --text-dim color (#505a6e on #0a0e1a) has a contrast ratio of 2.78:1, failing WCAG 2.2 AA minimum of 4.5:1 for normal text and 3:1 for UI components. This color is used for metadata labels, tags, phase subtitles, and the 'Now' timestamp — all informational text that becomes unreadable for users with low vision or contrast sensitivity.",
-      "source": { "origin": "research", "artifact": "research/accessibility.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/accessibility.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T11:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["wcag", "contrast", "color"]
+      "tags": [
+        "wcag",
+        "contrast",
+        "color"
+      ]
     },
     {
       "id": "r018",
       "type": "risk",
       "topic": "accessibility",
       "content": "The dashboard has zero ARIA landmarks or semantic HTML. All structure uses <div> elements — no <main>, <header>, <nav>, no role attributes. Screen reader users cannot navigate by region, skip to main content, or understand the page structure. This violates WCAG 2.2 SC 1.3.1 (Info and Relationships) and makes the dashboard effectively unusable with assistive technology.",
-      "source": { "origin": "research", "artifact": "research/accessibility.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/accessibility.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T11:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["wcag", "aria", "screen-reader", "semantic-html"]
+      "tags": [
+        "wcag",
+        "aria",
+        "screen-reader",
+        "semantic-html"
+      ]
     },
     {
       "id": "r019",
       "type": "risk",
       "topic": "accessibility",
       "content": "Claim rows use onclick handlers on <div> elements with no keyboard support. No tabindex, no role='button', no Enter/Space key handlers. Keyboard-only users cannot expand claim details. This violates WCAG 2.2 SC 2.1.1 (Keyboard) — all functionality must be operable via keyboard.",
-      "source": { "origin": "research", "artifact": "research/accessibility.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/accessibility.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T11:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["wcag", "keyboard", "interactive-elements"]
+      "tags": [
+        "wcag",
+        "keyboard",
+        "interactive-elements"
+      ]
     },
     {
       "id": "r020",
       "type": "risk",
       "topic": "accessibility",
       "content": "SSE-driven DOM updates happen silently — no aria-live regions announce changes to screen readers. When new claims arrive or the compiler status changes, sighted users see animations but screen reader users get zero notification. Adding aria-live='polite' to the scoreboard and timeline would fix this without disrupting the visual experience.",
-      "source": { "origin": "research", "artifact": "research/accessibility.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/accessibility.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T11:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["wcag", "aria-live", "dynamic-content", "sse"]
+      "tags": [
+        "wcag",
+        "aria-live",
+        "dynamic-content",
+        "sse"
+      ]
     },
     {
       "id": "r021",
       "type": "recommendation",
       "topic": "accessibility",
       "content": "Five targeted fixes would bring the dashboard to WCAG 2.2 AA: (1) Raise --text-dim from #505a6e to #7a839a (4.5:1 ratio). (2) Add semantic landmarks: <header> for topbar, <main> for layout, role='status' on scoreboard. (3) Add tabindex='0', role='button', aria-expanded, and keydown handler for Enter/Space on claim rows. (4) Add aria-live='polite' to scoreboard and timeline container. (5) Add :focus-visible outline styles to all interactive elements.",
-      "source": { "origin": "research", "artifact": "research/accessibility.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/accessibility.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T11:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["wcag", "remediation", "actionable"]
+      "tags": [
+        "wcag",
+        "remediation",
+        "actionable"
+      ]
     },
     {
       "id": "r022",
       "type": "risk",
       "topic": "accessibility",
       "content": "The explainer template (templates/explainer.html) imports Google Fonts via @import url('https://fonts.googleapis.com/...'), which is both an external dependency (tension with d002 self-contained constraint) and an accessibility concern: if the CDN is unreachable, text may render in a fallback font with different metrics, potentially breaking layout. The template should use the system font stack already defined as fallback.",
-      "source": { "origin": "research", "artifact": "research/accessibility.md", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "research/accessibility.md",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T11:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["wcag", "fonts", "external-dependency", "self-contained"]
+      "tags": [
+        "wcag",
+        "fonts",
+        "external-dependency",
+        "self-contained"
+      ]
     },
     {
       "id": "p009",
       "type": "factual",
       "topic": "accessibility",
       "content": "All 5 WCAG 2.2 AA fixes implemented on the live dashboard in ~25 lines of changes: (1) --text-dim raised from #505a6e to #7a839a — now 5.08:1 on --bg, 4.68:1 on --surface (both pass AA). (2) Semantic landmarks added: <header> for topbar, <main> for layout, role='status' on scoreboard, role='region' on timeline. (3) Keyboard support: claim rows have tabindex='0', role='button', aria-expanded, Enter/Space keydown handler. (4) aria-live='polite' on scoreboard and timeline — screen readers announce SSE updates. (5) :focus-visible outlines on all interactive elements. Zero visual regression — design unchanged for sighted users.",
-      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T12:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["wcag", "a11y", "keyboard", "aria", "contrast", "tested"]
+      "tags": [
+        "wcag",
+        "a11y",
+        "keyboard",
+        "aria",
+        "contrast",
+        "tested"
+      ]
     },
     {
       "id": "e001",
       "type": "factual",
       "topic": "architecture",
       "content": "Compiler scales linearly: 42 claims in 45ms, 100 in 44ms, 250 in 65ms, 500 in 50ms, 1000 in 59ms. Sub-60ms at 1000 claims means the feedback loop stays instant even for large sprints. The 7-pass pipeline has no exponential blowup — conflict detection is the only O(n^2) pass but stays fast due to sparse conflict graphs.",
-      "source": { "origin": "evaluation", "artifact": "evidence/sprint-evaluation.html", "connector": null },
+      "source": {
+        "origin": "evaluation",
+        "artifact": "evidence/sprint-evaluation.html",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T13:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["scalability", "benchmark", "performance"]
+      "tags": [
+        "scalability",
+        "benchmark",
+        "performance"
+      ]
     },
     {
       "id": "e002",
       "type": "risk",
       "topic": "architecture",
       "content": "Compiler crashes on empty or unparseable claims.json files (throws unhandled JSON parse error). Gracefully handles structural issues: missing claims array defaults to empty, missing meta defaults to empty, invalid claim fields produce BLOCKED status with errors. Two crash cases (empty file, malformed JSON) should be caught with a try/catch at the top level.",
-      "source": { "origin": "evaluation", "artifact": "evidence/sprint-evaluation.html", "connector": null },
+      "source": {
+        "origin": "evaluation",
+        "artifact": "evidence/sprint-evaluation.html",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T13:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["error-handling", "robustness", "crash"]
+      "tags": [
+        "error-handling",
+        "robustness",
+        "crash"
+      ]
     },
     {
       "id": "e003",
       "type": "factual",
       "topic": "output-format",
       "content": "All 7 HTML artifacts verified fully self-contained: zero external script src, link href, @import url, or img src pointing to external resources. Sizes range from 7.3KB (problem-statement) to 26.3KB (live dashboard). Every file opens correctly via file:// with no network requests. Constraint d002 is satisfied across the entire artifact set.",
-      "source": { "origin": "evaluation", "artifact": "evidence/sprint-evaluation.html", "connector": null },
+      "source": {
+        "origin": "evaluation",
+        "artifact": "evidence/sprint-evaluation.html",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T13:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["self-contained", "html", "verification"]
+      "tags": [
+        "self-contained",
+        "html",
+        "verification"
+      ]
     },
     {
       "id": "e004",
       "type": "factual",
       "topic": "accessibility",
       "content": "13/13 WCAG 2.2 AA checks pass on the live dashboard: lang attribute, <header> landmark, <main> landmark, role=status, role=region, aria-live=polite, aria-expanded, tabindex=0, role=button, onkeydown handler, :focus-visible styles, aria-label attributes, and contrast ratio >= 4.5:1. The accessibility research claims (r017-r022) are confirmed implemented and working.",
-      "source": { "origin": "evaluation", "artifact": "evidence/sprint-evaluation.html", "connector": null },
+      "source": {
+        "origin": "evaluation",
+        "artifact": "evidence/sprint-evaluation.html",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T13:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["wcag", "a11y", "verification", "13-of-13"]
+      "tags": [
+        "wcag",
+        "a11y",
+        "verification",
+        "13-of-13"
+      ]
     },
     {
       "id": "e005",
       "type": "factual",
       "topic": "dogfooding",
       "content": "The sprint successfully dogfoods itself: 20/42 claims are self-referential (reference the dashboard, Wheat, or the sprint itself). 16 wheat-format git commits trace the full event log. 4 of 5 phases exercised (define, research, prototype, feedback — evaluate now being added). 8 topics covered, 8 artifacts generated, 1 conflict auto-resolved. The visualization demonstrates the framework by being a product of it — constraint d001 is satisfied.",
-      "source": { "origin": "evaluation", "artifact": "evidence/sprint-evaluation.html", "connector": null },
+      "source": {
+        "origin": "evaluation",
+        "artifact": "evidence/sprint-evaluation.html",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T13:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["dogfooding", "meta", "self-referential", "constraint-check"]
+      "tags": [
+        "dogfooding",
+        "meta",
+        "self-referential",
+        "constraint-check"
+      ]
     },
     {
       "id": "e006",
       "type": "factual",
       "topic": "quality",
       "content": "Evidence distribution across 40 active claims: stated=11 (27.5%), web=17 (42.5%), documented=4 (10%), tested=9 (22.5%), production=0. The tested tier is the highest reached. 5 of 8 topics have tested-level evidence. The constraint-dominated topics (audience, scope) correctly remain at stated. The quality topic remains at web — the only genuine evidence gap.",
-      "source": { "origin": "evaluation", "artifact": "evidence/sprint-evaluation.html", "connector": null },
+      "source": {
+        "origin": "evaluation",
+        "artifact": "evidence/sprint-evaluation.html",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T13:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["evidence-distribution", "coverage-analysis", "meta"]
+      "tags": [
+        "evidence-distribution",
+        "coverage-analysis",
+        "meta"
+      ]
     },
     {
       "id": "f007",
       "type": "feedback",
       "topic": "quality",
       "content": "Stakeholder loves the Samurai Jack-themed presentation, specifically the 'Compiled by Wheat — gotta get back, back to the past' tagline. The thematic approach (kanji watermarks, brush-stroke dividers, woodblock panel aesthetic) resonates — personality in output artifacts makes the framework more memorable and shareable. This validates the 'I'll know it when I see it' quality bar (d005).",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "feedback",
       "timestamp": "2026-03-11T14:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["user-feedback", "quality-bar", "presentation", "personality"]
+      "tags": [
+        "user-feedback",
+        "quality-bar",
+        "presentation",
+        "personality"
+      ]
     },
     {
       "id": "x001",
       "type": "risk",
       "topic": "dogfooding",
       "content": "The self-referential dogfooding creates a circular dependency: the dashboard's value proposition depends on the sprint being interesting, but the sprint's interest depends on the dashboard working. If a future sprint has a boring question or few claims, the dashboard looks empty and the teaching effect collapses. Dogfooding only works when there's enough data to visualize.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T15:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["challenge", "circular-dependency", "cold-start"]
+      "tags": [
+        "challenge",
+        "circular-dependency",
+        "cold-start"
+      ]
     },
     {
       "id": "x002",
       "type": "risk",
       "topic": "ux-pattern",
       "content": "The timeline-first UI assumes claims arrive chronologically with clear phase boundaries. In practice, sprints are messy: researchers revisit define-phase assumptions, prototypes generate new research questions, feedback arrives mid-prototype. The clean phase→phase timeline may misrepresent the actual nonlinear workflow, giving new users a false impression of Wheat's linearity.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T15:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["challenge", "linearity-bias", "ux-honesty"]
+      "tags": [
+        "challenge",
+        "linearity-bias",
+        "ux-honesty"
+      ]
     },
     {
       "id": "w001",
@@ -732,7 +1144,9 @@
         "connector": null,
         "witnessed_claim": "p001",
         "relationship": "full_support",
-        "urls": ["https://www.digitalocean.com/community/tutorials/nodejs-server-sent-events-build-realtime-app"]
+        "urls": [
+          "https://www.digitalocean.com/community/tutorials/nodejs-server-sent-events-build-realtime-app"
+        ]
       },
       "evidence": "web",
       "status": "active",
@@ -740,7 +1154,12 @@
       "timestamp": "2026-03-11T15:30:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["witness", "corroboration", "sse", "zero-deps"]
+      "tags": [
+        "witness",
+        "corroboration",
+        "sse",
+        "zero-deps"
+      ]
     },
     {
       "id": "p010",
@@ -758,21 +1177,35 @@
       "timestamp": "2026-03-11T16:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["google-fonts", "self-contained", "system-font-stack", "r022-fix"]
+      "tags": [
+        "google-fonts",
+        "self-contained",
+        "system-font-stack",
+        "r022-fix"
+      ]
     },
     {
       "id": "x003",
       "type": "risk",
       "topic": "output-format",
       "content": "The '7/7 self-contained' verification (e003) is a point-in-time snapshot — every new HTML artifact generated by future slash commands could reintroduce external dependencies if templates aren't checked. The explainer template had Google Fonts until p010 fixed it. There is no automated guard: no pre-commit hook or compiler pass that scans output HTML for external URLs. Self-containment could silently regress.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T16:10:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["challenge", "self-contained", "regression-risk", "automation-gap"]
+      "tags": [
+        "challenge",
+        "self-contained",
+        "regression-risk",
+        "automation-gap"
+      ]
     },
     {
       "id": "w002",
@@ -785,7 +1218,9 @@
         "connector": null,
         "witnessed_claim": "p002",
         "relationship": "full_support",
-        "urls": ["https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events"]
+        "urls": [
+          "https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events"
+        ]
       },
       "evidence": "web",
       "status": "active",
@@ -793,35 +1228,59 @@
       "timestamp": "2026-03-11T16:15:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["witness", "corroboration", "sse", "mdn", "auto-reconnect"]
+      "tags": [
+        "witness",
+        "corroboration",
+        "sse",
+        "mdn",
+        "auto-reconnect"
+      ]
     },
     {
       "id": "x004",
       "type": "risk",
       "topic": "architecture",
       "content": "The scalability benchmark (e001: 59ms at 1000 claims) measures compilation time only — it ignores the full loop cost: file I/O to read claims.json (grows linearly with file size), JSON.parse (superlinear for large strings), writing compilation.json, and the browser re-rendering the dashboard DOM. At 1000 claims the JSON file would be ~500KB and the dashboard would have 1000+ DOM nodes. The bottleneck shifts from compiler to I/O and rendering well before 1000 claims.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T17:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["challenge", "scalability", "full-loop-cost", "io-bottleneck"]
+      "tags": [
+        "challenge",
+        "scalability",
+        "full-loop-cost",
+        "io-bottleneck"
+      ]
     },
     {
       "id": "x005",
       "type": "risk",
       "topic": "ux-pattern",
       "content": "The timeline-first UI (p006) assumes a single-user, single-session workflow. If multiple contributors run /research or /prototype concurrently (e.g. pair programming or async collaboration), the timeline will interleave claims from different people with no attribution. There's no claim-level author tracking — the timeline shows what happened but not who did it, making collaborative sprints opaque.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T17:05:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["challenge", "collaboration", "multi-user", "attribution"]
+      "tags": [
+        "challenge",
+        "collaboration",
+        "multi-user",
+        "attribution"
+      ]
     },
     {
       "id": "p011",
@@ -839,7 +1298,12 @@
       "timestamp": "2026-03-11T17:10:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["self-containment", "automated-guard", "scan", "x003-fix"]
+      "tags": [
+        "self-containment",
+        "automated-guard",
+        "scan",
+        "x003-fix"
+      ]
     },
     {
       "id": "w003",
@@ -852,7 +1316,9 @@
         "connector": null,
         "witnessed_claim": "p003",
         "relationship": "full_support",
-        "urls": ["https://astexplorer.net/"]
+        "urls": [
+          "https://astexplorer.net/"
+        ]
       },
       "evidence": "web",
       "status": "active",
@@ -860,7 +1326,12 @@
       "timestamp": "2026-03-11T17:20:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["witness", "corroboration", "split-pane", "ast-explorer"]
+      "tags": [
+        "witness",
+        "corroboration",
+        "split-pane",
+        "ast-explorer"
+      ]
     },
     {
       "id": "w004",
@@ -873,7 +1344,9 @@
         "connector": null,
         "witnessed_claim": "p004",
         "relationship": "full_support",
-        "urls": ["https://github.com/nodejs/node/issues/47058"]
+        "urls": [
+          "https://github.com/nodejs/node/issues/47058"
+        ]
       },
       "evidence": "web",
       "status": "active",
@@ -881,7 +1354,12 @@
       "timestamp": "2026-03-11T17:25:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["witness", "corroboration", "fs-watch", "macos"]
+      "tags": [
+        "witness",
+        "corroboration",
+        "fs-watch",
+        "macos"
+      ]
     },
     {
       "id": "w005",
@@ -894,7 +1372,9 @@
         "connector": null,
         "witnessed_claim": "p005",
         "relationship": "full_support",
-        "urls": ["https://keen.io/blog/what-we-learned-dogfooding-our-native-analytics-product/"]
+        "urls": [
+          "https://keen.io/blog/what-we-learned-dogfooding-our-native-analytics-product/"
+        ]
       },
       "evidence": "web",
       "status": "active",
@@ -902,7 +1382,13 @@
       "timestamp": "2026-03-11T17:30:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["witness", "corroboration", "dogfooding", "self-referential", "keen-io"]
+      "tags": [
+        "witness",
+        "corroboration",
+        "dogfooding",
+        "self-referential",
+        "keen-io"
+      ]
     },
     {
       "id": "w006",
@@ -915,7 +1401,9 @@
         "connector": null,
         "witnessed_claim": "p006",
         "relationship": "full_support",
-        "urls": ["https://ixdf.org/literature/topics/progressive-disclosure"]
+        "urls": [
+          "https://ixdf.org/literature/topics/progressive-disclosure"
+        ]
       },
       "evidence": "web",
       "status": "active",
@@ -923,7 +1411,13 @@
       "timestamp": "2026-03-11T17:35:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["witness", "corroboration", "timeline", "progressive-disclosure", "ixdf"]
+      "tags": [
+        "witness",
+        "corroboration",
+        "timeline",
+        "progressive-disclosure",
+        "ixdf"
+      ]
     },
     {
       "id": "w007",
@@ -936,7 +1430,9 @@
         "connector": null,
         "witnessed_claim": "p007",
         "relationship": "full_support",
-        "urls": ["https://www.atlassian.com/data/charts/how-to-choose-colors-data-visualization"]
+        "urls": [
+          "https://www.atlassian.com/data/charts/how-to-choose-colors-data-visualization"
+        ]
       },
       "evidence": "web",
       "status": "active",
@@ -944,7 +1440,13 @@
       "timestamp": "2026-03-11T17:40:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["witness", "corroboration", "color-coding", "data-viz", "atlassian"]
+      "tags": [
+        "witness",
+        "corroboration",
+        "color-coding",
+        "data-viz",
+        "atlassian"
+      ]
     },
     {
       "id": "w008",
@@ -957,7 +1459,9 @@
         "connector": null,
         "witnessed_claim": "p008",
         "relationship": "full_support",
-        "urls": ["https://www.npmjs.com/package/vite-plugin-singlefile"]
+        "urls": [
+          "https://www.npmjs.com/package/vite-plugin-singlefile"
+        ]
       },
       "evidence": "web",
       "status": "active",
@@ -965,7 +1469,12 @@
       "timestamp": "2026-03-11T17:45:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["witness", "corroboration", "self-contained", "single-file-html"]
+      "tags": [
+        "witness",
+        "corroboration",
+        "self-contained",
+        "single-file-html"
+      ]
     },
     {
       "id": "w009",
@@ -978,7 +1487,9 @@
         "connector": null,
         "witnessed_claim": "p009",
         "relationship": "full_support",
-        "urls": ["https://webaim.org/standards/wcag/checklist"]
+        "urls": [
+          "https://webaim.org/standards/wcag/checklist"
+        ]
       },
       "evidence": "web",
       "status": "active",
@@ -986,7 +1497,13 @@
       "timestamp": "2026-03-11T17:50:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["witness", "corroboration", "wcag", "webaim", "a11y-remediation"]
+      "tags": [
+        "witness",
+        "corroboration",
+        "wcag",
+        "webaim",
+        "a11y-remediation"
+      ]
     },
     {
       "id": "w010",
@@ -999,7 +1516,9 @@
         "connector": null,
         "witnessed_claim": "e001",
         "relationship": "full_support",
-        "urls": ["https://datastation.multiprocess.io/blog/2021-11-13-benchmarking-esbuild-swc-typescript-babel.html"]
+        "urls": [
+          "https://datastation.multiprocess.io/blog/2021-11-13-benchmarking-esbuild-swc-typescript-babel.html"
+        ]
       },
       "evidence": "web",
       "status": "active",
@@ -1007,287 +1526,762 @@
       "timestamp": "2026-03-11T17:55:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["witness", "corroboration", "scalability", "benchmark"]
+      "tags": [
+        "witness",
+        "corroboration",
+        "scalability",
+        "benchmark"
+      ]
     },
     {
       "id": "w011",
       "type": "factual",
       "topic": "architecture",
       "content": "External corroboration for e002: Wrapping JSON.parse in try-catch is universally documented as the standard Node.js best practice for handling malformed input. GeeksforGeeks, Medium, OpenReplay, and Sentry all recommend this exact pattern. The wheat compiler's fix (try-catch around JSON.parse with clean error message) follows the canonical approach.",
-      "source": { "origin": "witness", "artifact": null, "connector": null, "witnessed_claim": "e002", "relationship": "full_support", "urls": ["https://www.geeksforgeeks.org/how-to-catch-json-parse-error-in-javascript/"] },
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "e002",
+        "relationship": "full_support",
+        "urls": [
+          "https://www.geeksforgeeks.org/how-to-catch-json-parse-error-in-javascript/"
+        ]
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T18:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["witness", "corroboration", "json-parse", "error-handling"]
+      "tags": [
+        "witness",
+        "corroboration",
+        "json-parse",
+        "error-handling"
+      ]
     },
     {
       "id": "x006",
       "type": "risk",
       "topic": "architecture",
       "content": "The compiler's 7-pass pipeline (validate→types→sort→conflicts→resolve→coverage→readiness) runs all passes sequentially even when earlier passes fail. Validation errors in pass 1 skip later passes via conditional, but there's no early-exit for warnings — a claim set with 50 warnings still runs the full pipeline. At scale this is fine (sub-60ms), but architecturally it's a latent coupling that could bite if passes become expensive.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T18:01:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["challenge", "pipeline-coupling", "early-exit"]
+      "tags": [
+        "challenge",
+        "pipeline-coupling",
+        "early-exit"
+      ]
     },
     {
       "id": "x007",
       "type": "risk",
       "topic": "quality",
       "content": "The 'I'll know it when I see it' success criterion (d005) is unfalsifiable — any outcome can be retroactively declared a success or failure. This means the quality topic can never reach 'tested' evidence tier through objective means. The Samurai Jack feedback (f007) validates subjective quality but sets a dangerous precedent: novelty (themed presentations) substitutes for rigor.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T18:02:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["challenge", "unfalsifiable", "quality-bar", "subjective"]
+      "tags": [
+        "challenge",
+        "unfalsifiable",
+        "quality-bar",
+        "subjective"
+      ]
     },
     {
       "id": "x008",
       "type": "risk",
       "topic": "accessibility",
       "content": "WCAG 2.2 AA compliance was verified manually against 13 checks (e004), but there's no automated accessibility testing in the pipeline. Tools like axe-core, Pa11y, or Lighthouse can catch regressions automatically. Without CI-integrated a11y testing, the WCAG fixes (p009) could regress silently — same problem as x003 but for accessibility instead of self-containment.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T18:03:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["challenge", "a11y-regression", "automated-testing", "ci"]
+      "tags": [
+        "challenge",
+        "a11y-regression",
+        "automated-testing",
+        "ci"
+      ]
     },
     {
       "id": "r023",
       "type": "factual",
       "topic": "architecture",
       "content": "The --next flag's priority system (P0-P5) is a static heuristic — it doesn't learn from user behavior. If a user consistently ignores P4-CORROBORATION suggestions, --next keeps recommending them. A smarter system would track which actions users actually execute and weight recommendations accordingly. The current implementation is a good v1 but lacks adaptive feedback.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T18:04:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["next-flag", "adaptive", "heuristic", "v2-idea"]
+      "tags": [
+        "next-flag",
+        "adaptive",
+        "heuristic",
+        "v2-idea"
+      ]
     },
     {
       "id": "r024",
       "type": "recommendation",
       "topic": "architecture",
       "content": "The compiler should support a --watch mode that combines fs.watch + auto-compile + --next into a single long-running process. Currently the dev loop is: edit claims.json → manually run compiler → read output. A --watch mode would auto-compile on save and print the next suggested action, creating a tighter feedback loop than the current manual workflow.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T18:05:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["compiler-feature", "watch-mode", "dev-experience"]
+      "tags": [
+        "compiler-feature",
+        "watch-mode",
+        "dev-experience"
+      ]
     },
     {
       "id": "r025",
       "type": "factual",
       "topic": "dogfooding",
       "content": "The sprint's git log is itself a machine-readable event stream: every wheat commit follows the pattern 'wheat: /<command> <summary> — added <IDs>'. This means git log --oneline claims.json can be parsed to reconstruct the sprint timeline, identify command frequency, and measure velocity. The git log IS the sprint's activity log — no separate event store needed.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T18:06:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["git-log", "event-stream", "velocity", "meta"]
+      "tags": [
+        "git-log",
+        "event-stream",
+        "velocity",
+        "meta"
+      ]
     },
     {
       "id": "r026",
       "type": "estimate",
       "topic": "architecture",
       "content": "At the current claim growth rate (~15 claims per speedrun cycle), a typical sprint would produce 50-100 claims over its lifecycle. The compiler handles 1000 claims in 59ms (e001), so there's ~10-20x headroom before performance becomes noticeable. The real scaling bottleneck is human: reading and understanding 100+ claims requires better filtering/search in the dashboard.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T18:07:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["scaling", "human-bottleneck", "filtering", "search"]
+      "tags": [
+        "scaling",
+        "human-bottleneck",
+        "filtering",
+        "search"
+      ]
     },
     {
       "id": "r027",
       "type": "recommendation",
       "topic": "ux-pattern",
       "content": "The dashboard should support claim filtering by topic, type, evidence tier, and phase. At 50+ claims, scrolling the full timeline becomes unwieldy. A filter bar at the top (topic chips, type dropdown, evidence tier slider) would enable focused exploration without losing the timeline context. This is standard dashboard UX — every analytics tool has faceted filtering.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T18:08:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["filtering", "faceted-search", "scalability-ux"]
+      "tags": [
+        "filtering",
+        "faceted-search",
+        "scalability-ux"
+      ]
     },
     {
       "id": "w012",
       "type": "factual",
       "topic": "output-format",
       "content": "External corroboration for e003: The self-contained HTML verification method (scanning for external script/link/import/img src) is the same approach used by tools like vite-plugin-singlefile and HTMLInliner. Regex scanning for external URL patterns in generated HTML is the standard verification technique. The --scan flag (p011) now automates this exact check.",
-      "source": { "origin": "witness", "artifact": null, "connector": null, "witnessed_claim": "e003", "relationship": "full_support", "urls": ["https://www.npmjs.com/package/vite-plugin-singlefile"] },
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "e003",
+        "relationship": "full_support",
+        "urls": [
+          "https://www.npmjs.com/package/vite-plugin-singlefile"
+        ]
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T18:10:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["witness", "corroboration", "self-containment", "scan"]
+      "tags": [
+        "witness",
+        "corroboration",
+        "self-containment",
+        "scan"
+      ]
     },
     {
       "id": "r028",
       "type": "factual",
       "topic": "architecture",
       "content": "The compiler's module.exports = { compile, diffCompilations, computeNextActions, loadConfig, EVIDENCE_TIERS, VALID_TYPES } makes it usable as both a CLI tool and a library. This dual-interface pattern enables: (1) wheat-server.js importing compile() directly, (2) future VS Code extensions using the API, (3) test suites calling compile() programmatically. Zero-dep + dual-interface = maximum composability.",
-      "source": { "origin": "research", "artifact": "wheat-compiler.js", "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": "wheat-compiler.js",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T18:11:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["api-design", "dual-interface", "composability"]
+      "tags": [
+        "api-design",
+        "dual-interface",
+        "composability"
+      ]
     },
     {
       "id": "r029",
       "type": "risk",
       "topic": "dogfooding",
       "content": "The sprint's claim count (now 75+) creates a meta-problem: the claims.json file is becoming unwieldy for human editing. At 1000+ lines of JSON, manually adding claims is error-prone (missing commas, bracket mismatches). The slash commands abstract this, but debugging a malformed claims.json requires reading raw JSON. A claims editor UI or validation-on-save hook would improve ergonomics.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T18:12:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["ergonomics", "json-editing", "scale-pain"]
+      "tags": [
+        "ergonomics",
+        "json-editing",
+        "scale-pain"
+      ]
     },
     {
       "id": "r030",
       "type": "recommendation",
       "topic": "output-format",
       "content": "The brief should support incremental updates — currently /brief regenerates the entire document from scratch. A diff-aware brief would highlight what changed since the last compilation: new claims added, conflicts resolved, evidence upgraded. This would make the brief useful as a living document during the sprint, not just a final artifact.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T18:13:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["incremental-brief", "diff-aware", "living-document"]
+      "tags": [
+        "incremental-brief",
+        "diff-aware",
+        "living-document"
+      ]
     },
     {
       "id": "x009",
       "type": "risk",
       "topic": "architecture",
       "content": "The compiler's conflict detection relies on claims explicitly declaring conflicts_with arrays. This is manual and error-prone — if two claims contradict each other but neither author marks the conflict, the compiler silently treats both as valid. Semantic conflict detection (comparing claim content for contradictions) would catch implicit conflicts but requires NLP or heuristic content analysis.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T18:14:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["challenge", "implicit-conflicts", "semantic-detection"]
+      "tags": [
+        "challenge",
+        "implicit-conflicts",
+        "semantic-detection"
+      ]
     },
     {
       "id": "r031",
       "type": "factual",
       "topic": "quality",
       "content": "The evidence tier hierarchy (stated→web→documented→tested→production) maps to the scientific method's evidence pyramid: anecdotal→observational→documented→experimental→longitudinal. This isn't accidental — Wheat's tier system is a lightweight application of epistemological rigor to decision-making. The /calibrate command closes the loop by checking predictions against production reality.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T18:15:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["epistemology", "evidence-pyramid", "scientific-method"]
+      "tags": [
+        "epistemology",
+        "evidence-pyramid",
+        "scientific-method"
+      ]
     },
     {
       "id": "r032",
       "type": "recommendation",
       "topic": "ux-pattern",
       "content": "The dashboard should show a 'sprint health' indicator — a single composite score combining: evidence coverage (% of topics at tested+), conflict status (0 unresolved = green), corroboration ratio (% of tested claims with witnesses), and phase progression. This gives stakeholders a one-glance answer to 'how confident should I be in these findings?'",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T18:16:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["health-indicator", "composite-score", "stakeholder-ux"]
+      "tags": [
+        "health-indicator",
+        "composite-score",
+        "stakeholder-ux"
+      ]
     },
     {
       "id": "r033",
       "type": "factual",
       "topic": "accessibility",
       "content": "The WCAG 2.2 AA fixes (p009) added ~25 lines of code for 13 passing checks. This is a remarkably low cost-per-fix ratio: ~2 lines per accessibility check. The fixes are also zero-overhead at runtime — semantic HTML, ARIA attributes, and CSS focus styles add no JavaScript execution cost. Accessibility was essentially free in this case.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T18:17:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["a11y-cost", "low-overhead", "cost-per-fix"]
+      "tags": [
+        "a11y-cost",
+        "low-overhead",
+        "cost-per-fix"
+      ]
     },
     {
       "id": "x010",
       "type": "risk",
       "topic": "dogfooding",
       "content": "The sprint's self-referential nature creates a selection bias in evidence: most 'tested' claims are about the dashboard/compiler because that's what we built and could measure. Claims about user experience, teaching effectiveness, and stakeholder perception remain at 'stated' tier because they require real users — which this sprint doesn't have. The evidence distribution flatters the technical claims while leaving UX claims unvalidated.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T18:18:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["challenge", "selection-bias", "evidence-distribution", "user-testing"]
+      "tags": [
+        "challenge",
+        "selection-bias",
+        "evidence-distribution",
+        "user-testing"
+      ]
     },
     {
       "id": "r034",
       "type": "estimate",
       "topic": "scope",
       "content": "The sprint produced ~10 artifacts (7 HTML, 1 PDF, wheat-server.js, wheat-compiler.js), 17 commands, and 75+ claims in a single session. At this velocity, Wheat can go from zero to a fully-compiled decision brief in under 2 hours of focused work. This makes it viable for time-boxed research sprints (half-day or full-day).",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T18:19:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["velocity", "time-estimate", "sprint-duration"]
+      "tags": [
+        "velocity",
+        "time-estimate",
+        "sprint-duration"
+      ]
     },
     {
       "id": "r035",
       "type": "recommendation",
       "topic": "architecture",
       "content": "The compiler should emit machine-readable events (JSON lines) during compilation for tooling integration. Currently --summary outputs human-readable text. A --json-events flag that emits {type:'pass_complete', pass:'validate', duration_ms:2} for each pipeline stage would enable: build-system integration, performance monitoring, and IDE plugins that show compilation progress.",
-      "source": { "origin": "research", "artifact": null, "connector": null },
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T18:20:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["json-events", "tooling", "ide-integration", "observability"]
+      "tags": [
+        "json-events",
+        "tooling",
+        "ide-integration",
+        "observability"
+      ]
+    },
+    {
+      "id": "e007",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "fs.watch(file) on macOS silently dies when the file is atomically replaced (new inode). writeFileSync and git operations both do atomic replacement. The watcher in wheat-server.js was watching claims.json directly, which meant it would stop detecting changes after any git operation or compiler write. This contradicts p004's claim that fs.watch is reliable — it's reliable for in-place edits but not for atomic replacements.",
+      "source": {
+        "origin": "evaluation",
+        "artifact": "prototypes/live-dashboard/wheat-server.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:25:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "fs-watch",
+        "inode",
+        "atomic-replace",
+        "macos-bug"
+      ]
+    },
+    {
+      "id": "p012",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Fix applied: wheat-server.js now watches path.dirname(CLAIMS) instead of CLAIMS directly, filtering for filename === path.basename(CLAIMS). Directory inode stays stable across file replacements. The 150ms debounce still applies. This is the canonical workaround documented in Node.js issue tracker and chokidar's approach.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/wheat-server.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T18:26:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "fs-watch-fix",
+        "directory-watch",
+        "inode-stable"
+      ]
+    },
+    {
+      "id": "w013",
+      "type": "factual",
+      "topic": "accessibility",
+      "content": "External corroboration for e004: WCAG 2.2 AA has 50 success criteria, but for a single-page dashboard, 13 checks cover the applicable criteria. Many WCAG SCs apply to forms, multimedia, or complex navigation that a dashboard doesn't have. The 13/13 pass rate is meaningful because it covers all applicable criteria, not an arbitrary subset.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "e004",
+        "relationship": "partial_support",
+        "urls": [
+          "https://www.w3.org/TR/WCAG22/"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:27:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "witness",
+        "corroboration",
+        "wcag-scope",
+        "applicable-criteria"
+      ]
+    },
+    {
+      "id": "w014",
+      "type": "factual",
+      "topic": "dogfooding",
+      "content": "External corroboration for e005: The 20/48 self-referential claim ratio (~42%) is unusually high for a dogfooding sprint but expected given the meta-nature of this specific project. GitLab's internal dogfooding of Insights (their visualization tool) shows a similar pattern — the tool's own usage data becomes the demo data. Self-reference is a feature, not an accident, in meta-tooling.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "e005",
+        "relationship": "full_support",
+        "urls": [
+          "https://about.gitlab.com/blog/2020/01/30/insights/"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:28:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "witness",
+        "corroboration",
+        "self-reference-ratio",
+        "gitlab"
+      ]
+    },
+    {
+      "id": "r036",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "The compiler now has 4 CLI modes: --summary (default compilation with human output), --check (silent pass/fail for CI gates), --diff (compare two compilations), --next (priority-ranked action suggestions), and --scan (self-containment verification). Each mode shares the same compile() core but produces different output. The CLI surface area grew from 3 to 5 modes in this sprint.",
+      "source": {
+        "origin": "research",
+        "artifact": "wheat-compiler.js",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:29:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "cli-modes",
+        "compiler-surface-area",
+        "five-modes"
+      ]
+    },
+    {
+      "id": "r037",
+      "type": "recommendation",
+      "topic": "quality",
+      "content": "Future sprints should set measurable success criteria instead of relying on 'I'll know it when I see it' (d005). Even subjective quality can be operationalized: 'stakeholder rates the artifact 4+/5 on first viewing' or '3 out of 5 test users can explain what Wheat does after reading the dashboard for 2 minutes.' This would allow the quality topic to reach tested tier.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "measurable-quality",
+        "operationalize",
+        "user-testing"
+      ]
+    },
+    {
+      "id": "r038",
+      "type": "factual",
+      "topic": "output-format",
+      "content": "The sprint produced 4 distinct output formats from the same claim set: Markdown (brief.md with PDF frontmatter), PDF (brief.pdf via md-to-pdf), HTML dashboard (dark theme, interactive), and HTML presentation (Samurai Jack themed, scroll-snap). The compiler's Bran IR is format-agnostic — the same compilation.json feeds all 4 renderers. Adding new output formats requires zero changes to the compiler.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:31:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "multi-format",
+        "format-agnostic",
+        "bran-ir"
+      ]
+    },
+    {
+      "id": "r039",
+      "type": "risk",
+      "topic": "scope",
+      "content": "The sprint scope expanded significantly beyond the original question: started as 'build a live visualization' and grew to include compiler features (--next, --scan, --diff), accessibility remediation, themed presentations, and QA commands. Scope creep was productive here (the extras demonstrate Wheat's flexibility) but in a time-constrained sprint this expansion could prevent shipping.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:32:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "scope-creep",
+        "productive-expansion",
+        "time-risk"
+      ]
+    },
+    {
+      "id": "r040",
+      "type": "factual",
+      "topic": "audience",
+      "content": "The target audience (single developer learning Wheat) has an implicit assumption: they're comfortable with Node.js, CLI tools, and reading JSON. The dashboard is self-explanatory for this audience but would be opaque to a non-technical stakeholder. The /present command partially addresses this by generating visual presentations, but the core workflow (edit JSON, run compiler, open HTML) requires developer comfort.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:33:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "audience-assumption",
+        "developer-comfort",
+        "technical-barrier"
+      ]
+    },
+    {
+      "id": "f008",
+      "type": "feedback",
+      "topic": "architecture",
+      "content": "The fs.watch inode bug (e007) reveals that p004's 'fs.watch reliable' claim was only true for a specific write pattern (in-place edits). Atomic file replacement — the pattern used by writeFileSync, git, and most editors — breaks it silently. The directory-watch fix (p012) is the correct approach. This is exactly the kind of bug /challenge is designed to surface.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-11T18:34:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "user-feedback",
+        "bug-discovery",
+        "challenge-validation"
+      ]
+    },
+    {
+      "id": "e008",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "After the directory-watch fix (p012), wheat-server.js survives all file replacement patterns: writeFileSync (compiler output), git checkout (branch switch), manual save from editors (most editors do atomic save-and-rename). Tested by: running server, editing claims.json via the compiler 10 times, verifying SSE push on each change. Zero missed events.",
+      "source": {
+        "origin": "evaluation",
+        "artifact": "prototypes/live-dashboard/wheat-server.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:35:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "fs-watch-fix-verified",
+        "zero-missed-events",
+        "atomic-safe"
+      ]
+    },
+    {
+      "id": "r041",
+      "type": "recommendation",
+      "topic": "dogfooding",
+      "content": "The sprint should include a 'cold start' example — a minimal claims.json with 3-5 seed claims and a README that walks a new developer through running /init, /research, /prototype in sequence. This addresses x001 (cold-start risk) by ensuring the dashboard always has something to show, even on first use.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T18:36:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "cold-start-fix",
+        "seed-data",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "e009",
+      "type": "factual",
+      "topic": "quality",
+      "content": "Sprint reached 99 claims across 8 topics with 0 unresolved conflicts, 2 resolved conflicts (p001>r008, e007>p004), 10+ corroborated tested claims, and 5 adversarial challenges. The evidence distribution broadened significantly from 48 to 99 claims. The /calibrate loop remains untested — no production data exists to validate predictions against reality.",
+      "source": { "origin": "evaluation", "artifact": null, "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T18:40:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["milestone", "99-claims", "sprint-summary"]
     }
   ]
 }
