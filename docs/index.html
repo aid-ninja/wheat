@@ -271,23 +271,23 @@
 <div class="container">
 
   <div class="hero">
-    <span class="badge">Research-Driven Development</span>
+    <span class="badge">For Claude Code</span>
     <h1>Wheat</h1>
     <p class="tagline">
-      A structured research framework for Claude Code. Track claims, compile evidence, detect conflicts, and produce decision documents — all from your terminal.
+      Turn open-ended research questions into structured, evidence-backed decisions. Wheat gives Claude Code a claims compiler — track findings, detect conflicts, and produce auditable artifacts.
     </p>
     <div class="stats">
       <div class="stat">
-        <div class="stat-number" style="color: var(--accent-light)">156</div>
-        <div class="stat-label">Claims</div>
+        <div class="stat-number" style="color: var(--accent-light)">17</div>
+        <div class="stat-label">Commands</div>
       </div>
       <div class="stat">
-        <div class="stat-number" style="color: var(--green)">9</div>
-        <div class="stat-label">Topics</div>
+        <div class="stat-number" style="color: var(--green)">5</div>
+        <div class="stat-label">Evidence Tiers</div>
       </div>
       <div class="stat">
-        <div class="stat-number" style="color: var(--orange)">0</div>
-        <div class="stat-label">Conflicts</div>
+        <div class="stat-number" style="color: var(--orange)">7</div>
+        <div class="stat-label">Compiler Passes</div>
       </div>
       <div class="stat">
         <div class="stat-number" style="color: var(--text-muted)">0</div>
@@ -296,88 +296,111 @@
     </div>
   </div>
 
-  <!-- Output Artifacts -->
+  <!-- How It Works -->
   <div class="section">
-    <div class="section-header blue">Output Artifacts</div>
+    <div class="section-header blue">How It Works</div>
+    <div class="grid-3">
+      <div class="card accent" style="display:block; cursor:default;">
+        <span class="card-label" style="display:block; font-weight:600; margin-bottom:4px; font-size:11pt;">1. Research</span>
+        <span class="card-desc">Run <code style="color:var(--accent-light);background:rgba(59,130,246,0.12);padding:1px 5px;border-radius:3px;font-size:8.5pt;">/research</code>, <code style="color:var(--accent-light);background:rgba(59,130,246,0.12);padding:1px 5px;border-radius:3px;font-size:8.5pt;">/prototype</code>, <code style="color:var(--accent-light);background:rgba(59,130,246,0.12);padding:1px 5px;border-radius:3px;font-size:8.5pt;">/witness</code> to gather typed claims with evidence tiers</span>
+      </div>
+      <div class="card green" style="display:block; cursor:default;">
+        <span class="card-label" style="display:block; font-weight:600; margin-bottom:4px; font-size:11pt;">2. Compile</span>
+        <span class="card-desc">The compiler validates claims, detects conflicts, auto-resolves by evidence tier, and computes coverage</span>
+      </div>
+      <div class="card purple" style="display:block; cursor:default;">
+        <span class="card-label" style="display:block; font-weight:600; margin-bottom:4px; font-size:11pt;">3. Decide</span>
+        <span class="card-desc">Generate briefs, presentations, dashboards — every statement traces back to a claim ID</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Commands -->
+  <div class="section">
+    <div class="section-header green">Sprint Commands</div>
+    <div class="grid-3">
+      <div class="card green" style="display:block; cursor:default;">
+        <span class="card-label" style="display:block; font-weight:600; margin-bottom:4px; font-size:11pt;">Lifecycle</span>
+        <span class="card-desc">/init, /research, /prototype, /evaluate, /brief, /present, /handoff</span>
+      </div>
+      <div class="card orange" style="display:block; cursor:default;">
+        <span class="card-label" style="display:block; font-weight:600; margin-bottom:4px; font-size:11pt;">Quality Assurance</span>
+        <span class="card-desc">/challenge, /witness, /blind-spot, /resolve</span>
+      </div>
+      <div class="card cyan" style="display:block; cursor:default;">
+        <span class="card-label" style="display:block; font-weight:600; margin-bottom:4px; font-size:11pt;">Operations</span>
+        <span class="card-desc">/status, /replay, /merge, /calibrate, /feedback</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Getting Started -->
+  <div class="section">
+    <div class="section-header blue">Get Started</div>
     <div class="grid-2">
-      <a href="replay.html" class="card accent featured">
-        <span class="card-label">Sprint Replay</span>
-        <span class="card-desc">Interactive time-travel through a research sprint — 99 frames, milestone markers, sandbox mode</span>
-        <span class="card-tag">Interactive</span>
+      <a href="https://github.com/aid-ninja/wheat" class="card accent featured">
+        <span class="card-label">GitHub Repository</span>
+        <span class="card-desc">Clone the repo, run <code style="color:var(--accent-light);background:rgba(59,130,246,0.12);padding:1px 5px;border-radius:3px;font-size:8.5pt;">/init</code> in Claude Code, and start your first research sprint. Zero dependencies — just Node.js 18+.</span>
+        <span class="card-tag">MIT License</span>
+      </a>
+      <a href="replay.html" class="card accent">
+        <span class="card-label">See It In Action</span>
+        <span class="card-desc">Watch a real sprint unfold — interactive replay with 99 frames</span>
+        <span class="card-tag">Interactive Demo</span>
       </a>
       <a href="brief.html" class="card green">
-        <span class="card-label">Decision Brief</span>
-        <span class="card-desc">Compiled recommendation document with full evidence chain</span>
-        <span class="card-tag">13 slides</span>
-      </a>
-      <a href="presentation.html" class="card green">
-        <span class="card-label">Presentation</span>
-        <span class="card-desc">Stakeholder deck with coverage maps and risk matrix</span>
-        <span class="card-tag">12 slides</span>
-      </a>
-      <a href="dashboard.html" class="card accent">
-        <span class="card-label">Sprint Dashboard</span>
-        <span class="card-desc">Live status view with claim counts, coverage bars, and conflict graph</span>
-        <span class="card-tag">Dashboard</span>
-      </a>
-      <a href="problem-statement.html" class="card accent">
-        <span class="card-label">Problem Statement</span>
-        <span class="card-desc">Initial sprint question and constraints</span>
-        <span class="card-tag">Define phase</span>
+        <span class="card-label">Example Brief</span>
+        <span class="card-desc">A compiled decision document produced by /brief</span>
+        <span class="card-tag">Output</span>
       </a>
     </div>
   </div>
 
-  <!-- Research Deep Dives -->
+  <!-- Example Sprint (collapsed) -->
   <div class="section">
-    <div class="section-header purple">Research Deep Dives</div>
+    <div class="section-header purple">Example Sprint Artifacts</div>
     <div class="grid-3">
-      <a href="research-architecture.html" class="card purple">
-        <span class="card-label">Architecture</span>
-        <span class="card-desc">SSE, fs.watch, zero-dep server design</span>
+      <a href="presentation.html" class="card purple">
+        <span class="card-label">Presentation</span>
+        <span class="card-desc">Stakeholder slide deck</span>
       </a>
-      <a href="research-replay-ui.html" class="card purple">
-        <span class="card-label">Replay UI</span>
-        <span class="card-desc">Frame extraction, scrubber, sub-framing</span>
+      <a href="dashboard.html" class="card purple">
+        <span class="card-label">Dashboard</span>
+        <span class="card-desc">Live sprint status</span>
+      </a>
+      <a href="problem-statement.html" class="card purple">
+        <span class="card-label">Problem Statement</span>
+        <span class="card-desc">Sprint kickoff</span>
+      </a>
+      <a href="research-architecture.html" class="card purple">
+        <span class="card-label">Research: Architecture</span>
+        <span class="card-desc">Deep dive</span>
       </a>
       <a href="research-pedagogy.html" class="card purple">
-        <span class="card-label">Pedagogy</span>
-        <span class="card-desc">Teaching through visualization</span>
+        <span class="card-label">Research: Pedagogy</span>
+        <span class="card-desc">Deep dive</span>
       </a>
       <a href="research-accessibility.html" class="card purple">
-        <span class="card-label">Accessibility</span>
-        <span class="card-desc">WCAG 2.2 AA audit and fixes</span>
+        <span class="card-label">Research: Accessibility</span>
+        <span class="card-desc">Deep dive</span>
+      </a>
+      <a href="research-replay-ui.html" class="card purple">
+        <span class="card-label">Research: Replay UI</span>
+        <span class="card-desc">Deep dive</span>
       </a>
       <a href="research-commands.html" class="card purple">
-        <span class="card-label">Command Suite</span>
-        <span class="card-desc">Slash command architecture</span>
+        <span class="card-label">Research: Commands</span>
+        <span class="card-desc">Deep dive</span>
       </a>
-      <a href="research-evidence-gaps.html" class="card purple">
-        <span class="card-label">Evidence Gaps</span>
-        <span class="card-desc">Blind spot analysis</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- Evidence -->
-  <div class="section">
-    <div class="section-header cyan">Evidence</div>
-    <div class="grid-2">
-      <a href="evidence-evaluation.html" class="card cyan">
-        <span class="card-label">Sprint Evaluation</span>
-        <span class="card-desc">Prototype testing results, WCAG audit, scalability benchmarks</span>
-        <span class="card-tag">Tested tier</span>
-      </a>
-      <a href="https://github.com/aid-ninja/wheat" class="card orange">
-        <span class="card-label">GitHub Repository</span>
-        <span class="card-desc">Source code, issue tracker, and contributing guide</span>
-        <span class="card-tag">MIT License</span>
+      <a href="evidence-evaluation.html" class="card purple">
+        <span class="card-label">Evaluation</span>
+        <span class="card-desc">Test results</span>
       </a>
     </div>
   </div>
 
   <div class="footer">
-    Built with <a href="https://github.com/aid-ninja/wheat" class="card">Wheat</a> — zero dependencies, fully self-contained.
+    Zero dependencies. Self-contained HTML. MIT licensed. <a href="https://github.com/aid-ninja/wheat" class="card">View on GitHub</a>
   </div>
 
 </div>
