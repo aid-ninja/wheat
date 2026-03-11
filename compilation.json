@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-11T06:14:38.218Z",
-  "claims_hash": "e40f97a",
+  "compiled_at": "2026-03-11T06:18:25.329Z",
+  "claims_hash": "79cf3f7",
   "compiler_version": "0.1.0",
   "status": "ready",
   "errors": [],
@@ -28,9 +28,10 @@
     },
     {
       "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"output-format\" has only web-level evidence (1 claims)",
+      "message": "Topic \"output-format\" has only web-level evidence (2 claims)",
       "claims": [
-        "r007"
+        "r007",
+        "f002"
       ]
     }
   ],
@@ -379,6 +380,27 @@
         "meta",
         "self-referential"
       ]
+    },
+    {
+      "id": "f002",
+      "type": "feedback",
+      "topic": "output-format",
+      "content": "The self-contained HTML approach (file:// openable, no server needed) is actually the right call for this use case. The /status command already regenerates the dashboard on demand — that's sufficient. Real-time SSE updates are cool but unnecessary.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-11T03:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "user-feedback",
+        "simplicity"
+      ]
     }
   ],
   "conflict_graph": {
@@ -387,6 +409,11 @@
         "winner": "p001",
         "loser": "r008",
         "reason": "evidence_tier: tested (4) > web (2)"
+      },
+      {
+        "winner": "r001",
+        "loser": "f001",
+        "reason": "evidence_tier: web (2) > stated (1)"
       },
       {
         "winner": "r001",
@@ -476,14 +503,16 @@
       ]
     },
     "output-format": {
-      "claims": 1,
+      "claims": 2,
       "max_evidence": "web",
       "status": "weak",
       "types": [
-        "risk"
+        "risk",
+        "feedback"
       ],
       "claim_ids": [
-        "r007"
+        "r007",
+        "f002"
       ]
     }
   },
@@ -505,8 +534,8 @@
       "complete": false
     },
     "feedback": {
-      "claims": 0,
-      "complete": false
+      "claims": 2,
+      "complete": true
     }
   },
   "sprint_meta": {
@@ -516,14 +545,14 @@
     ],
     "initiated": "2026-03-11",
     "phase": "prototype",
-    "total_claims": 18,
-    "active_claims": 16,
+    "total_claims": 20,
+    "active_claims": 17,
     "conflicted_claims": 0,
-    "superseded_claims": 2,
+    "superseded_claims": 3,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:e40f97a826090ad09d21a11fc3bdde5a9eb4a8585bf656248d0cba30d27c937d",
+    "input_hash": "sha256:79cf3f7508f18643f1af466a7b81459691692328909b8ef81790c66272b05bfc",
     "compiler_version": "0.1.0",
     "deterministic": true
   }

@@ -258,6 +258,34 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["dogfood", "meta", "self-referential"]
+    },
+    {
+      "id": "f001",
+      "type": "feedback",
+      "topic": "architecture",
+      "content": "User prefers the static file:// dashboard (output/dashboard.html) over the live SSE server (localhost:3141). The SSE server doesn't add enough value — most interaction is reading the current state, which the static HTML already shows well. The live server is over-engineered for the actual use pattern.",
+      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-11T03:00:00Z",
+      "conflicts_with": ["r001"],
+      "resolved_by": null,
+      "tags": ["user-feedback", "static-vs-live"]
+    },
+    {
+      "id": "f002",
+      "type": "feedback",
+      "topic": "output-format",
+      "content": "The self-contained HTML approach (file:// openable, no server needed) is actually the right call for this use case. The /status command already regenerates the dashboard on demand — that's sufficient. Real-time SSE updates are cool but unnecessary.",
+      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-11T03:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["user-feedback", "simplicity"]
     }
   ]
 }
