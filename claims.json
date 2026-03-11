@@ -903,6 +903,27 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["witness", "corroboration", "dogfooding", "self-referential", "keen-io"]
+    },
+    {
+      "id": "w006",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "External corroboration for p006: Timeline-first layouts with progressive disclosure are an established UX pattern. Interaction Design Foundation, LogRocket, and Material UI all document vertical timelines with expandable nodes grouped by phase/stage as a standard approach for activity feeds and chronological dashboards. Accordions and click-to-expand are the canonical progressive disclosure mechanism for managing information density.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "p006",
+        "relationship": "full_support",
+        "urls": ["https://ixdf.org/literature/topics/progressive-disclosure"]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:35:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["witness", "corroboration", "timeline", "progressive-disclosure", "ixdf"]
     }
   ]
 }
