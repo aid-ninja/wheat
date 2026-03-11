@@ -52,6 +52,20 @@
   .reveal-delay-2 { transition-delay: 0.2s; }
   .reveal-delay-3 { transition-delay: 0.3s; }
 
+  /* Hero loads immediately with staggered fade */
+  .hero-fade {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .hero-fade-1 { animation-delay: 0.05s; }
+  .hero-fade-2 { animation-delay: 0.15s; }
+  .hero-fade-3 { animation-delay: 0.25s; }
+  .hero-fade-4 { animation-delay: 0.4s; }
+  @keyframes heroIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   /* --- Ambient --- */
   .bg-ambient {
     position: fixed;
@@ -627,13 +641,13 @@
   <section class="hero-section">
     <div class="hero-inner">
       <div class="hero-glow"></div>
-      <h1 class="hero-title reveal">wheat</h1>
-      <div class="hero-sub reveal reveal-delay-1">for Claude Code</div>
-      <p class="hero-tagline reveal reveal-delay-2">
+      <h1 class="hero-title hero-fade hero-fade-1">wheat</h1>
+      <div class="hero-sub hero-fade hero-fade-2">for Claude Code</div>
+      <p class="hero-tagline hero-fade hero-fade-3">
         Turn <strong>messy research</strong> into <strong>decisions you can defend</strong>.<br>
         A claims compiler that tracks evidence, catches conflicts, and ships auditable artifacts.
       </p>
-      <div class="cta-row reveal reveal-delay-3">
+      <div class="cta-row hero-fade hero-fade-4">
         <a href="https://github.com/aid-ninja/wheat" class="cta cta-primary">Start a Sprint</a>
         <a href="replay.html" class="cta cta-ghost">See It In Action</a>
       </div>
@@ -1017,10 +1031,25 @@
   function getPositions() {
     var pad = 80;
     var cx = PW / 2;
-    var cy = PH / 2;
-    var colL = Math.max(pad + 50, cx * 0.3);  // left column
-    var colC = cx;                              // center
-    var colR = Math.min(PW - pad - 50, cx * 1.7); // right column
+    var mobile = PW < 500;
+
+    if (mobile) {
+      // Vertical stack — all nodes centered, evenly spaced
+      var spacing = (PH - pad * 2) / 5;
+      var y0 = pad;
+      return [
+        { x: cx, y: y0 },                    // 0: commands
+        { x: cx, y: y0 + spacing },          // 1: claims
+        { x: cx, y: y0 + spacing * 2 },      // 2: git
+        { x: cx, y: y0 + spacing * 3 },      // 3: compiler
+        { x: cx, y: y0 + spacing * 4 },      // 4: compiled
+        { x: cx, y: y0 + spacing * 5 },      // 5: artifacts
+      ];
+    }
+
+    var colL = Math.max(pad + 50, cx * 0.3);
+    var colC = cx;
+    var colR = Math.min(PW - pad - 50, cx * 1.7);
     var usableH = PH - pad * 2;
     var y0 = pad;
 
@@ -1038,6 +1067,12 @@
   function getTrace(fromPos, toPos, edgeIdx) {
     var ax = fromPos.x, ay = fromPos.y;
     var bx = toPos.x, by = toPos.y;
+    var mobile = PW < 500;
+
+    if (mobile) {
+      // On mobile all nodes are stacked vertically — straight lines down
+      return [{x:ax,y:ay}, {x:bx,y:by}];
+    }
 
     // Edge 0: commands → claims (go right then down)
     if (edgeIdx === 0) {
