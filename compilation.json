@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-11T10:27:57.707Z",
-  "claims_hash": "cefce2f",
+  "compiled_at": "2026-03-11T10:40:52.157Z",
+  "claims_hash": "489b6b8",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -2252,29 +2252,6 @@
       ]
     },
     {
-      "id": "r042",
-      "type": "factual",
-      "topic": "architecture",
-      "content": "The optimal replay architecture is pre-computed frames: an array where frames[i] is the full sprint state at commit i, embedded as inline JSON in a self-contained HTML file. A stateless render(frame) function updates the DOM on each frame change, and a controller manages currentFrame/playing/speed. This is the pattern used by Bostock's Bar Chart Race, COVID time-series dashboards, and Observable's Scrubber component. For ~30 frames x ~100 claims, inline data is well under 1MB.",
-      "source": {
-        "origin": "research",
-        "artifact": "research/replay-ui.md",
-        "connector": null
-      },
-      "evidence": "web",
-      "status": "active",
-      "phase_added": "research",
-      "timestamp": "2026-03-11T19:30:00Z",
-      "conflicts_with": [],
-      "resolved_by": null,
-      "tags": [
-        "replay",
-        "architecture",
-        "frames",
-        "observable"
-      ]
-    },
-    {
       "id": "r043",
       "type": "factual",
       "topic": "ux-pattern",
@@ -2385,6 +2362,220 @@
         "risk",
         "git-dependency"
       ]
+    },
+    {
+      "id": "x011",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "In the actual Wheat sprint git history, 9 of 32 claims-touching commits (28%) are batch commits adding >5 claims each. These 9 commits account for ~66 of ~99 total claims (67%). The remaining 23 commits average 1.4 claims each. Frame-per-commit replay would show 72% of frames contributing only 33% of the content.",
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T20:00:00Z",
+      "conflicts_with": [
+        "r042"
+      ],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "challenge",
+        "batch-commits",
+        "pacing"
+      ]
+    },
+    {
+      "id": "x012",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "The frame-per-commit model creates severely uneven replay pacing: 14 single-claim witness commits produce near-identical frames (viewer sees almost no change), while 3 'batch' and 'speedrun' commits each jump by 9-11 claims across multiple topics simultaneously. The viewer experience alternates between tedious stasis and incomprehensible jumps — the opposite of the 'teaches by showing itself in action' design goal (d001).",
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T20:00:00Z",
+      "conflicts_with": [
+        "r042"
+      ],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "challenge",
+        "ux",
+        "pacing",
+        "uneven-frames"
+      ]
+    },
+    {
+      "id": "x013",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "Batch commits conflate unrelated research steps: commit a9920d1 adds witness w012, research r028-r035 (8 claims across multiple topics), and challenges x006-x010 in a single frame. A viewer cannot distinguish which findings came from which investigation. The narrative thread — the 'why did the researcher look at this next' story — is lost when heterogeneous claim types are lumped into one frame.",
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T20:00:00Z",
+      "conflicts_with": [
+        "r042"
+      ],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "challenge",
+        "narrative",
+        "batch-conflation"
+      ]
+    },
+    {
+      "id": "x014",
+      "type": "recommendation",
+      "topic": "architecture",
+      "content": "Alternative to frame-per-commit: claim-level framing, where each frame adds exactly one claim (or one small logical group). The /replay pipeline would decompose batch commits into individual claim additions ordered by ID, producing ~99 frames instead of ~32. Pros: smooth pacing, clear narrative per frame, each step is digestible. Cons: loses the actual git history granularity, synthetic ordering within batches may not reflect real research sequence, higher frame count increases data size (~3x).",
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T20:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "alternative",
+        "claim-level-frames",
+        "tradeoff"
+      ]
+    },
+    {
+      "id": "x015",
+      "type": "recommendation",
+      "topic": "architecture",
+      "content": "Hybrid framing approach: use commit-level frames as the primary timeline but allow sub-frame stepping within batch commits. The scrubber shows 32 major stops (commits), but clicking a batch frame expands it into sub-steps (one per claim). Implementation: frames[] becomes a tree — each frame has an optional 'substeps' array. The controller supports fractional indices (frame 7.3 = commit 7, claim 3). This preserves git fidelity while solving the pacing problem, at the cost of more complex scrubber UI.",
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T20:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "alternative",
+        "hybrid-frames",
+        "sub-stepping"
+      ]
+    },
+    {
+      "id": "w015",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "External sources provide partial support for r043. Bostock's Observable Scrubber confirms: (1) it uses <input type='range'> driven by an array of discrete values (analogous to step=1), (2) it auto-pauses when the user interacts with the slider, and (3) playback resumes via a play button. However, Bostock's Scrubber uses setInterval-based timing rather than requestAnimationFrame — Observable's reactive runtime handles frame scheduling separately. Daniel Wilson's Web Animations API scrubbing pattern (danielcwilson.com) uses requestAnimationFrame to sync a range slider with animation.currentTime, and pauses on user drag via input/change events — matching r043's rAF + auto-pause claims. MDN's custom video player pattern uses <progress> (not <input type='range'>) with timeupdate events and does NOT auto-pause on scrub. r043 missed a fourth component present in both Bostock and Wilson patterns: a frame counter or text label showing the current position (e.g., 'frame 12 of 45' or elapsed time), which aids orientation during scrubbing.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "r043",
+        "external_url": "https://observablehq.com/@mbostock/scrubber",
+        "relationship": "partial_support"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T20:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "scrubber",
+        "witness",
+        "observable"
+      ]
+    },
+    {
+      "id": "p013",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "build-replay.js successfully extracts 35 frames from git history, compiles each with wheat-compiler.js --input, computes deltas with --diff, auto-detects 15 milestones (phase transitions, evidence jumps, new topics), and generates a self-contained output/replay.html with inline FRAMES data. The pipeline reuses the existing compiler infrastructure as predicted by r046.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T20:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "frame-extraction",
+        "build-tool"
+      ]
+    },
+    {
+      "id": "p014",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "Replay viewer prototype implements four-panel layout (scrubber + claims list + coverage map + stats), play/pause/speed control (1x/2x/4x), range slider with step=1 frame snapping, keyboard shortcuts (arrows/space/home/end), CSS transitions for claim appear/remove/upgrade, and milestone markers on the timeline. All self-contained in a single HTML file with no external dependencies.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "output/replay.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T20:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "viewer",
+        "self-contained"
+      ]
+    },
+    {
+      "id": "p015",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "The challenge findings from x011-x013 are confirmed in the prototype: batch commits (28% of frames) create visible pacing jumps where 10+ claims appear simultaneously while single-witness commits show minimal change. The hybrid framing approach (x015) would improve this but is not yet implemented.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "output/replay.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T20:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "pacing",
+        "batch-commits"
+      ]
     }
   ],
   "conflict_graph": {
@@ -2393,6 +2584,21 @@
         "winner": "p001",
         "loser": "r008",
         "reason": "evidence_tier: tested (4) > web (2)"
+      },
+      {
+        "winner": "x011",
+        "loser": "r042",
+        "reason": "evidence_tier: documented (3) > web (2)"
+      },
+      {
+        "winner": "x012",
+        "loser": "r042",
+        "reason": "evidence_tier: documented (3) > web (2)"
+      },
+      {
+        "winner": "x013",
+        "loser": "r042",
+        "reason": "evidence_tier: documented (3) > web (2)"
       }
     ],
     "unresolved": []
@@ -2404,8 +2610,8 @@
       "status": "strong",
       "types": [
         "factual",
-        "risk",
-        "recommendation"
+        "recommendation",
+        "risk"
       ],
       "claim_ids": [
         "r017",
@@ -2424,9 +2630,9 @@
       ],
       "constraint_count": 0,
       "source_origins": [
-        "research",
-        "prototype",
         "evaluation",
+        "prototype",
+        "research",
         "witness"
       ],
       "source_count": 4,
@@ -2438,15 +2644,15 @@
       ]
     },
     "architecture": {
-      "claims": 36,
+      "claims": 42,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
+        "estimate",
         "factual",
         "feedback",
         "recommendation",
-        "risk",
-        "estimate"
+        "risk"
       ],
       "claim_ids": [
         "r002",
@@ -2480,21 +2686,28 @@
         "r036",
         "f008",
         "e008",
-        "r042",
         "r044",
         "r045",
         "r046",
-        "r047"
+        "r047",
+        "x011",
+        "x012",
+        "x013",
+        "x014",
+        "x015",
+        "p013",
+        "p015"
       ],
       "constraint_count": 3,
       "source_origins": [
-        "research",
-        "prototype",
-        "stakeholder",
+        "challenge",
         "evaluation",
+        "prototype",
+        "research",
+        "stakeholder",
         "witness"
       ],
-      "source_count": 5,
+      "source_count": 6,
       "type_diversity": 5,
       "missing_types": [
         "constraint"
@@ -2514,8 +2727,8 @@
       ],
       "constraint_count": 1,
       "source_origins": [
-        "stakeholder",
-        "research"
+        "research",
+        "stakeholder"
       ],
       "source_count": 2,
       "type_diversity": 2,
@@ -2533,8 +2746,8 @@
       "types": [
         "constraint",
         "factual",
-        "risk",
-        "recommendation"
+        "recommendation",
+        "risk"
       ],
       "claim_ids": [
         "d001",
@@ -2550,10 +2763,10 @@
       ],
       "constraint_count": 1,
       "source_origins": [
-        "stakeholder",
-        "prototype",
         "evaluation",
+        "prototype",
         "research",
+        "stakeholder",
         "witness"
       ],
       "source_count": 5,
@@ -2569,10 +2782,10 @@
       "status": "strong",
       "types": [
         "constraint",
-        "risk",
-        "feedback",
         "factual",
-        "recommendation"
+        "feedback",
+        "recommendation",
+        "risk"
       ],
       "claim_ids": [
         "d002",
@@ -2590,10 +2803,10 @@
       ],
       "constraint_count": 2,
       "source_origins": [
-        "stakeholder",
-        "research",
-        "prototype",
         "evaluation",
+        "prototype",
+        "research",
+        "stakeholder",
         "witness"
       ],
       "source_count": 5,
@@ -2608,10 +2821,10 @@
       "status": "strong",
       "types": [
         "constraint",
-        "feedback",
         "factual",
-        "risk",
-        "recommendation"
+        "feedback",
+        "recommendation",
+        "risk"
       ],
       "claim_ids": [
         "d005",
@@ -2628,9 +2841,9 @@
       ],
       "constraint_count": 4,
       "source_origins": [
-        "stakeholder",
+        "evaluation",
         "research",
-        "evaluation"
+        "stakeholder"
       ],
       "source_count": 3,
       "type_diversity": 5,
@@ -2654,8 +2867,8 @@
       ],
       "constraint_count": 1,
       "source_origins": [
-        "stakeholder",
-        "research"
+        "research",
+        "stakeholder"
       ],
       "source_count": 2,
       "type_diversity": 3,
@@ -2666,14 +2879,14 @@
       ]
     },
     "ux-pattern": {
-      "claims": 16,
+      "claims": 18,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
-        "recommendation",
+        "constraint",
         "factual",
         "feedback",
-        "constraint",
+        "recommendation",
         "risk"
       ],
       "claim_ids": [
@@ -2692,12 +2905,14 @@
         "w007",
         "r027",
         "r032",
-        "r043"
+        "r043",
+        "w015",
+        "p014"
       ],
       "constraint_count": 2,
       "source_origins": [
-        "research",
         "prototype",
+        "research",
         "stakeholder",
         "witness"
       ],
@@ -2806,12 +3021,20 @@
     "r041": 0,
     "e009": 0,
     "f009": 0,
-    "r042": 0,
-    "r043": 0,
+    "r043": 1,
     "r044": 0,
     "r045": 0,
     "r046": 0,
-    "r047": 0
+    "r047": 0,
+    "x011": 0,
+    "x012": 0,
+    "x013": 0,
+    "x014": 0,
+    "x015": 0,
+    "w015": 0,
+    "p013": 0,
+    "p014": 0,
+    "p015": 0
   },
   "phase_summary": {
     "define": {
@@ -2819,15 +3042,15 @@
       "complete": true
     },
     "research": {
-      "claims": 47,
+      "claims": 48,
       "complete": true
     },
     "prototype": {
-      "claims": 12,
+      "claims": 15,
       "complete": true
     },
     "evaluate": {
-      "claims": 33,
+      "claims": 38,
       "complete": true
     },
     "feedback": {
@@ -2842,14 +3065,14 @@
     ],
     "initiated": "2026-03-11",
     "phase": "evaluate",
-    "total_claims": 106,
-    "active_claims": 103,
+    "total_claims": 115,
+    "active_claims": 111,
     "conflicted_claims": 0,
-    "superseded_claims": 3,
+    "superseded_claims": 4,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:cefce2fe89a28c935cecc1387c79427590e8254c735b01bcb2400f25630863d4",
+    "input_hash": "sha256:489b6b83420d1bfc513da2c6748f4cee9d8a15d5245993e840d8cb0cd383b804",
     "compiler_version": "0.2.0",
     "deterministic": true
   }
