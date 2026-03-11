@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-11T05:50:20.236Z",
-  "claims_hash": "864871b",
+  "compiled_at": "2026-03-11T06:01:54.833Z",
+  "claims_hash": "aea1678",
   "compiler_version": "0.1.0",
   "status": "ready",
   "errors": [],
@@ -10,13 +10,6 @@
       "message": "Topic \"dogfooding\" has only stated-level evidence (1 claims)",
       "claims": [
         "d001"
-      ]
-    },
-    {
-      "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"output-format\" has only stated-level evidence (1 claims)",
-      "claims": [
-        "d002"
       ]
     },
     {
@@ -38,6 +31,32 @@
       "message": "Topic \"quality\" has only stated-level evidence (1 claims)",
       "claims": [
         "d005"
+      ]
+    },
+    {
+      "code": "W_WEAK_EVIDENCE",
+      "message": "Topic \"architecture\" has only web-level evidence (4 claims)",
+      "claims": [
+        "r001",
+        "r002",
+        "r003",
+        "r008"
+      ]
+    },
+    {
+      "code": "W_WEAK_EVIDENCE",
+      "message": "Topic \"ux-pattern\" has only web-level evidence (3 claims)",
+      "claims": [
+        "r004",
+        "r005",
+        "r006"
+      ]
+    },
+    {
+      "code": "W_WEAK_EVIDENCE",
+      "message": "Topic \"output-format\" has only web-level evidence (1 claims)",
+      "claims": [
+        "r007"
       ]
     }
   ],
@@ -61,27 +80,6 @@
       "tags": [
         "meta",
         "self-referential"
-      ]
-    },
-    {
-      "id": "d002",
-      "type": "constraint",
-      "topic": "output-format",
-      "content": "Output must be self-contained HTML (inline CSS/JS, no external dependencies) that can be opened directly in a browser.",
-      "source": {
-        "origin": "stakeholder",
-        "artifact": null,
-        "connector": null
-      },
-      "evidence": "stated",
-      "status": "active",
-      "phase_added": "define",
-      "timestamp": "2026-03-11T00:00:00Z",
-      "conflicts_with": [],
-      "resolved_by": null,
-      "tags": [
-        "html",
-        "portable"
       ]
     },
     {
@@ -145,10 +143,187 @@
         "quality",
         "wow-factor"
       ]
+    },
+    {
+      "id": "r001",
+      "type": "recommendation",
+      "topic": "architecture",
+      "content": "Use a tiny Node.js server (~80 lines, zero dependencies) with Server-Sent Events (SSE) to push compilation updates to the browser in real time. SSE beats WebSockets here: one-way data flow, auto-reconnect built into the browser, and zero npm dependencies.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T01:00:00Z",
+      "conflicts_with": [
+        "d002"
+      ],
+      "resolved_by": null,
+      "tags": [
+        "sse",
+        "server",
+        "real-time"
+      ]
+    },
+    {
+      "id": "r002",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Node.js fs.watch uses OS-level file notifications (FSEvents on macOS, inotify on Linux). For watching a single file like claims.json, it is sufficient without chokidar. Zero dependencies needed.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T01:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "file-watching",
+        "fs.watch"
+      ]
+    },
+    {
+      "id": "r003",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Browser-only approaches (File System Access API) are not viable: Chrome-only, require manual file picker every session, and still need a server to trigger CLI commands. A server is unavoidable.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T01:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "browser-api",
+        "limitation"
+      ]
+    },
+    {
+      "id": "r004",
+      "type": "recommendation",
+      "topic": "ux-pattern",
+      "content": "Use AST Explorer's pattern: input on left (claims flowing in), compiled output on right (compilation result), updating in real time as data changes. This is the closest proven analogue to showing claims.json -> compiler -> compilation.json.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T01:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "split-pane",
+        "ast-explorer"
+      ]
+    },
+    {
+      "id": "r005",
+      "type": "recommendation",
+      "topic": "ux-pattern",
+      "content": "For the compiler passes, use a linear pipeline stepper (like GitHub Actions) — stages shown left-to-right with status icons (pending/running/done/error). Color coding: green=pass, yellow=running, red=fail, grey=pending.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T01:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pipeline-viz",
+        "github-actions"
+      ]
+    },
+    {
+      "id": "r006",
+      "type": "recommendation",
+      "topic": "ux-pattern",
+      "content": "Next.js HMR pattern: server sends lightweight notification with just a hash, browser fetches full data only when needed. For Wheat: SSE sends {event:'update', hash:'abc'}, client fetches /compilation.json. Avoids sending large payloads over SSE.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T01:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "hmr-pattern",
+        "efficiency"
+      ]
+    },
+    {
+      "id": "r007",
+      "type": "risk",
+      "topic": "output-format",
+      "content": "A live-updating UI requires a running server, which conflicts with the 'self-contained HTML' constraint (d002). Resolution: the server is the dev experience; the HTML it serves is still self-contained. Two artifacts: wheat-server.js (dev tool) + output HTML (portable artifact).",
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T01:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "tension",
+        "server-vs-static"
+      ]
+    },
+    {
+      "id": "r008",
+      "type": "estimate",
+      "topic": "architecture",
+      "content": "The entire live server can be built with zero npm dependencies — Node.js core http + fs modules only. Estimated ~80-100 lines for: static file serving, SSE endpoint, file watcher, and compiler auto-run.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/live-ui-architecture.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T01:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "zero-deps",
+        "size-estimate"
+      ]
     }
   ],
   "conflict_graph": {
-    "resolved": [],
+    "resolved": [
+      {
+        "winner": "r001",
+        "loser": "d002",
+        "reason": "evidence_tier: web (2) > stated (1)"
+      }
+    ],
     "unresolved": []
   },
   "coverage": {
@@ -161,17 +336,6 @@
       ],
       "claim_ids": [
         "d001"
-      ]
-    },
-    "output-format": {
-      "claims": 1,
-      "max_evidence": "stated",
-      "status": "weak",
-      "types": [
-        "constraint"
-      ],
-      "claim_ids": [
-        "d002"
       ]
     },
     "audience": {
@@ -206,6 +370,46 @@
       "claim_ids": [
         "d005"
       ]
+    },
+    "architecture": {
+      "claims": 4,
+      "max_evidence": "web",
+      "status": "weak",
+      "types": [
+        "recommendation",
+        "factual",
+        "estimate"
+      ],
+      "claim_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r008"
+      ]
+    },
+    "ux-pattern": {
+      "claims": 3,
+      "max_evidence": "web",
+      "status": "weak",
+      "types": [
+        "recommendation"
+      ],
+      "claim_ids": [
+        "r004",
+        "r005",
+        "r006"
+      ]
+    },
+    "output-format": {
+      "claims": 1,
+      "max_evidence": "web",
+      "status": "weak",
+      "types": [
+        "risk"
+      ],
+      "claim_ids": [
+        "r007"
+      ]
     }
   },
   "phase_summary": {
@@ -214,8 +418,8 @@
       "complete": true
     },
     "research": {
-      "claims": 0,
-      "complete": false
+      "claims": 8,
+      "complete": true
     },
     "prototype": {
       "claims": 0,
@@ -237,14 +441,14 @@
     ],
     "initiated": "2026-03-11",
     "phase": "define",
-    "total_claims": 5,
-    "active_claims": 5,
+    "total_claims": 13,
+    "active_claims": 12,
     "conflicted_claims": 0,
-    "superseded_claims": 0,
+    "superseded_claims": 1,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:864871b922b438268e00c017a2f9d44fa1a8edaa980753e71db2cbef041401d6",
+    "input_hash": "sha256:aea16781cc739cdd167496113c3d200af01a657f8c7261037fe2e3a6e2c8a302",
     "compiler_version": "0.1.0",
     "deterministic": true
   }
