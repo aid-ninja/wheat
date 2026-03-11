@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-11T06:38:59.986Z",
-  "claims_hash": "6535f04",
+  "compiled_at": "2026-03-11T06:45:29.265Z",
+  "claims_hash": "cc69f25",
   "compiler_version": "0.1.0",
   "status": "ready",
   "errors": [],
@@ -488,6 +488,50 @@
         "data-density",
         "progressive-disclosure"
       ]
+    },
+    {
+      "id": "p006",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "Timeline-first dashboard prototype built: vertical timeline as primary UI spine, claims as expandable nodes grouped by phase (define/research/prototype/evaluate/feedback), progressive disclosure via click-to-expand detail panels. Compact scoreboard replaces the old card grid. Coverage shown as inline topic chips with evidence-tier colored dots. Conflict resolutions and warnings appear as inline timeline events. 'Now' node pulses at the bottom showing live watching state.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T06:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "timeline",
+        "progressive-disclosure",
+        "narrative-ui"
+      ]
+    },
+    {
+      "id": "p007",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "Phase-colored visual system confirmed effective: each sprint phase gets a distinct color (define=amber, research=blue, prototype=green, evaluate=purple, feedback=cyan) applied consistently to timeline dots, claim IDs, phase headers, and claim dot accents. Creates instant visual grouping without labels.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T06:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "color-system",
+        "phase-coding",
+        "visual-hierarchy"
+      ]
     }
   ],
   "conflict_graph": {
@@ -583,7 +627,7 @@
       ]
     },
     "ux-pattern": {
-      "claims": 5,
+      "claims": 7,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -596,7 +640,9 @@
         "r005",
         "r006",
         "p003",
-        "f005"
+        "f005",
+        "p006",
+        "p007"
       ]
     }
   },
@@ -610,7 +656,7 @@
       "complete": true
     },
     "prototype": {
-      "claims": 5,
+      "claims": 7,
       "complete": true
     },
     "evaluate": {
@@ -629,14 +675,14 @@
     ],
     "initiated": "2026-03-11",
     "phase": "prototype",
-    "total_claims": 23,
-    "active_claims": 21,
+    "total_claims": 25,
+    "active_claims": 23,
     "conflicted_claims": 0,
     "superseded_claims": 2,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:6535f045ce675bed8da5b09bf76753f20ed4ed73bdfd9cbcb34e9881c47ab81e",
+    "input_hash": "sha256:cc69f25d3c1dbacbf629d283b82ab02252be670cf089be59ea0c817bd37deaea",
     "compiler_version": "0.1.0",
     "deterministic": true
   }

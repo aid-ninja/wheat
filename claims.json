@@ -328,6 +328,34 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["user-feedback", "timeline", "data-density", "progressive-disclosure"]
+    },
+    {
+      "id": "p006",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "Timeline-first dashboard prototype built: vertical timeline as primary UI spine, claims as expandable nodes grouped by phase (define/research/prototype/evaluate/feedback), progressive disclosure via click-to-expand detail panels. Compact scoreboard replaces the old card grid. Coverage shown as inline topic chips with evidence-tier colored dots. Conflict resolutions and warnings appear as inline timeline events. 'Now' node pulses at the bottom showing live watching state.",
+      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T06:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["timeline", "progressive-disclosure", "narrative-ui"]
+    },
+    {
+      "id": "p007",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "Phase-colored visual system confirmed effective: each sprint phase gets a distinct color (define=amber, research=blue, prototype=green, evaluate=purple, feedback=cyan) applied consistently to timeline dots, claim IDs, phase headers, and claim dot accents. Creates instant visual grouping without labels.",
+      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T06:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["color-system", "phase-coding", "visual-hierarchy"]
     }
   ]
 }
