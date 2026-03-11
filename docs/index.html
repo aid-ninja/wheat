@@ -284,6 +284,19 @@
   .footer a.card::before { display: none; }
   .footer a.card:hover { text-decoration: underline; background: none; transform: none; }
 
+  code.cmd-inline {
+    display: block;
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    font-size: 9pt;
+    color: var(--text-muted);
+    background: rgba(0,0,0,0.25);
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+    line-height: 1.6;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+
   /* Command grid */
   .cmd-grid {
     display: grid;
@@ -356,21 +369,24 @@
     </div>
   </div>
 
-  <!-- How It Works -->
+  <!-- Get Started -->
   <div class="section">
-    <div class="section-header blue">How It Works</div>
+    <div class="section-header blue">Get Started in 3 Steps</div>
     <div class="grid-3">
       <div class="card accent" style="display:block; cursor:default;">
-        <span class="card-label" style="display:block; font-weight:600; margin-bottom:4px; font-size:11pt;">1. Research</span>
-        <span class="card-desc">Run <code style="color:var(--accent-light);background:rgba(59,130,246,0.12);padding:1px 5px;border-radius:3px;font-size:8.5pt;">/research</code>, <code style="color:var(--accent-light);background:rgba(59,130,246,0.12);padding:1px 5px;border-radius:3px;font-size:8.5pt;">/prototype</code>, <code style="color:var(--accent-light);background:rgba(59,130,246,0.12);padding:1px 5px;border-radius:3px;font-size:8.5pt;">/witness</code> to gather typed claims with evidence tiers</span>
+        <span class="card-label" style="display:block; font-weight:600; margin-bottom:4px; font-size:11pt;">1. Clone</span>
+        <code class="cmd-inline">git clone https://github.com/aid-ninja/wheat.git<br>cd wheat</code>
       </div>
       <div class="card green" style="display:block; cursor:default;">
-        <span class="card-label" style="display:block; font-weight:600; margin-bottom:4px; font-size:11pt;">2. Compile</span>
-        <span class="card-desc">The compiler validates claims, detects conflicts, auto-resolves by evidence tier, and computes coverage</span>
+        <span class="card-label" style="display:block; font-weight:600; margin-bottom:4px; font-size:11pt;">2. Init</span>
+        <span class="card-desc">Open the folder in Claude Code and run</span>
+        <code class="cmd-inline">/init</code>
+        <span class="card-desc" style="margin-top:6px; display:block;">This creates your first sprint with a research question and seed claims.</span>
       </div>
       <div class="card purple" style="display:block; cursor:default;">
-        <span class="card-label" style="display:block; font-weight:600; margin-bottom:4px; font-size:11pt;">3. Decide</span>
-        <span class="card-desc">Generate briefs, presentations, dashboards — every statement traces back to a claim ID</span>
+        <span class="card-label" style="display:block; font-weight:600; margin-bottom:4px; font-size:11pt;">3. Go</span>
+        <span class="card-desc">Start researching. The compiler runs automatically.</span>
+        <code class="cmd-inline">/research "your question"<br>/prototype<br>/brief</code>
       </div>
     </div>
   </div>
