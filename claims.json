@@ -692,6 +692,55 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["user-feedback", "quality-bar", "presentation", "personality"]
+    },
+    {
+      "id": "x001",
+      "type": "risk",
+      "topic": "dogfooding",
+      "content": "The self-referential dogfooding creates a circular dependency: the dashboard's value proposition depends on the sprint being interesting, but the sprint's interest depends on the dashboard working. If a future sprint has a boring question or few claims, the dashboard looks empty and the teaching effect collapses. Dogfooding only works when there's enough data to visualize.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T15:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["challenge", "circular-dependency", "cold-start"]
+    },
+    {
+      "id": "x002",
+      "type": "risk",
+      "topic": "ux-pattern",
+      "content": "The timeline-first UI assumes claims arrive chronologically with clear phase boundaries. In practice, sprints are messy: researchers revisit define-phase assumptions, prototypes generate new research questions, feedback arrives mid-prototype. The clean phase→phase timeline may misrepresent the actual nonlinear workflow, giving new users a false impression of Wheat's linearity.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T15:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["challenge", "linearity-bias", "ux-honesty"]
+    },
+    {
+      "id": "w001",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "External corroboration for p001: SSE with zero-dependency Node.js is the established pattern for real-time dashboards. DigitalOcean, dev.to, and multiple 2024-2025 tutorials confirm native http + EventSource as the standard approach — no Express or socket.io needed. The 133-line server size is consistent with community examples (80-150 lines typical).",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "p001",
+        "relationship": "full_support",
+        "urls": ["https://www.digitalocean.com/community/tutorials/nodejs-server-sent-events-build-realtime-app"]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T15:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["witness", "corroboration", "sse", "zero-deps"]
     }
   ]
 }
