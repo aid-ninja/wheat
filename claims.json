@@ -2885,9 +2885,7 @@
       "status": "active",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T23:00:00Z",
-      "conflicts_with": [
-        "x018"
-      ],
+      "conflicts_with": [],
       "resolved_by": null,
       "tags": [
         "replay",
@@ -3373,11 +3371,11 @@
         "connector": null
       },
       "evidence": "web",
-      "status": "active",
+      "status": "superseded",
       "phase_added": "research",
       "timestamp": "2026-03-11T23:06:00Z",
       "conflicts_with": [],
-      "resolved_by": null,
+      "resolved_by": "x031",
       "tags": [
         "pedagogy",
         "scaffolding",
@@ -3629,6 +3627,226 @@
         "replay",
         "milestone-classification",
         "annotation-map"
+      ]
+    },
+    {
+      "id": "w016",
+      "type": "factual",
+      "topic": "pedagogy",
+      "content": "The worked examples effect is one of the most replicated findings in cognitive load theory. Sweller (1988) established that studying solved examples reduces cognitive load vs. problem-solving because learners avoid weak strategies like means-ends analysis. Barbieri et al. (2023) meta-analysis confirmed the effect across mathematics learning. The split-attention effect (Chandler & Sweller, 1992) shows integrated text+diagram formats outperform separated formats with large effect sizes \u2014 but a 2024 meta-analysis (Zhang) notes the effect is strongest for high element-interactivity materials and that some recent studies failed to replicate it for simpler materials. Mayer & Moreno (1998) independently confirmed the split-attention principle in multimedia learning: words placed near corresponding visuals produced superior transfer performance. For programming specifically, worked examples are well-supported for novice learners (ACM Transactions on Computing Education, 2025). r060's claim that the replay IS a worked example is well-grounded. The recommendation for inline annotations follows from the split-attention principle, though with the caveat that the effect is strongest when the visualization has high element interactivity (which a multi-panel replay viewer likely does). No direct empirical study of worked examples applied to interactive replay/timeline visualizations was found.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "r060",
+        "external_url": "https://onlinelibrary.wiley.com/doi/abs/10.1207/s15516709cog1202_4",
+        "relationship": "full_support"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T23:55:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pedagogy",
+        "cognitive-load",
+        "worked-examples",
+        "split-attention",
+        "sweller",
+        "mayer",
+        "witness",
+        "r060"
+      ]
+    },
+    {
+      "id": "x028",
+      "type": "factual",
+      "topic": "pedagogy",
+      "content": "The actual Wheat sprint exhibits 44 phase transitions across 156 claims. Research claims appear in the evaluate phase (r042-r068), prototype claims appear after evaluation started (p012-p022), and feedback interleaves throughout. The chronological third analysis shows: first third has 5 phases represented (define 5, research 22, prototype 9, feedback 7, evaluate 9), middle third has 4 phases (research 23, evaluate 24, prototype 3, feedback 2), final third has 3 phases (evaluate 30, research 12, prototype 10). This is not a clean three-act progression \u2014 it is a continuously interleaving investigation.",
+      "source": {
+        "origin": "challenge",
+        "artifact": "claims.json git log analysis",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T23:55:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pedagogy",
+        "three-act",
+        "interleaving",
+        "empirical",
+        "challenge-r066"
+      ]
+    },
+    {
+      "id": "x029",
+      "type": "risk",
+      "topic": "pedagogy",
+      "content": "Content gating between acts (as r066 proposes) would create a false linearity. If Act 1 is 'Explore' (define/research) and Act 2 is 'Complicate' (prototype/challenge), the gating would hide that this sprint had 7 feedback claims and 9 prototype claims in the first third, and 23 research claims in the middle third. A learner gated into Act 1 would see an artificially clean 'research only' phase that never existed. This risks teaching the wrong lesson: that sprints are sequential when they are actually concurrent.",
+      "source": {
+        "origin": "challenge",
+        "artifact": "claims.json phase_added analysis",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T23:55:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pedagogy",
+        "content-gating",
+        "false-linearity",
+        "challenge-r066"
+      ]
+    },
+    {
+      "id": "x030",
+      "type": "factual",
+      "topic": "pedagogy",
+      "content": "The three-act model does capture something real: the sprint has a broad arc. The first third is define/research-heavy (27 of 52 claims). The middle third is evaluate-heavy (24 of 52). The final third is evaluate-dominant (30 of 52). So there IS a macro-level progression from exploration to evaluation. The three-act model is directionally correct as a simplification \u2014 the problem is that it overstates the cleanliness of the transitions and obscures the continuous interleaving that characterizes real investigative work.",
+      "source": {
+        "origin": "challenge",
+        "artifact": "claims.json phase distribution",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T23:55:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pedagogy",
+        "three-act",
+        "partial-validity",
+        "nuance",
+        "challenge-r066"
+      ]
+    },
+    {
+      "id": "x031",
+      "type": "recommendation",
+      "topic": "pedagogy",
+      "content": "Replace three-act gated structure with a phase-colored timeline that makes interleaving visible. Each frame is color-coded by its phase_added (define=blue, research=green, prototype=orange, evaluate=purple, feedback=yellow). The viewer sees the full chronological sequence with the interleaving pattern rendered honestly. Phase-transition milestones (already implemented in build-replay.js) mark when the dominant phase shifts, giving the macro-arc without hiding the micro-interleaving. This teaches a more accurate lesson: investigation is iterative and concurrent, not sequential.",
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T23:55:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pedagogy",
+        "phase-coloring",
+        "timeline",
+        "interleaving-visible",
+        "challenge-r066"
+      ]
+    },
+    {
+      "id": "x032",
+      "type": "risk",
+      "topic": "pedagogy",
+      "content": "The three-act structure risks cargo-culting narrative conventions onto non-narrative data. Wheat sprints are exploratory investigations, not stories with rising action and denouement. Forcing a story arc may satisfy a pedagogical instinct ('people learn through stories') while distorting the actual shape of the investigation. The replay's pedagogical power comes from showing how real research actually works \u2014 messy, iterative, with backtracking \u2014 not from smoothing it into a screenplay.",
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T23:55:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pedagogy",
+        "cargo-cult",
+        "narrative-bias",
+        "challenge-r066"
+      ]
+    },
+    {
+      "id": "p023",
+      "type": "factual",
+      "topic": "pedagogy",
+      "content": "Sandbox mode implemented in build-replay.js adds a collapsible panel (toggled via 'Try it' button or S key) that lets users create mock claims client-side with type, topic, evidence tier, and content fields. Sandbox claims are overlaid on the current frame's claims list with a visible 'sandbox' badge and persist across frame scrubbing. Coverage bars and stats update in real-time to reflect sandbox additions. This validates r068's recommendation that client-side mock claim creation is the highest-leverage pedagogical feature.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T23:58:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "sandbox",
+        "pedagogy",
+        "active-learning",
+        "client-side",
+        "replay-viewer"
+      ]
+    },
+    {
+      "id": "p024",
+      "type": "factual",
+      "topic": "pedagogy",
+      "content": "Educational tooltips fire on the user's first sandbox claim creation, explaining the evidence tier system and suggesting /prototype to upgrade evidence from web to tested. Conflict detection runs client-side using a heuristic (risk vs recommendation, constraint vs recommendation on same topic) and surfaces a compiler-warning-style message when triggered. Both features validate r062's principle that effective explorables let learners 'create their own data points to form mental models' \u2014 the sandbox makes the compiler's conflict-detection and evidence-weighting mechanics tangible rather than abstract.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T23:58:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "sandbox",
+        "pedagogy",
+        "conflict-detection",
+        "educational-tooltip",
+        "explorable-explanations"
+      ]
+    },
+    {
+      "id": "p025",
+      "type": "recommendation",
+      "topic": "pedagogy",
+      "content": "The sandbox prototype confirms that zero-persistence client-side claim creation works well for teaching Wheat's core mechanics. Next iteration should add: (1) a 'challenge mode' preset that drops the user into a frame with a known conflict and asks them to resolve it, (2) export sandbox claims as a shareable URL fragment for collaborative learning, and (3) a guided tutorial overlay that walks through creating claim -> seeing coverage change -> triggering conflict -> resolving it.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T23:58:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "sandbox",
+        "pedagogy",
+        "next-iteration",
+        "challenge-mode",
+        "guided-tutorial"
       ]
     }
   ]

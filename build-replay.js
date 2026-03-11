@@ -1162,6 +1162,221 @@ function generateHTML(frames) {
     background: rgba(255,255,255,0.05);
   }
 
+  /* ─── Sandbox panel ──────────────────────────────────────────────── */
+  .sandbox-toggle {
+    background: rgba(245,158,11,0.12);
+    border: 1px solid rgba(245,158,11,0.3);
+    color: var(--orange);
+    border-radius: 6px;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 9pt;
+    font-family: inherit;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    transition: background 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .sandbox-toggle:hover {
+    background: rgba(245,158,11,0.2);
+    border-color: rgba(245,158,11,0.5);
+  }
+
+  .sandbox-toggle.active {
+    background: var(--orange);
+    color: var(--bg-dark);
+    border-color: var(--orange);
+  }
+
+  .sandbox-panel {
+    display: none;
+    padding: 14px 24px;
+    background: linear-gradient(180deg, rgba(30,41,59,1) 0%, rgba(15,23,42,1) 100%);
+    border-top: 2px solid var(--orange);
+    flex-shrink: 0;
+    animation: sandboxSlideIn 0.25s ease-out;
+  }
+
+  .sandbox-panel.visible {
+    display: block;
+  }
+
+  @keyframes sandboxSlideIn {
+    from { opacity: 0; max-height: 0; }
+    to { opacity: 1; max-height: 300px; }
+  }
+
+  .sandbox-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .sandbox-title {
+    font-size: 9pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--orange);
+  }
+
+  .sandbox-count {
+    font-size: 8pt;
+    color: var(--text-dim);
+    margin-left: 8px;
+  }
+
+  .sandbox-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .sandbox-reset {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: var(--red);
+    border-radius: 4px;
+    padding: 3px 10px;
+    cursor: pointer;
+    font-size: 8pt;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+
+  .sandbox-reset:hover {
+    background: rgba(239,68,68,0.2);
+  }
+
+  .sandbox-form {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .sandbox-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .sandbox-field label {
+    font-size: 7.5pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+
+  .sandbox-field select,
+  .sandbox-field input[type="text"] {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text);
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 9pt;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .sandbox-field select:focus,
+  .sandbox-field input[type="text"]:focus {
+    border-color: var(--orange);
+  }
+
+  .sandbox-field input[type="text"] {
+    min-width: 260px;
+  }
+
+  .sandbox-add-btn {
+    background: var(--orange);
+    border: none;
+    color: var(--bg-dark);
+    border-radius: 4px;
+    padding: 5px 14px;
+    cursor: pointer;
+    font-size: 9pt;
+    font-family: inherit;
+    font-weight: 600;
+    transition: opacity 0.15s;
+  }
+
+  .sandbox-add-btn:hover {
+    opacity: 0.85;
+  }
+
+  .sandbox-add-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Sandbox badge on claims */
+  .sandbox-badge {
+    font-size: 6.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: rgba(245,158,11,0.15);
+    color: var(--orange);
+    padding: 1px 5px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-left: 4px;
+  }
+
+  /* Sandbox tooltip */
+  .sandbox-tooltip {
+    display: none;
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 6px;
+    font-size: 8.5pt;
+    color: var(--text-muted);
+    line-height: 1.5;
+    animation: sandboxSlideIn 0.25s ease-out;
+  }
+
+  .sandbox-tooltip.visible {
+    display: block;
+  }
+
+  .sandbox-tooltip strong {
+    color: var(--orange);
+  }
+
+  .sandbox-tooltip code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 8pt;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--accent-light);
+  }
+
+  /* Sandbox compiler warning */
+  .sandbox-warning {
+    display: none;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 6px;
+    font-size: 8.5pt;
+    color: var(--red);
+    line-height: 1.5;
+    animation: sandboxSlideIn 0.25s ease-out;
+  }
+
+  .sandbox-warning.visible {
+    display: block;
+  }
+
   /* ─── Annotation panel ──────────────────────────────────────────────── */
   .annotation-panel {
     padding: 12px 24px 12px 20px;
@@ -1266,9 +1481,57 @@ function generateHTML(frames) {
       <span id="subframeIndicator"></span>
       <button class="btn" id="nextCommitBtn" title="Skip to next commit (N)" style="display:none">Next Commit &#9654;&#9654;</button>
       <button class="btn speed-btn" id="speedBtn" title="Playback speed">1x</button>
+      <button class="sandbox-toggle" id="sandboxToggle" title="Toggle Sandbox (S)">Try it</button>
     </div>
   </div>
   <div class="commit-msg" id="commitMsg">—</div>
+</div>
+
+<!-- Sandbox panel -->
+<div class="sandbox-panel" id="sandboxPanel">
+  <div class="sandbox-header">
+    <div>
+      <span class="sandbox-title">Sandbox</span>
+      <span class="sandbox-count" id="sandboxCount"></span>
+    </div>
+    <div class="sandbox-actions">
+      <button class="sandbox-reset" id="sandboxReset" title="Clear all sandbox claims">Reset</button>
+    </div>
+  </div>
+  <div class="sandbox-form">
+    <div class="sandbox-field">
+      <label>Type</label>
+      <select id="sandboxType">
+        <option value="factual">factual</option>
+        <option value="constraint">constraint</option>
+        <option value="estimate">estimate</option>
+        <option value="risk">risk</option>
+        <option value="recommendation">recommendation</option>
+        <option value="feedback">feedback</option>
+      </select>
+    </div>
+    <div class="sandbox-field">
+      <label>Topic</label>
+      <select id="sandboxTopic"></select>
+    </div>
+    <div class="sandbox-field">
+      <label>Evidence</label>
+      <select id="sandboxEvidence">
+        <option value="stated">stated</option>
+        <option value="web" selected>web</option>
+        <option value="documented">documented</option>
+        <option value="tested">tested</option>
+        <option value="production">production</option>
+      </select>
+    </div>
+    <div class="sandbox-field" style="flex:1;">
+      <label>Content</label>
+      <input type="text" id="sandboxContent" placeholder="Write a mock claim..." />
+    </div>
+    <button class="sandbox-add-btn" id="sandboxAdd">Add Claim</button>
+  </div>
+  <div class="sandbox-tooltip" id="sandboxTooltip"></div>
+  <div class="sandbox-warning" id="sandboxWarning"></div>
 </div>
 
 <!-- Annotation panel (shown on milestone frames) -->
@@ -1328,7 +1591,8 @@ function generateHTML(frames) {
   <kbd>&larr;</kbd> <kbd>&rarr;</kbd> step &nbsp;
   <kbd>Space</kbd> play/pause &nbsp;
   <kbd>N</kbd> next commit &nbsp;
-  <kbd>Esc</kbd> dismiss annotation &nbsp;
+  <kbd>S</kbd> sandbox &nbsp;
+  <kbd>Esc</kbd> dismiss &nbsp;
   <kbd>Home</kbd> <kbd>End</kbd> jump
 </div>
 
@@ -1345,6 +1609,12 @@ let animFrameId = null;
 let annotationDismissed = false; // tracks if user dismissed current annotation
 let milestonePauseTimer = null;  // timer for auto-pause on milestones
 const MILESTONE_PAUSE_MS = 3000; // auto-pause duration on milestone frames
+
+// ─── Sandbox state ────────────────────────────────────────────────────────
+let sandboxOpen = false;
+let sandboxClaims = []; // { id, type, topic, content, evidence, status }
+let sandboxCounter = 0;
+let sandboxFirstClaim = true; // track if first claim for educational tooltip
 
 // Animated counter targets
 const counterState = {
@@ -1468,6 +1738,146 @@ function resumeFromMilestonePause() {
   }
 }
 
+// ─── Sandbox controls ─────────────────────────────────────────────────────
+const sandboxToggle = document.getElementById('sandboxToggle');
+const sandboxPanel = document.getElementById('sandboxPanel');
+const sandboxCount = document.getElementById('sandboxCount');
+const sandboxTopicSelect = document.getElementById('sandboxTopic');
+const sandboxTypeSelect = document.getElementById('sandboxType');
+const sandboxEvidenceSelect = document.getElementById('sandboxEvidence');
+const sandboxContentInput = document.getElementById('sandboxContent');
+const sandboxAddBtn = document.getElementById('sandboxAdd');
+const sandboxResetBtn = document.getElementById('sandboxReset');
+const sandboxTooltip = document.getElementById('sandboxTooltip');
+const sandboxWarning = document.getElementById('sandboxWarning');
+
+function toggleSandbox() {
+  sandboxOpen = !sandboxOpen;
+  sandboxPanel.classList.toggle('visible', sandboxOpen);
+  sandboxToggle.classList.toggle('active', sandboxOpen);
+  if (sandboxOpen) populateSandboxTopics();
+}
+
+function populateSandboxTopics() {
+  // Gather unique topics from current frame
+  const frame = FRAMES[currentFrame];
+  if (!frame) return;
+  const topics = new Set();
+  frame.claims.forEach(c => topics.add(c.topic));
+  sandboxClaims.forEach(c => topics.add(c.topic));
+  const sorted = [...topics].sort();
+
+  const current = sandboxTopicSelect.value;
+  sandboxTopicSelect.innerHTML = '';
+  sorted.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t;
+    opt.textContent = t;
+    sandboxTopicSelect.appendChild(opt);
+  });
+  if (current && sorted.includes(current)) {
+    sandboxTopicSelect.value = current;
+  }
+}
+
+function addSandboxClaim() {
+  const type = sandboxTypeSelect.value;
+  const topic = sandboxTopicSelect.value;
+  const evidence = sandboxEvidenceSelect.value;
+  const content = sandboxContentInput.value.trim();
+  if (!content || !topic) return;
+
+  sandboxCounter++;
+  const claim = {
+    id: 'sb' + String(sandboxCounter).padStart(3, '0'),
+    type,
+    topic,
+    content,
+    evidence,
+    status: 'active',
+    sandbox: true,
+  };
+  sandboxClaims.push(claim);
+  sandboxContentInput.value = '';
+  sandboxCount.textContent = sandboxClaims.length + ' sandbox claim' + (sandboxClaims.length !== 1 ? 's' : '');
+
+  // Educational tooltip on first claim
+  if (sandboxFirstClaim) {
+    sandboxFirstClaim = false;
+    const tipType = type;
+    const tipEvidence = evidence;
+    sandboxTooltip.innerHTML =
+      'You just created a <strong>' + escapeHtml(tipType) + '</strong> claim at ' +
+      '<strong>' + escapeHtml(tipEvidence) + '</strong>-level evidence. ' +
+      'Try adding a <code>/prototype</code> to upgrade it to <strong>tested</strong>. ' +
+      'In Wheat, evidence tiers determine how much weight the compiler gives each claim.';
+    sandboxTooltip.classList.add('visible');
+    setTimeout(() => sandboxTooltip.classList.remove('visible'), 12000);
+  }
+
+  // Check for conflicts: same topic, contradictory type or opposing recommendations
+  checkSandboxConflicts(claim);
+
+  // Re-render with sandbox claims overlaid
+  render(FRAMES[currentFrame]);
+}
+
+function checkSandboxConflicts(newClaim) {
+  const frame = FRAMES[currentFrame];
+  if (!frame) return;
+
+  // Find existing claims on same topic with different type
+  const sameTopic = frame.claims.filter(c => c.topic === newClaim.topic);
+  const hasConflict = sameTopic.some(c => {
+    // Simple conflict heuristic: a risk vs recommendation on same topic
+    return (c.type === 'risk' && newClaim.type === 'recommendation') ||
+           (c.type === 'recommendation' && newClaim.type === 'risk') ||
+           (c.type === 'constraint' && newClaim.type === 'recommendation');
+  });
+
+  // Also check sandbox-to-sandbox conflicts
+  const sameTopicSandbox = sandboxClaims.filter(c => c.topic === newClaim.topic && c.id !== newClaim.id);
+  const hasSandboxConflict = sameTopicSandbox.some(c => {
+    return (c.type === 'risk' && newClaim.type === 'recommendation') ||
+           (c.type === 'recommendation' && newClaim.type === 'risk') ||
+           (c.type === 'constraint' && newClaim.type === 'recommendation');
+  });
+
+  if (hasConflict || hasSandboxConflict) {
+    const conflictWith = hasConflict
+      ? sameTopic.find(c => (c.type === 'risk' && newClaim.type === 'recommendation') || (c.type === 'recommendation' && newClaim.type === 'risk') || (c.type === 'constraint' && newClaim.type === 'recommendation'))
+      : sameTopicSandbox.find(c => (c.type === 'risk' && newClaim.type === 'recommendation') || (c.type === 'recommendation' && newClaim.type === 'risk') || (c.type === 'constraint' && newClaim.type === 'recommendation'));
+
+    sandboxWarning.innerHTML =
+      '<strong>Compiler warning:</strong> Potential conflict detected between ' +
+      '<strong>' + escapeHtml(newClaim.id) + '</strong> (' + escapeHtml(newClaim.type) + ') and ' +
+      '<strong>' + escapeHtml(conflictWith.id) + '</strong> (' + escapeHtml(conflictWith.type) + ') on topic "' +
+      escapeHtml(newClaim.topic) + '". In a real sprint, <code>/resolve</code> would adjudicate based on evidence tier.';
+    sandboxWarning.classList.add('visible');
+    setTimeout(() => sandboxWarning.classList.remove('visible'), 15000);
+  }
+}
+
+function resetSandbox() {
+  sandboxClaims = [];
+  sandboxCounter = 0;
+  sandboxFirstClaim = true;
+  sandboxCount.textContent = '';
+  sandboxTooltip.classList.remove('visible');
+  sandboxWarning.classList.remove('visible');
+  render(FRAMES[currentFrame]);
+}
+
+sandboxToggle.addEventListener('click', toggleSandbox);
+sandboxAddBtn.addEventListener('click', addSandboxClaim);
+sandboxResetBtn.addEventListener('click', resetSandbox);
+sandboxContentInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); addSandboxClaim(); }
+  e.stopPropagation(); // prevent keyboard shortcuts while typing
+});
+// Prevent keyboard nav when focused on sandbox inputs
+sandboxContentInput.addEventListener('keyup', (e) => e.stopPropagation());
+
 const SPEEDS = [1, 2, 4];
 let speedIdx = 0;
 speedBtn.addEventListener('click', () => {
@@ -1479,8 +1889,14 @@ speedBtn.addEventListener('click', () => {
 // ─── Keyboard ────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;
+  if (e.target.tagName === 'SELECT') return;
 
   switch(e.key) {
+    case 's':
+    case 'S':
+      e.preventDefault();
+      toggleSandbox();
+      break;
     case ' ':
     case 'k':
       e.preventDefault();
@@ -1678,12 +2094,19 @@ function render(frame) {
 
   // Annotation panel
   renderAnnotation(frame);
+
+  // Update sandbox topic dropdown if sandbox is open
+  if (sandboxOpen) populateSandboxTopics();
 }
 
 // ─── Claims Panel ────────────────────────────────────────────────────────────
 function renderClaims(frame) {
+  // Merge frame claims + sandbox claims
+  const allClaims = [...frame.claims];
+  sandboxClaims.forEach(sc => allClaims.push(sc));
+
   const groups = {};
-  frame.claims.forEach(c => {
+  allClaims.forEach(c => {
     if (!groups[c.topic]) groups[c.topic] = [];
     groups[c.topic].push(c);
   });
@@ -1696,24 +2119,35 @@ function renderClaims(frame) {
 
   sortedTopics.forEach(topic => {
     const claims = groups[topic];
+    const sandboxInTopic = claims.filter(c => c.sandbox);
+    const totalLabel = sandboxInTopic.length > 0
+      ? claims.length + ' <span style="color:var(--orange);font-size:7pt;">(+' + sandboxInTopic.length + ' sandbox)</span>'
+      : '' + claims.length;
     html += '<div class="topic-group">';
-    html += '<div class="topic-header"><span>' + escapeHtml(topic) + '</span><span class="topic-count">' + claims.length + '</span></div>';
+    html += '<div class="topic-header"><span>' + escapeHtml(topic) + '</span><span class="topic-count">' + totalLabel + '</span></div>';
 
     claims.forEach((c, idx) => {
       const isNew = addedSet.has(c.id);
+      const isSandbox = c.sandbox;
       const classes = ['claim-item'];
       if (isNew) {
         classes.push('badge-new', 'claim-enter');
       }
+      if (isSandbox) {
+        classes.push('claim-enter');
+      }
 
       const maxStagger = Math.max((1000 / speed) * 0.4, 100);
       const staggerMs = Math.min(idx * 20, maxStagger);
-      const delay = isNew ? ' style="animation-delay:' + staggerMs + 'ms"' : '';
+      const delay = (isNew || isSandbox) ? ' style="animation-delay:' + staggerMs + 'ms"' : '';
 
       html += '<div class="' + classes.join(' ') + '"' + delay + '>';
       html += '<span class="claim-id">' + c.id + '</span>';
       html += '<span class="claim-content">' + escapeHtml(truncate(c.content, 80)) + '</span>';
       html += '<span class="claim-evidence evidence-' + c.evidence + '">' + c.evidence + '</span>';
+      if (isSandbox) {
+        html += '<span class="sandbox-badge">sandbox</span>';
+      }
       html += '</div>';
     });
 
@@ -1738,7 +2172,26 @@ function renderClaims(frame) {
 
 // ─── Coverage Map ────────────────────────────────────────────────────────────
 function renderCoverage(frame) {
-  const coverage = frame.coverage;
+  // Build coverage including sandbox claims
+  const coverage = {};
+  // Start from frame coverage
+  Object.keys(frame.coverage).forEach(topic => {
+    coverage[topic] = { ...frame.coverage[topic], sandboxExtra: 0 };
+  });
+  // Overlay sandbox claims
+  sandboxClaims.forEach(sc => {
+    if (!coverage[sc.topic]) {
+      coverage[sc.topic] = { claims: 0, max_evidence: sc.evidence, status: 'weak', sandboxExtra: 0 };
+    }
+    coverage[sc.topic].claims++;
+    coverage[sc.topic].sandboxExtra++;
+    // Check if sandbox claim upgrades evidence
+    const tiers = ['stated', 'web', 'documented', 'tested', 'production'];
+    const curIdx = tiers.indexOf(coverage[sc.topic].max_evidence);
+    const newIdx = tiers.indexOf(sc.evidence);
+    if (newIdx > curIdx) coverage[sc.topic].max_evidence = sc.evidence;
+  });
+
   const topics = Object.keys(coverage).sort();
   const maxClaims = Math.max(...topics.map(t => coverage[t].claims), 1);
 
@@ -1748,11 +2201,14 @@ function renderCoverage(frame) {
     const widthPct = Math.max((entry.claims / maxClaims) * 100, 8);
     const statusClass = 'status-' + entry.status;
     const bgColor = EVIDENCE_COLORS[entry.max_evidence] || EVIDENCE_COLORS.stated;
+    const hasSandbox = entry.sandboxExtra > 0;
 
     html += '<div class="coverage-bar-row">';
-    html += '<span class="coverage-topic" title="' + escapeHtml(topic) + '">' + escapeHtml(topic) + '</span>';
+    html += '<span class="coverage-topic" title="' + escapeHtml(topic) + '">' + escapeHtml(topic);
+    if (hasSandbox) html += ' <span style="color:var(--orange);font-size:7pt;">+' + entry.sandboxExtra + '</span>';
+    html += '</span>';
     html += '<div class="coverage-bar-track">';
-    html += '<div class="coverage-bar-fill" style="width:' + widthPct + '%;background:' + bgColor + ';opacity:0.7;"></div>';
+    html += '<div class="coverage-bar-fill" style="width:' + widthPct + '%;background:' + bgColor + ';opacity:0.7;' + (hasSandbox ? 'box-shadow:0 0 6px rgba(245,158,11,0.4);' : '') + '"></div>';
     html += '</div>';
     html += '<span class="coverage-status ' + statusClass + '">' + entry.status + '</span>';
     html += '</div>';
@@ -1765,17 +2221,26 @@ function renderCoverage(frame) {
 function renderStats(frame) {
   const prev = currentFrame > 0 ? FRAMES[currentFrame - 1] : null;
 
+  // Include sandbox claims in counts
+  const sandboxTotal = sandboxClaims.length;
+  const sandboxTopics = new Set(sandboxClaims.map(c => c.topic));
+  const frameTopics = new Set(Object.keys(frame.coverage));
+  const newSandboxTopics = [...sandboxTopics].filter(t => !frameTopics.has(t)).length;
+
   // Animate counters
-  animateCounter('statClaims', frame.stats.total, prev?.stats.total);
-  animateCounter('statTopics', frame.stats.topics, prev?.stats.topics);
+  animateCounter('statClaims', frame.stats.total + sandboxTotal, prev?.stats.total);
+  animateCounter('statTopics', frame.stats.topics + newSandboxTopics, prev?.stats.topics);
   animateCounter('statConflicts', frame.conflicts.unresolved, prev?.conflicts.unresolved);
 
   document.getElementById('statPhase').textContent = frame.stats.phase;
 
-  // Evidence distribution
+  // Evidence distribution (include sandbox)
   const evidenceCounts = {};
   EVIDENCE_ORDER.forEach(e => evidenceCounts[e] = 0);
   frame.claims.forEach(c => {
+    if (evidenceCounts[c.evidence] !== undefined) evidenceCounts[c.evidence]++;
+  });
+  sandboxClaims.forEach(c => {
     if (evidenceCounts[c.evidence] !== undefined) evidenceCounts[c.evidence]++;
   });
 

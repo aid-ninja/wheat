@@ -3,74 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wheat — The Journey Back to Clarity</title>
+<title>Wheat Sprint Presentation — Live Visualization</title>
 <style>
-  /* ═══════════════════════════════════════════════════════════════
-     SAMURAI JACK THEME
-     Inspired by Genndy Tartakovsky's visual language:
-     - Bold geometric shapes
-     - High contrast with limited palette
-     - Dramatic negative space
-     - Thick brush-stroke aesthetic
-     - Japanese woodblock print influence
-     ═══════════════════════════════════════════════════════════════ */
-
   :root {
-    /* Samurai Jack palette */
-    --ink: #0d0d0d;
-    --parchment: #f5ead6;
-    --parchment-dim: #d9cbb5;
-    --blood: #c0392b;
-    --blood-dim: rgba(192,57,43,0.15);
-    --bamboo: #2d6a4f;
-    --bamboo-dim: rgba(45,106,79,0.15);
-    --sky: #4a90d9;
-    --sky-dim: rgba(74,144,217,0.15);
-    --gold: #d4a017;
-    --gold-dim: rgba(212,160,23,0.15);
-    --shadow: rgba(13,13,13,0.7);
-    --stroke: #1a1a1a;
-  }
-
-  @keyframes brushIn {
-    from { clip-path: inset(0 100% 0 0); }
-    to { clip-path: inset(0 0 0 0); }
-  }
-
-  @keyframes fadeUp {
-    from { transform: translateY(30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  @keyframes sliceIn {
-    0% { transform: scaleX(0); transform-origin: left; }
-    100% { transform: scaleX(1); transform-origin: left; }
-  }
-
-  @keyframes pulseGlow {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(212,160,23,0.4); }
-    50% { box-shadow: 0 0 20px 4px rgba(212,160,23,0.15); }
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263548;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.12);
+    --pink: #f472b6;
+    --pink-dim: rgba(244,114,182,0.12);
+    --cyan: #22d3ee;
+    --cyan-dim: rgba(34,211,238,0.12);
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   html, body {
     height: 100%;
+    margin: 0;
     scroll-behavior: smooth;
+  }
+
+  html {
     overflow-y: scroll;
     scroll-snap-type: y mandatory;
   }
 
   body {
-    font-family: 'Georgia', 'Times New Roman', serif;
-    background: var(--ink);
-    color: var(--parchment);
-    font-size: 12pt;
-    line-height: 1.6;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    font-size: 11pt;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
   }
 
-  /* ── Slides ──────────────────────────────────────────────── */
   .slide {
     width: 100%;
     height: 100vh;
@@ -83,136 +64,104 @@
     scroll-snap-align: start;
   }
 
-  /* Brush stroke dividers */
-  .brush {
-    width: 120px;
-    height: 6px;
-    background: var(--blood);
-    border-radius: 0 3px 3px 0;
-    margin: 20px 0 28px 0;
-    animation: sliceIn 0.6s ease-out forwards;
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40%;
+    height: 100%;
+    background: radial-gradient(ellipse at top right, rgba(59,130,246,0.08) 0%, transparent 70%);
+    pointer-events: none;
   }
 
-  .brush.gold { background: var(--gold); }
-  .brush.bamboo { background: var(--bamboo); }
-  .brush.sky { background: var(--sky); }
-
-  /* ── Typography — bold, geometric, Tartakovsky-style ──── */
   h1 {
-    font-size: 64pt;
-    font-weight: 900;
-    letter-spacing: -0.04em;
-    line-height: 0.95;
-    text-transform: uppercase;
-    color: var(--parchment);
-  }
-
-  h1 .accent {
-    color: var(--blood);
-    display: block;
+    font-size: 42pt;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   h2 {
-    font-size: 36pt;
+    font-size: 32pt;
     font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1.05;
-    color: var(--parchment);
-    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 24px;
+    color: #fff;
   }
 
   h3 {
     font-size: 14pt;
-    font-weight: 400;
-    font-style: italic;
-    color: var(--parchment-dim);
-    letter-spacing: 0.02em;
-  }
-
-  p {
-    font-size: 15pt;
-    color: var(--parchment-dim);
-    line-height: 1.65;
-    max-width: 75%;
-  }
-
-  .kanji {
-    font-size: 180pt;
-    position: absolute;
-    right: 80px;
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 0.04;
-    font-family: serif;
-    font-weight: 900;
-    line-height: 1;
-    color: var(--parchment);
-    user-select: none;
-  }
-
-  /* ── Label — ink stamp style ─────────────────────────── */
-  .stamp {
-    display: inline-block;
-    font-family: -apple-system, sans-serif;
-    font-size: 9pt;
-    font-weight: 700;
-    letter-spacing: 0.14em;
+    font-weight: 600;
+    color: var(--accent-light);
+    margin-bottom: 12px;
     text-transform: uppercase;
-    padding: 5px 14px;
-    border: 2px solid currentColor;
-    margin-bottom: 20px;
+    letter-spacing: 0.08em;
   }
 
-  .stamp-blood { color: var(--blood); border-color: var(--blood); }
-  .stamp-bamboo { color: var(--bamboo); border-color: var(--bamboo); }
-  .stamp-gold { color: var(--gold); border-color: var(--gold); }
-  .stamp-sky { color: var(--sky); border-color: var(--sky); }
-
-  /* ── Cards — woodblock print panels ──────────────────── */
-  .panel {
-    background: rgba(245,234,214,0.04);
-    border-left: 4px solid var(--blood);
-    padding: 24px 28px;
-    margin-bottom: 16px;
-    position: relative;
-  }
-
-  .panel.bamboo { border-color: var(--bamboo); }
-  .panel.gold { border-color: var(--gold); }
-  .panel.sky { border-color: var(--sky); }
-
-  .panel-title {
-    font-family: -apple-system, sans-serif;
-    font-size: 10pt;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+  h4 {
+    font-size: 13pt;
+    font-weight: 600;
+    color: var(--text);
     margin-bottom: 8px;
   }
 
-  .panel.bamboo .panel-title { color: var(--bamboo); }
-  .panel.gold .panel-title { color: var(--gold); }
-  .panel.sky .panel-title { color: var(--sky); }
-  .panel .panel-title { color: var(--blood); }
-
-  .panel-text {
-    font-size: 13pt;
-    color: var(--parchment);
-    line-height: 1.55;
+  p {
+    font-size: 14pt;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+    text-align: left;
+    font-weight: 400;
+    max-width: 85%;
   }
 
-  .panel-detail {
-    font-size: 11pt;
-    color: var(--parchment-dim);
-    margin-top: 8px;
+  .subtitle {
+    font-size: 18pt;
+    color: var(--text-muted);
+    font-weight: 300;
+    max-width: 70%;
   }
 
-  /* ── Layout ──────────────────────────────────────────── */
+  .label {
+    display: inline-block;
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-light);
+    background: rgba(59,130,246,0.12);
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+
+  .label.green { color: var(--green); background: var(--green-dim); }
+  .label.orange { color: var(--orange); background: var(--orange-dim); }
+  .label.red { color: var(--red); background: var(--red-dim); }
+  .label.purple { color: var(--purple); background: var(--purple-dim); }
+  .label.pink { color: var(--pink); background: var(--pink-dim); }
+  .label.cyan { color: var(--cyan); background: var(--cyan-dim); }
+
+  .divider {
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin: 16px 0 24px 0;
+  }
+
   .two-col {
     display: flex;
-    gap: 48px;
+    gap: 40px;
     align-items: flex-start;
   }
+
   .two-col > div { flex: 1; }
 
   .three-col {
@@ -220,142 +169,71 @@
     gap: 24px;
     align-items: stretch;
   }
+
   .three-col > div { flex: 1; }
 
-  /* ── Data viz — bold geometric bars ──────────────────── */
-  .bar-chart {
-    display: flex;
-    align-items: flex-end;
-    gap: 16px;
-    height: 160px;
-    margin: 16px 0;
+  .card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 28px;
+    border: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+    overflow: hidden;
   }
 
-  .bar-group {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
+  .card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
     height: 100%;
-    justify-content: flex-end;
+    background: var(--accent);
+    border-radius: 4px 0 0 4px;
   }
 
-  .bar {
-    width: 100%;
-    max-width: 56px;
-    border-radius: 2px 2px 0 0;
-    transition: height 0.5s ease;
-  }
+  .card.green::after { background: var(--green); }
+  .card.orange::after { background: var(--orange); }
+  .card.red::after { background: var(--red); }
+  .card.purple::after { background: var(--purple); }
+  .card.pink::after { background: var(--pink); }
+  .card.cyan::after { background: var(--cyan); }
 
-  .bar-val {
-    font-family: -apple-system, sans-serif;
-    font-size: 11pt;
-    font-weight: 700;
-    color: var(--parchment);
-  }
-
-  .bar-label {
-    font-family: -apple-system, sans-serif;
+  .card-label {
     font-size: 9pt;
-    color: var(--parchment-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  /* ── Stat blocks ─────────────────────────────────────── */
-  .stat-row {
-    display: flex;
-    gap: 24px;
-    margin: 16px 0;
-  }
-
-  .stat {
-    flex: 1;
-    text-align: center;
-    padding: 20px;
-    border: 1px solid rgba(245,234,214,0.08);
-  }
-
-  .stat-n {
-    font-family: -apple-system, sans-serif;
-    font-size: 36pt;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1;
-  }
-
-  .stat-l {
-    font-family: -apple-system, sans-serif;
-    font-size: 9pt;
-    color: var(--parchment-dim);
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-top: 6px;
+    color: var(--accent-light);
+    margin-bottom: 8px;
   }
 
-  /* ── Table ───────────────────────────────────────────── */
-  table {
-    width: 100%;
-    border-collapse: collapse;
+  .card.green .card-label { color: var(--green); }
+  .card.orange .card-label { color: var(--orange); }
+  .card.red .card-label { color: var(--red); }
+  .card.purple .card-label { color: var(--purple); }
+  .card.cyan .card-label { color: var(--cyan); }
+
+  .card-text {
+    font-size: 15pt;
+    color: var(--text);
+    line-height: 1.5;
+    font-weight: 500;
+  }
+
+  .card-detail {
     font-size: 11pt;
-    margin: 12px 0;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-top: 10px;
   }
 
-  th {
-    text-align: left;
-    padding: 10px 14px;
-    font-family: -apple-system, sans-serif;
-    font-size: 9pt;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--gold);
-    border-bottom: 2px solid rgba(212,160,23,0.3);
-  }
-
-  td {
-    padding: 10px 14px;
-    border-bottom: 1px solid rgba(245,234,214,0.06);
-    color: var(--parchment-dim);
-  }
-
-  /* ── Evidence tier pills ─────────────────────────────── */
-  .tier {
-    font-family: -apple-system, sans-serif;
-    font-size: 9pt;
-    font-weight: 700;
-    padding: 2px 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    display: inline-block;
-  }
-
-  .tier-tested { background: var(--bamboo-dim); color: var(--bamboo); }
-  .tier-documented { background: var(--sky-dim); color: var(--sky); }
-  .tier-web { background: var(--gold-dim); color: var(--gold); }
-  .tier-stated { background: rgba(245,234,214,0.06); color: var(--parchment-dim); }
-
-  /* ── Claim refs ──────────────────────────────────────── */
-  .ref {
-    font-family: -apple-system, monospace;
+  .claim-ref {
     font-size: 8pt;
-    color: rgba(245,234,214,0.25);
-    position: absolute;
-    bottom: 8px;
-    right: 12px;
+    color: var(--text-dim);
+    font-family: monospace;
   }
 
-  .slide-ref {
-    position: absolute;
-    bottom: 28px;
-    right: 40px;
-    font-family: -apple-system, monospace;
-    font-size: 8pt;
-    color: rgba(245,234,214,0.2);
-  }
-
-  /* ── Slide nav ───────────────────────────────────────── */
   .slide-nav {
     position: fixed;
     right: 24px;
@@ -363,425 +241,753 @@
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     z-index: 100;
   }
 
   .slide-nav a {
-    width: 6px;
-    height: 6px;
-    border-radius: 0;
-    background: rgba(245,234,214,0.15);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
     display: block;
     transition: all 0.2s;
-    transform: rotate(45deg);
+    text-decoration: none;
   }
 
   .slide-nav a:hover,
   .slide-nav a.active {
-    background: var(--blood);
-    transform: rotate(45deg) scale(1.6);
+    background: var(--accent);
+    transform: scale(1.5);
   }
 
-  /* ── Check marks ─────────────────────────────────────── */
-  .check {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12pt;
-    margin-bottom: 10px;
-    color: var(--parchment-dim);
+  @keyframes fadeInUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }
-  .check::before {
-    content: '';
-    width: 18px;
-    height: 18px;
-    background: var(--bamboo);
+
+  .fade-in {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .wheat-footer {
+    position: absolute;
+    bottom: 24px;
+    right: 40px;
+    font-size: 8pt;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  .slide-number {
+    position: absolute;
+    bottom: 24px;
+    left: 40px;
+    font-size: 8pt;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* Evidence bar chart */
+  .bar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 16px;
+  }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .bar-label {
+    width: 110px;
+    font-size: 11pt;
+    color: var(--text-muted);
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .bar-track {
+    flex: 1;
+    height: 32px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding-left: 12px;
+    font-size: 11pt;
+    font-weight: 600;
+    color: #fff;
+    transition: width 0.8s ease;
+  }
+
+  .bar-fill.tested { background: var(--green); }
+  .bar-fill.documented { background: var(--accent); }
+  .bar-fill.web { background: var(--orange); }
+  .bar-fill.stated { background: var(--purple); }
+  .bar-fill.production { background: var(--pink); }
+
+  /* Big stat */
+  .big-stat {
+    font-size: 48pt;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .big-stat-label {
+    font-size: 12pt;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 48px;
+    margin-top: 20px;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-size: 36pt;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .stat-desc {
+    font-size: 11pt;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* Risk list */
+  .risk-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .risk-list li {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 13pt;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .risk-list li:last-child { border-bottom: none; }
+
+  .risk-list li strong {
+    color: var(--text);
+  }
+
+  /* Recommendation numbering */
+  .rec-item {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+
+  .rec-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-weight: 700;
+    font-size: 14pt;
     flex-shrink: 0;
   }
-  .check.done::before {
-    content: '';
-    background: var(--bamboo);
-    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+
+  .rec-content {
+    flex: 1;
   }
 
-  /* ── Responsive ──────────────────────────────────────── */
-  @media (max-width: 768px) {
-    .slide { padding: 32px; }
-    h1 { font-size: 36pt; }
-    h2 { font-size: 24pt; }
-    .two-col, .three-col { flex-direction: column; }
-    .kanji { font-size: 100pt; right: 20px; }
-    p { max-width: 100%; }
+  .rec-content h4 {
+    font-size: 14pt;
+    margin-bottom: 4px;
+  }
+
+  .rec-content p {
+    font-size: 11pt;
+    margin-bottom: 0;
+    max-width: 100%;
+  }
+
+  /* Four-panel mockup */
+  .panel-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .panel-grid .panel {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 16px 20px;
+    min-height: 80px;
+  }
+
+  .panel-grid .panel.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .panel-title {
+    font-size: 9pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent-light);
+    margin-bottom: 6px;
+  }
+
+  .panel-desc {
+    font-size: 11pt;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  .scrubber-bar {
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    margin-top: 8px;
+    position: relative;
+  }
+
+  .scrubber-fill {
+    width: 45%;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+  }
+
+  .scrubber-dot {
+    position: absolute;
+    top: -5px;
+    left: 45%;
+    width: 16px;
+    height: 16px;
+    background: var(--accent-light);
+    border-radius: 50%;
+    border: 2px solid var(--bg-dark);
   }
 </style>
 </head>
 <body>
 
-<!-- Slide nav — diamond shapes like Jack's sword guard -->
+<!-- Nav dots -->
 <nav class="slide-nav" aria-label="Slide navigation">
-  <a href="#s1" aria-label="Title"></a>
-  <a href="#s2" aria-label="The Quest"></a>
-  <a href="#s3" aria-label="The Path"></a>
-  <a href="#s4" aria-label="The Forge"></a>
-  <a href="#s5" aria-label="The Trial"></a>
-  <a href="#s6" aria-label="The Risks"></a>
-  <a href="#s7" aria-label="The Verdict"></a>
-  <a href="#s8" aria-label="Next Steps"></a>
-  <a href="#s9" aria-label="Certificate"></a>
+  <a href="#slide-1" title="Title"></a>
+  <a href="#slide-2" title="The Question"></a>
+  <a href="#slide-3" title="What We Built"></a>
+  <a href="#slide-4" title="Architecture"></a>
+  <a href="#slide-5" title="Evidence"></a>
+  <a href="#slide-6" title="Pedagogy"></a>
+  <a href="#slide-7" title="What Went Right"></a>
+  <a href="#slide-8" title="Uncertainties"></a>
+  <a href="#slide-9" title="Blind Spots"></a>
+  <a href="#slide-10" title="Recommendations"></a>
+  <a href="#slide-11" title="Sprint Health"></a>
+  <a href="#slide-12" title="Next Steps"></a>
 </nav>
 
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 1 — TITLE
-     ═══════════════════════════════════════════════════════════ -->
-<div class="slide" id="s1">
-  <div class="kanji">麦</div>
-  <span class="stamp stamp-blood">Wheat Research Sprint</span>
-  <h1>Long ago in<br>a distant land,<br><span class="accent">the data was chaos.</span></h1>
-  <div class="brush"></div>
-  <h3>How can we build a live visualization that teaches Wheat by showing itself in action?</h3>
-  <p style="margin-top:16px;font-size:12pt;color:rgba(245,234,214,0.35)">2026-03-11 &mdash; For the wandering developer</p>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 2 — THE QUEST (Constraints)
-     ═══════════════════════════════════════════════════════════ -->
-<div class="slide" id="s2">
-  <div class="kanji">道</div>
-  <span class="stamp stamp-gold">The Quest</span>
-  <h2>Five Sacred Constraints</h2>
-  <div class="brush gold"></div>
-
-  <div class="three-col" style="margin-top:16px">
-    <div class="panel gold">
-      <div class="panel-title">Dogfooding</div>
-      <div class="panel-text">The visualization must be built through Wheat itself &mdash; claims, compiler, then artifact.</div>
-      <span class="ref">d001</span>
+<!-- ====== SLIDE 1: Title ====== -->
+<div class="slide" id="slide-1">
+  <span class="label">Wheat Research Sprint</span>
+  <h1>Teaching Wheat<br>By Showing Itself</h1>
+  <p class="subtitle">A live visualization that demonstrates the framework by being a product of it.</p>
+  <div style="margin-top: 32px; display: flex; gap: 40px;">
+    <div>
+      <div class="big-stat" style="font-size: 36pt;">156</div>
+      <div class="big-stat-label">claims</div>
     </div>
-    <div class="panel gold">
-      <div class="panel-title">Self-Contained</div>
-      <div class="panel-text">Output must be standalone HTML. Inline CSS/JS. No external dependencies. Opens from <code>file://</code>.</div>
-      <span class="ref">d002</span>
+    <div>
+      <div class="big-stat" style="font-size: 36pt;">9</div>
+      <div class="big-stat-label">topics</div>
     </div>
-    <div class="panel gold">
-      <div class="panel-title">Self-Explanatory</div>
-      <div class="panel-text">A developer seeing Wheat for the first time must understand it without external docs.</div>
-      <span class="ref">d003</span>
+    <div>
+      <div class="big-stat" style="font-size: 36pt;">17</div>
+      <div class="big-stat-label">commands</div>
     </div>
   </div>
-
-  <div class="two-col" style="margin-top:16px">
-    <div class="panel gold">
-      <div class="panel-title">Full Freedom</div>
-      <div class="panel-text">No budget, timeline, or tech constraints. Go as ambitious as needed.</div>
-      <span class="ref">d004</span>
-    </div>
-    <div class="panel gold">
-      <div class="panel-title">The Test</div>
-      <div class="panel-text">"I'll know it when I see it." Visually compelling enough to sell itself on first impression.</div>
-      <span class="ref">d005</span>
-    </div>
-  </div>
+  <div style="margin-top: 24px; font-size: 10pt; color: var(--text-dim);">March 11, 2026 &middot; Certificate: sha256:70ea25d</div>
+  <div class="wheat-footer">Compiled by Wheat v0.2.0</div>
+  <div class="slide-number">1 / 12</div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 3 — THE PATH (Architecture research)
-     ═══════════════════════════════════════════════════════════ -->
-<div class="slide" id="s3">
-  <div class="kanji">道</div>
-  <span class="stamp stamp-sky">The Path</span>
-  <h2>Choosing the Way</h2>
-  <div class="brush sky"></div>
+<!-- ====== SLIDE 2: The Question ====== -->
+<div class="slide" id="slide-2">
+  <span class="label purple">Define Phase</span>
+  <h2>How can we build a live visualization of Wheat that teaches the framework by showing itself in action?</h2>
+  <div class="divider"></div>
+  <div class="three-col" style="margin-top: 16px;">
+    <div class="card">
+      <div class="card-label">Audience</div>
+      <div class="card-text">A developer seeing Wheat for the first time</div>
+      <div class="card-detail">Self-explanatory without external docs <span class="claim-ref">[d003]</span></div>
+    </div>
+    <div class="card green">
+      <div class="card-label">Constraint</div>
+      <div class="card-text">Self-contained HTML, zero external dependencies</div>
+      <div class="card-detail">Works via file://, works offline <span class="claim-ref">[d002]</span></div>
+    </div>
+    <div class="card purple">
+      <div class="card-label">Meta-Constraint</div>
+      <div class="card-text">Must dogfood the Wheat pipeline itself</div>
+      <div class="card-detail">Claims, compiler, then artifact <span class="claim-ref">[d001]</span></div>
+    </div>
+  </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+  <div class="slide-number">2 / 12</div>
+</div>
 
+<!-- ====== SLIDE 3: What We Built ====== -->
+<div class="slide" id="slide-3">
+  <span class="label green">Prototype</span>
+  <h2>The Replay Viewer</h2>
+  <p>A four-panel interactive replay of the entire sprint, extracted from git history.</p>
+  <div class="panel-grid">
+    <div class="panel full-width">
+      <div class="panel-title">Timeline Scrubber</div>
+      <div class="panel-desc">Play/pause, speed control, keyboard shortcuts. 35 commits expanded to ~50-60 frames via hybrid sub-framing.</div>
+      <div class="scrubber-bar">
+        <div class="scrubber-fill"></div>
+        <div class="scrubber-dot"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Claims Panel</div>
+      <div class="panel-desc">Claims appear and animate in as the scrubber advances. Grouped by phase with color coding. <span class="claim-ref">[p014]</span></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Coverage &amp; Stats</div>
+      <div class="panel-desc">Topic coverage map and evidence distribution update in real time per frame. <span class="claim-ref">[p017]</span></div>
+    </div>
+    <div class="panel full-width" style="background: var(--bg-card-hover);">
+      <div class="panel-title">Milestone Markers</div>
+      <div class="panel-desc">Key moments annotated on the timeline: first prototype, blind-spot analysis, evidence milestones. <span class="claim-ref">[r042, e010]</span></div>
+    </div>
+  </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+  <div class="slide-number">3 / 12</div>
+</div>
+
+<!-- ====== SLIDE 4: Architecture Decisions ====== -->
+<div class="slide" id="slide-4">
+  <span class="label">Architecture</span>
+  <h2>Key Design Decisions</h2>
+  <div class="three-col" style="margin-top: 8px;">
+    <div class="card">
+      <div class="card-label">Pre-Computed Frames</div>
+      <div class="card-text">Frames extracted from git at build time, not at runtime</div>
+      <div class="card-detail">Eliminates repo dependency for viewers. Stateless render function means any frame can be shown independently. <span class="claim-ref">[r042, p016]</span></div>
+    </div>
+    <div class="card green">
+      <div class="card-label">Hybrid Sub-Framing</div>
+      <div class="card-text">Batch commits auto-split into sub-frames</div>
+      <div class="card-detail">Commits with &gt;3 claims get sub-frames grouped by topic. Preserves git fidelity while solving pacing. <span class="claim-ref">[x015, e010]</span></div>
+    </div>
+    <div class="card purple">
+      <div class="card-label">Compiler as Diff Engine</div>
+      <div class="card-text">7-pass pipeline, 1000 claims in 59ms</div>
+      <div class="card-detail">Same compilation.json feeds dashboard, brief, PDF, presentation, and replay. Linear scaling confirmed. <span class="claim-ref">[e001, w010, r038]</span></div>
+    </div>
+  </div>
+  <div style="margin-top: 24px;">
+    <div class="two-col">
+      <div class="card orange" style="padding: 20px 28px;">
+        <div class="card-label" style="color: var(--orange);">Zero Dependencies</div>
+        <div class="card-detail" style="margin-top: 0;">Server: 133 lines, no npm. Compiler: 685 lines, no npm. All output: inline CSS/JS. <span class="claim-ref">[p001, r014]</span></div>
+      </div>
+      <div class="card" style="padding: 20px 28px;">
+        <div class="card-label">17-Command Suite</div>
+        <div class="card-detail" style="margin-top: 0;">3 tiers: Sprint Lifecycle (10), Quality Assurance (4), Operations (3). Three feedback loops. <span class="claim-ref">[r013, r016]</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+  <div class="slide-number">4 / 12</div>
+</div>
+
+<!-- ====== SLIDE 5: Evidence Summary ====== -->
+<div class="slide" id="slide-5">
+  <span class="label cyan">Evidence</span>
+  <h2>Evidence Distribution</h2>
+  <p>How confident are we? 147 active claims across 5 evidence tiers.</p>
+  <div class="two-col" style="margin-top: 12px;">
+    <div>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label">Tested</div>
+          <div class="bar-track"><div class="bar-fill tested" style="width: 23%;">34</div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Documented</div>
+          <div class="bar-track"><div class="bar-fill documented" style="width: 17%;">25</div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Web</div>
+          <div class="bar-track"><div class="bar-fill web" style="width: 51%;">75</div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Stated</div>
+          <div class="bar-track"><div class="bar-fill stated" style="width: 9%;">13</div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Production</div>
+          <div class="bar-track"><div class="bar-fill production" style="width: 0%;"></div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-label">Strong Signal</div>
+        <div class="card-text">40% of claims are documented or tested</div>
+        <div class="card-detail">34 tested claims span 5 of 9 topics. Architecture and UX are well-validated.</div>
+      </div>
+      <div class="card orange">
+        <div class="card-label" style="color: var(--orange);">Watch Out</div>
+        <div class="card-text">0 production-tier claims</div>
+        <div class="card-detail">No real users yet. The 13 stated claims are constraints and feedback -- correct at that tier.</div>
+      </div>
+    </div>
+  </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+  <div class="slide-number">5 / 12</div>
+</div>
+
+<!-- ====== SLIDE 6: Pedagogy ====== -->
+<div class="slide" id="slide-6">
+  <span class="label orange">Pedagogy</span>
+  <h2>What We Learned About Teaching</h2>
+  <p>The sprint's most important finding: we built the instrument but not the lesson plan.</p>
+  <div class="divider"></div>
   <div class="two-col">
     <div>
-      <div class="panel sky">
-        <div class="panel-title">The Weapon</div>
-        <div class="panel-text">Zero-dependency Node.js SSE server. <code>fs.watch</code> on claims.json, auto-compile, push to browser.</div>
-        <div class="panel-detail">133 lines. No npm install. Pure Node.js core.</div>
-        <span class="ref">p001</span>
+      <div class="card red" style="margin-bottom: 16px;">
+        <div class="card-label">The Gap</div>
+        <div class="card-text">The visualization shows what happened but not why</div>
+        <div class="card-detail">No annotations explain Wheat concepts at key moments. No learning objectives defined. <span class="claim-ref">[r049, r050]</span></div>
       </div>
-      <div class="panel sky">
-        <div class="panel-title">Browser-Only: Defeated</div>
-        <div class="panel-text">File System Access API is Chrome-only, requires manual picker each session. A server is unavoidable.</div>
-        <span class="ref">r003</span>
-      </div>
-    </div>
-    <div>
-      <div class="panel sky">
-        <div class="panel-title">The Pattern</div>
-        <div class="panel-text">HMR-style: server sends hash notification, browser fetches full data. Lightweight, efficient.</div>
-        <span class="ref">r006</span>
-      </div>
-      <div class="panel sky">
-        <div class="panel-title">The Resolve</div>
-        <div class="panel-text">Two artifacts serve two masters: live server for working, static HTML for sharing. The tension between them is the design.</div>
-        <span class="ref">r007, f003</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 4 — THE FORGE (What we built)
-     ═══════════════════════════════════════════════════════════ -->
-<div class="slide" id="s4">
-  <div class="kanji">鍛</div>
-  <span class="stamp stamp-bamboo">The Forge</span>
-  <h2>What Was Built</h2>
-  <div class="brush bamboo"></div>
-
-  <div class="two-col">
-    <div>
-      <div class="panel bamboo">
-        <div class="panel-title">Timeline-First Dashboard</div>
-        <div class="panel-text">Vertical timeline as the UI spine. Claims as expandable nodes. Phase-colored system: define=amber, research=blue, prototype=green, evaluate=purple, feedback=cyan.</div>
-        <div class="panel-detail">Progressive disclosure. Reverse chronological. Newest at top.</div>
-        <span class="ref">p006, p007, f006</span>
-      </div>
-
-      <div class="panel bamboo">
-        <div class="panel-title">17-Command Suite</div>
-        <div class="panel-text">3 tiers: Lifecycle (10), Quality Assurance (4), Operations (3). Three feedback loops: self-correction, external validation, meta-learning.</div>
-        <span class="ref">r013, r016</span>
+      <div class="card orange">
+        <div class="card-label" style="color: var(--orange);">Echo Chamber</div>
+        <div class="card-text">13 claims, all from a single source</div>
+        <div class="card-detail">Pedagogy is the only topic with mono-source evidence. Needs external validation.</div>
       </div>
     </div>
     <div>
-      <div class="panel bamboo">
-        <div class="panel-title">Compiler v0.2.0</div>
-        <div class="panel-text">685 lines. 7-pass pipeline. Constraint-aware coverage. 9 new capabilities: --diff, corroboration, burn-residue safety, module exports.</div>
-        <span class="ref">r014</span>
+      <h3 style="margin-bottom: 16px;">Proposed Solutions</h3>
+      <div class="card green" style="margin-bottom: 12px; padding: 20px 28px;">
+        <div class="card-detail" style="margin-top: 0;"><strong>5 learning objectives</strong> designed for the replay viewer <span class="claim-ref">[r064]</span></div>
       </div>
-
-      <div class="panel bamboo">
-        <div class="panel-title">WCAG 2.2 AA</div>
-        <div class="panel-text">13/13 accessibility checks pass. Keyboard navigation, ARIA landmarks, aria-live regions, contrast 5.08:1. Built in ~25 lines of changes.</div>
-        <span class="ref">p009, e004</span>
+      <div class="card green" style="margin-bottom: 12px; padding: 20px 28px;">
+        <div class="card-detail" style="margin-top: 0;"><strong>Contextual annotations</strong> at key frames explaining concepts <span class="claim-ref">[r065]</span></div>
+      </div>
+      <div class="card green" style="margin-bottom: 12px; padding: 20px 28px;">
+        <div class="card-detail" style="margin-top: 0;"><strong>Three-act narrative structure</strong> for guided replay <span class="claim-ref">[r066]</span></div>
+      </div>
+      <div class="card" style="padding: 20px 28px;">
+        <div class="card-detail" style="margin-top: 0;"><strong>Tension:</strong> Scaffolding risks making the tool feel like a tutorial rather than a professional tool <span class="claim-ref">[r067]</span></div>
       </div>
     </div>
   </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+  <div class="slide-number">6 / 12</div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 5 — THE TRIAL (Benchmarks & evaluation)
-     ═══════════════════════════════════════════════════════════ -->
-<div class="slide" id="s5">
-  <div class="kanji">試</div>
-  <span class="stamp stamp-bamboo">The Trial</span>
-  <h2>Tested Against Reality</h2>
-  <div class="brush bamboo"></div>
+<!-- ====== SLIDE 7: What Went Right ====== -->
+<div class="slide" id="slide-7">
+  <span class="label green">Strengths</span>
+  <h2>What Went Right</h2>
+  <div class="three-col" style="margin-top: 8px;">
+    <div class="card green">
+      <div class="card-label">Dogfooding Loop</div>
+      <div class="card-text">Self-referential loop confirmed</div>
+      <div class="card-detail">The dashboard visualizes its own sprint. As claims are added, the dashboard updates in real time. <span class="claim-ref">[p005, e005, w005]</span></div>
+    </div>
+    <div class="card green">
+      <div class="card-label">Performance</div>
+      <div class="card-text">1000 claims in 59ms</div>
+      <div class="card-detail">Linear scaling verified via benchmarks. Compiler has 5 CLI modes, 9 pipeline passes, zero deps. <span class="claim-ref">[e001, w010]</span></div>
+    </div>
+    <div class="card green">
+      <div class="card-label">Accessibility</div>
+      <div class="card-text">WCAG 2.2 AA: 13/13 checks pass</div>
+      <div class="card-detail">Five targeted fixes in ~25 lines: contrast, landmarks, keyboard, aria-live, focus styles. <span class="claim-ref">[p009, e004]</span></div>
+    </div>
+  </div>
+  <div class="two-col" style="margin-top: 24px;">
+    <div class="card">
+      <div class="card-label">Self-Contained Output</div>
+      <div class="card-text">Every artifact works offline via file://</div>
+      <div class="card-detail">Automated guard: <code>wheat-compiler.js --scan</code> checks all HTML for external URLs. <span class="claim-ref">[p008, p011]</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Multi-Format Pipeline</div>
+      <div class="card-text">One compilation.json feeds 5 renderers</div>
+      <div class="card-detail">Markdown, PDF, HTML dashboard, HTML presentation, replay viewer -- all from the same data. <span class="claim-ref">[r038]</span></div>
+    </div>
+  </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+  <div class="slide-number">7 / 12</div>
+</div>
 
-  <div class="two-col">
+<!-- ====== SLIDE 8: What We're Not Sure About ====== -->
+<div class="slide" id="slide-8">
+  <span class="label orange">Open Questions</span>
+  <h2>What We're Not Sure About</h2>
+  <p>These are the areas where evidence is thin or confidence is low.</p>
+  <div class="divider"></div>
+  <ul class="risk-list" style="max-width: 80%;">
+    <li><strong>Audience assumptions are unvalidated.</strong> "Self-explanatory without external docs" is asserted but never tested with a real user. <span class="claim-ref">[d003, r051]</span></li>
+    <li><strong>Scope expanded significantly.</strong> Sprint grew from visualization into compiler features, accessibility, presentations, and replay. Productive, but risky under time constraints. <span class="claim-ref">[r039]</span></li>
+    <li><strong>Confirmation bias in external validation.</strong> All 15 witness claims are confirmatory. No disconfirming evidence was sought. <span class="claim-ref">[r055, x023-x027]</span></li>
+    <li><strong>Selection bias in evidence tiers.</strong> Technical claims reach "tested" easily; UX claims stay at "stated." Evidence is structurally uneven. <span class="claim-ref">[x010]</span></li>
+    <li><strong>Replay file size.</strong> 1.8MB uncompressed (corrected from 763KB estimate). Gzips to ~180KB, but delta encoding was rejected as premature. <span class="claim-ref">[x020-x022]</span></li>
+  </ul>
+  <div class="wheat-footer">Compiled by Wheat</div>
+  <div class="slide-number">8 / 12</div>
+</div>
+
+<!-- ====== SLIDE 9: Blind Spots ====== -->
+<div class="slide" id="slide-9">
+  <span class="label red">Blind Spots</span>
+  <h2>What We Found Missing</h2>
+  <p>Identified via structured /blind-spot analysis.</p>
+  <div class="three-col" style="margin-top: 16px;">
     <div>
-      <p style="margin-bottom:20px">The compiler was forged to endure. We tested it at scales far beyond the current sprint.</p>
-
-      <div class="bar-chart" role="img" aria-label="Compiler performance: 42 claims 45ms, 100 claims 44ms, 250 claims 65ms, 500 claims 50ms, 1000 claims 59ms">
-        <div class="bar-group">
-          <div class="bar-val">45ms</div>
-          <div class="bar" style="height:69%;background:var(--sky)"></div>
-          <div class="bar-label">42</div>
-        </div>
-        <div class="bar-group">
-          <div class="bar-val">44ms</div>
-          <div class="bar" style="height:68%;background:var(--sky)"></div>
-          <div class="bar-label">100</div>
-        </div>
-        <div class="bar-group">
-          <div class="bar-val">65ms</div>
-          <div class="bar" style="height:100%;background:var(--sky)"></div>
-          <div class="bar-label">250</div>
-        </div>
-        <div class="bar-group">
-          <div class="bar-val">50ms</div>
-          <div class="bar" style="height:77%;background:var(--sky)"></div>
-          <div class="bar-label">500</div>
-        </div>
-        <div class="bar-group">
-          <div class="bar-val">59ms</div>
-          <div class="bar" style="height:91%;background:var(--sky)"></div>
-          <div class="bar-label">1000</div>
-        </div>
+      <div class="card red" style="margin-bottom: 16px;">
+        <div class="card-label">High Severity</div>
+        <div class="card-text">Pedagogy gap</div>
+        <div class="card-detail">Built the instrument but not the lesson plan. Directly undermines the sprint question. <span class="claim-ref">[r048-r050]</span></div>
       </div>
-      <p style="font-size:10pt;color:rgba(245,234,214,0.3);text-align:center">Claims &rarr;</p>
-    </div>
-    <div>
-      <div class="stat-row" style="flex-direction:column;gap:12px">
-        <div class="stat">
-          <div class="stat-n" style="color:var(--bamboo)">7 / 7</div>
-          <div class="stat-l">Artifacts Self-Contained</div>
-        </div>
-        <div class="stat">
-          <div class="stat-n" style="color:var(--bamboo)">13 / 13</div>
-          <div class="stat-l">WCAG AA Checks Pass</div>
-        </div>
-        <div class="stat">
-          <div class="stat-n" style="color:var(--bamboo)">6 / 6</div>
-          <div class="stat-l">Error Inputs Handled</div>
-        </div>
-      </div>
-      <div class="slide-ref">e001, e002, e003, e004</div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 6 — THE RISKS
-     ═══════════════════════════════════════════════════════════ -->
-<div class="slide" id="s6">
-  <div class="kanji">危</div>
-  <span class="stamp stamp-blood">The Shadows</span>
-  <h2>Risks Faced &amp; Defeated</h2>
-  <div class="brush"></div>
-
-  <table>
-    <thead>
-      <tr><th>Threat</th><th>Status</th><th>Resolution</th></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td style="color:var(--parchment)">Server vs self-contained HTML tension</td>
-        <td><span class="tier tier-tested">resolved</span></td>
-        <td>Two artifacts: live server for dev, static for sharing</td>
-      </tr>
-      <tr>
-        <td style="color:var(--parchment)">Compiler crashes on malformed input</td>
-        <td><span class="tier tier-tested">fixed</span></td>
-        <td>try/catch added &mdash; clean error messages, no stack traces</td>
-      </tr>
-      <tr>
-        <td style="color:var(--parchment)">Zero accessibility infrastructure</td>
-        <td><span class="tier tier-tested">fixed</span></td>
-        <td>5 WCAG 2.2 AA fixes in ~25 lines, 13/13 checks pass</td>
-      </tr>
-      <tr>
-        <td style="color:var(--parchment)">Constraint false-positive warnings</td>
-        <td><span class="tier tier-tested">fixed</span></td>
-        <td>Constraint-aware coverage: W_CONSTRAINT_ONLY vs W_WEAK_EVIDENCE</td>
-      </tr>
-      <tr>
-        <td style="color:var(--parchment)">Template imports external Google Fonts</td>
-        <td><span class="tier tier-web">open</span></td>
-        <td>Remove @import; use system font stack</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <p style="margin-top:20px;font-size:12pt">One resolved conflict: <strong style="color:var(--bamboo)">p001</strong> (tested: 133 lines) superseded <strong style="color:var(--blood);text-decoration:line-through;opacity:0.5">r008</strong> (web: ~80 estimated). Evidence wins.</p>
-  <div class="slide-ref">r007, e002, p009, r012, r022</div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 7 — THE VERDICT
-     ═══════════════════════════════════════════════════════════ -->
-<div class="slide" id="s7">
-  <div class="kanji">決</div>
-  <span class="stamp stamp-bamboo">The Verdict</span>
-  <h2>Ship It</h2>
-  <div class="brush bamboo"></div>
-
-  <div class="stat-row">
-    <div class="stat" style="animation:pulseGlow 3s ease-in-out infinite">
-      <div class="stat-n" style="color:var(--gold)">48</div>
-      <div class="stat-l">Total Claims</div>
-    </div>
-    <div class="stat">
-      <div class="stat-n" style="color:var(--bamboo)">8</div>
-      <div class="stat-l">Topics Covered</div>
-    </div>
-    <div class="stat">
-      <div class="stat-n" style="color:var(--bamboo)">6 / 8</div>
-      <div class="stat-l">Topics at Tested</div>
-    </div>
-    <div class="stat">
-      <div class="stat-n" style="color:var(--bamboo)">0</div>
-      <div class="stat-l">Conflicts</div>
-    </div>
-    <div class="stat">
-      <div class="stat-n" style="color:var(--gold)">5 / 5</div>
-      <div class="stat-l">Constraints Met</div>
-    </div>
-  </div>
-
-  <div class="panel bamboo" style="margin-top:24px">
-    <div class="panel-title">Recommendation</div>
-    <div class="panel-text" style="font-size:16pt">Ship the live dashboard as the canonical Wheat teaching tool. The self-referential loop &mdash; claims about the dashboard, displayed by the dashboard &mdash; <em>is</em> the teaching mechanism. A developer watching it learns Wheat by seeing Wheat work on itself.</div>
-  </div>
-
-  <div class="slide-ref">e005, e006</div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 8 — NEXT STEPS
-     ═══════════════════════════════════════════════════════════ -->
-<div class="slide" id="s8">
-  <div class="kanji">次</div>
-  <span class="stamp stamp-sky">The Journey Continues</span>
-  <h2>Next Steps</h2>
-  <div class="brush sky"></div>
-
-  <div class="two-col">
-    <div>
-      <div class="panel sky" style="margin-bottom:16px">
-        <div class="panel-title">Immediate</div>
-        <div class="panel-text">Remove Google Fonts import from explainer template. Run <code>/witness</code> on key claims for external corroboration. Run <code>/calibrate</code> after production use to validate evidence tiers.</div>
-      </div>
-      <div class="panel sky">
-        <div class="panel-title">Future Sprints</div>
-        <div class="panel-text">Use the 17-command suite. Leverage <code>/challenge</code> for adversarial testing. <code>/replay</code> for sprint archaeology. <code>/handoff</code> for team transitions. <code>/merge</code> for cross-sprint synthesis.</div>
+      <div class="card red">
+        <div class="card-label">High Severity</div>
+        <div class="card-text">No automated tests</div>
+        <div class="card-detail">685-line compiler with 5 CLI modes and zero repeatable assertions. <span class="claim-ref">[r053, r057]</span></div>
       </div>
     </div>
     <div>
-      <div class="panel sky">
-        <div class="panel-title">The Meta-Lesson</div>
-        <div class="panel-text" style="font-style:italic;font-size:14pt">"The framework teaches itself by being used on itself. Every claim in this sprint is evidence that Wheat works &mdash; and the presentation you're reading right now was gated by the compiler that those claims describe."</div>
-        <div class="panel-detail" style="margin-top:12px">20 of 48 claims are self-referential. The ouroboros is the feature.</div>
+      <div class="card orange" style="margin-bottom: 16px;">
+        <div class="card-label" style="color: var(--orange);">Medium Severity</div>
+        <div class="card-text">Replay viewer accessibility</div>
+        <div class="card-detail">Primary teaching artifact has no WCAG audit. Dashboard was audited; replay was not. <span class="claim-ref">[r059]</span></div>
+      </div>
+      <div class="card orange">
+        <div class="card-label" style="color: var(--orange);">Medium Severity</div>
+        <div class="card-text">No user testing</div>
+        <div class="card-detail">Target audience assumptions are entirely unvalidated. <span class="claim-ref">[r051]</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-label">Structural</div>
+        <div class="card-text">No mobile / responsive</div>
+        <div class="card-detail">All layouts are desktop-only. <span class="claim-ref">[r052]</span></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Structural</div>
+        <div class="card-text">Manual conflict detection</div>
+        <div class="card-detail">Contradictory claims can coexist undetected. No semantic analysis. <span class="claim-ref">[x009]</span></div>
       </div>
     </div>
   </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+  <div class="slide-number">9 / 12</div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 9 — CERTIFICATE
-     ═══════════════════════════════════════════════════════════ -->
-<div class="slide" id="s9" style="justify-content:center;align-items:center;text-align:center">
-  <span class="stamp stamp-gold">Compilation Certificate</span>
-  <h2 style="margin-top:20px;font-size:24pt">Deterministic Output</h2>
-  <div class="brush gold" style="margin-left:auto;margin-right:auto"></div>
-
-  <div style="margin-top:24px;font-family:-apple-system,monospace;font-size:11pt;color:var(--parchment-dim);line-height:2">
-    <div><strong style="color:var(--gold)">Hash</strong> &nbsp; sha256:b311e643ba878...</div>
-    <div><strong style="color:var(--gold)">Compiler</strong> &nbsp; wheat v0.2.0</div>
-    <div><strong style="color:var(--gold)">Claims</strong> &nbsp; 48 total &middot; 46 active &middot; 2 superseded</div>
-    <div><strong style="color:var(--gold)">Compiled</strong> &nbsp; 2026-03-11T08:17:50.289Z</div>
-    <div><strong style="color:var(--gold)">Status</strong> &nbsp; READY &middot; 0 conflicts</div>
+<!-- ====== SLIDE 10: Recommendations ====== -->
+<div class="slide" id="slide-10">
+  <span class="label green">Recommendations</span>
+  <h2>What To Do Next</h2>
+  <p>Prioritized by impact. Items 1-3 are ship-blocking.</p>
+  <div class="divider"></div>
+  <div style="max-width: 80%;">
+    <div class="rec-item">
+      <div class="rec-num" style="background: var(--red);">1</div>
+      <div class="rec-content">
+        <h4>Define learning objectives for the replay viewer</h4>
+        <p>Add contextual annotations at key frames. This is the highest-priority gap. <span class="claim-ref">[r064, r065, r056]</span></p>
+      </div>
+    </div>
+    <div class="rec-item">
+      <div class="rec-num" style="background: var(--red);">2</div>
+      <div class="rec-content">
+        <h4>Add a minimal test suite for the compiler</h4>
+        <p>6 tests covering happy path, error cases, and determinism. <span class="claim-ref">[r057]</span></p>
+      </div>
+    </div>
+    <div class="rec-item">
+      <div class="rec-num" style="background: var(--red);">3</div>
+      <div class="rec-content">
+        <h4>Run WCAG audit on the replay viewer</h4>
+        <p>Apply the same 5-fix pattern that worked for the dashboard. <span class="claim-ref">[r059, r021]</span></p>
+      </div>
+    </div>
+    <div class="rec-item">
+      <div class="rec-num">4</div>
+      <div class="rec-content">
+        <h4>Add claim filtering to the dashboard</h4>
+        <p>Filter by topic, type, and evidence tier for sprints with 50+ claims. <span class="claim-ref">[r027]</span></p>
+      </div>
+    </div>
+    <div class="rec-item">
+      <div class="rec-num">5</div>
+      <div class="rec-content">
+        <h4>Implement guided replay with three-act structure</h4>
+        <p>Narrative arc plus optional sandbox mode for hands-on learning. <span class="claim-ref">[r066, r068]</span></p>
+      </div>
+    </div>
   </div>
-
-  <p style="margin-top:32px;max-width:500px;text-align:center;font-size:12pt;font-style:italic;color:rgba(245,234,214,0.3)">
-    Same claims in &rarr; same brief out. The Bran invariant holds.
-  </p>
-
-  <div style="margin-top:48px;font-size:10pt;color:rgba(245,234,214,0.15)">
-    Compiled by Wheat &mdash; gotta get back, back to the past
-  </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+  <div class="slide-number">10 / 12</div>
 </div>
 
-<!-- ── Slide nav active state ──────────────────────────────── -->
+<!-- ====== SLIDE 11: Sprint Health ====== -->
+<div class="slide" id="slide-11">
+  <span class="label">Sprint Health</span>
+  <h2>By The Numbers</h2>
+  <div class="stat-row" style="margin-top: 32px;">
+    <div class="stat-item">
+      <div class="stat-num" style="color: var(--accent-light);">156</div>
+      <div class="stat-desc">Total Claims</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" style="color: var(--green);">146</div>
+      <div class="stat-desc">Active</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" style="color: var(--text-muted);">4</div>
+      <div class="stat-desc">Superseded</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" style="color: var(--orange);">9</div>
+      <div class="stat-desc">Topics</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" style="color: var(--green);">0</div>
+      <div class="stat-desc">Conflicts</div>
+    </div>
+  </div>
+  <div class="three-col" style="margin-top: 40px;">
+    <div class="card">
+      <div class="card-label">Top Topic</div>
+      <div class="card-text">Architecture</div>
+      <div class="card-detail">48 claims, 7 sources, 5/6 types. The most thoroughly explored area.</div>
+    </div>
+    <div class="card orange">
+      <div class="card-label" style="color: var(--orange);">Thinnest Topic</div>
+      <div class="card-text">Audience</div>
+      <div class="card-detail">3 claims, 2 sources. Needs user testing to validate assumptions.</div>
+    </div>
+    <div class="card purple">
+      <div class="card-label">Velocity</div>
+      <div class="card-text">~10 artifacts, 17 commands</div>
+      <div class="card-detail">156 claims produced in a single research session. <span class="claim-ref">[r034]</span></div>
+    </div>
+  </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+  <div class="slide-number">11 / 12</div>
+</div>
+
+<!-- ====== SLIDE 12: Next Steps ====== -->
+<div class="slide" id="slide-12">
+  <span class="label green">Next Steps</span>
+  <h2>Where We Go From Here</h2>
+  <div class="divider"></div>
+  <div class="two-col" style="margin-top: 8px;">
+    <div>
+      <h3>Immediate</h3>
+      <div class="card red" style="margin-bottom: 16px;">
+        <div class="card-text">Close the pedagogy gap</div>
+        <div class="card-detail">Learning objectives, contextual annotations, worked examples. This is the one thing that determines whether the visualization teaches or just demos.</div>
+      </div>
+      <div class="card orange" style="margin-bottom: 16px;">
+        <div class="card-text">Add compiler test suite</div>
+        <div class="card-detail">6 tests, zero deps. Prevents silent regressions in the 685-line pipeline.</div>
+      </div>
+      <div class="card orange">
+        <div class="card-text">Audit replay viewer accessibility</div>
+        <div class="card-detail">The dashboard passed WCAG AA. The replay viewer hasn't been checked.</div>
+      </div>
+    </div>
+    <div>
+      <h3>Next Sprint</h3>
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-text">User test with a real developer</div>
+        <div class="card-detail">Validate the "self-explanatory" assumption. One session would move 3 claims from stated to tested.</div>
+      </div>
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-text">Guided replay with narrative arc</div>
+        <div class="card-detail">Three-act structure, sandbox mode for hands-on exploration.</div>
+      </div>
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-text">Claim filtering and search</div>
+        <div class="card-detail">Essential for sprints beyond 50 claims. Dashboard needs topic/type/tier filters.</div>
+      </div>
+      <div class="card">
+        <div class="card-text">Mobile / responsive CSS</div>
+        <div class="card-detail">All current layouts are desktop-only.</div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top: 32px; text-align: center; color: var(--text-dim); font-size: 10pt;">
+    Wheat Research Sprint &middot; 156 claims &middot; March 2026 &middot; Certificate: sha256:70ea25d
+  </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+  <div class="slide-number">12 / 12</div>
+</div>
+
 <script>
-  const navLinks = document.querySelectorAll('.slide-nav a');
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        navLinks.forEach(a => a.classList.remove('active'));
-        const id = e.target.id;
-        const idx = parseInt(id.replace('s','')) - 1;
-        if (navLinks[idx]) navLinks[idx].classList.add('active');
+  // Active nav dot tracking
+  const dots = document.querySelectorAll('.slide-nav a');
+  const slides = document.querySelectorAll('.slide');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = Array.from(slides).indexOf(entry.target);
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
       }
     });
   }, { threshold: 0.5 });
-  document.querySelectorAll('.slide').forEach(s => obs.observe(s));
+  slides.forEach(s => observer.observe(s));
+
+  // Keyboard navigation
+  document.addEventListener('keydown', e => {
+    const current = Array.from(slides).findIndex(s => {
+      const rect = s.getBoundingClientRect();
+      return rect.top >= -100 && rect.top < window.innerHeight / 2;
+    });
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+      e.preventDefault();
+      const next = Math.min(current + 1, slides.length - 1);
+      slides[next].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const prev = Math.max(current - 1, 0);
+      slides[prev].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
 </script>
 
 </body>
