@@ -6,7 +6,6 @@ css: |-
   body { font-family: system-ui, sans-serif; font-size: 11pt; line-height: 1.6; color: #111; max-width: 100%; }
   h1 { font-size: 20pt; margin-bottom: 4pt; }
   h2 { font-size: 14pt; margin-top: 16pt; margin-bottom: 6pt; border-bottom: 1px solid #ddd; padding-bottom: 4pt; }
-  h3 { font-size: 12pt; margin-top: 12pt; margin-bottom: 4pt; }
   table { border-collapse: collapse; width: 100%; margin: 8pt 0; font-size: 10pt; }
   th, td { border: 1px solid #ccc; padding: 4pt 8pt; text-align: left; }
   th { background: #f5f5f5; }
@@ -14,166 +13,96 @@ css: |-
   .certificate { margin-top: 24pt; padding: 12pt; background: #f9f9f9; border-radius: 4pt; font-size: 9pt; }
 ---
 
-# Brief: How can we build a live visualization of Wheat that teaches the framework by showing itself in action?
+# Decision Brief: Live Wheat Visualization
 
-**Date**: 2026-03-11
-**Claims**: 156 total, 143 active, 4 superseded, 5 conflicted (2 resolved)
-**Certificate**: sha256:150e17e
-**Status**: BLOCKED (3 unresolved conflicts)
+**Date**: 2026-03-11  |  **Audience**: Developer learning Wheat  |  **Phase**: Compiled
 
 ## Executive Summary
 
-The sprint answered its question decisively: a zero-dependency Node.js server with SSE push, a timeline-first dashboard, and a replay viewer together form a self-referential teaching tool that demonstrates Wheat by being a product of it. All five original constraints are satisfied -- self-contained HTML works via file://, the dogfooding loop is confirmed, and WCAG 2.2 AA accessibility is verified. The compiler scales linearly to 1000+ claims in under 60ms. However, the sprint invested heavily in technical architecture (48 claims) while leaving pedagogy underexplored (13 claims, all from a single source). The visualization shows what happened but does not yet explain why -- it is a demo, not a tutorial. Addressing the pedagogy blind spot is the highest-priority next step.
+The sprint asked: *How can we build a live visualization of Wheat that teaches the framework by showing itself in action?* The answer is a self-contained HTML replay viewer that time-travels through git history, rendering claims, coverage, and conflicts at each commit. The system works — 156 active claims compiled cleanly, the replay viewer is tested, and the architecture requires zero npm dependencies [d002, p001].
 
-## Key Findings
+## Recommendation
 
-### Architecture -- tested (48 claims, 7 sources, 5/6 types)
+Ship the replay viewer as the primary Wheat demonstration artifact. The architecture is validated: SSE streaming for live development [p001], git-based frame extraction for replay [p014, r046], and hybrid sub-framing for batch commits [x015, p015]. Key next steps:
 
-The core architecture is validated and robust:
-
-- **Zero-dependency server**: wheat-server.js is 133 lines with no npm dependencies. SSE auto-reconnect works natively. The server watches the directory (not the file) to survive atomic file replacements [p001, p002, p012, e008].
-- **Compiler performance**: 7-pass pipeline compiles 1000 claims in 59ms. Linear scaling confirmed via benchmarks [e001, w010]. Conflict detection is O(n^2) but stays fast due to sparse conflict graphs.
-- **Compiler capabilities**: v0.2.0 has 685 lines, 5 CLI modes (--summary, --check, --diff, --next, --scan), 9 pipeline passes, module.exports for library usage. Still zero dependencies [r014, r028, r036].
-- **17-command suite** organized in 3 tiers: Sprint Lifecycle (10), Quality Assurance (4), Operations (3). Three feedback loops: self-correction, external validation, meta-learning [r013, r016].
-- **Replay architecture**: Pre-computed frames extracted from git history, hybrid framing (commit-level primary, sub-frames for batches >3 claims), stateless render function. 35 frames expanded to ~50-60 with sub-framing [r042, p013, p016, e010].
-- **Key risk**: Conflict detection relies on manual conflicts_with arrays -- no semantic conflict detection [x009]. The --next heuristic is static, not adaptive [r023].
-
-### UX Pattern -- tested (25 claims, 5 sources, 5/6 types)
-
-- **Timeline-first layout** with progressive disclosure: claims as expandable nodes grouped by phase, reverse-chronological, compact scoreboard [p006, f006].
-- **Phase-colored visual system**: 5 distinct hues (amber/blue/green/purple/cyan) for instant visual grouping. Follows Atlassian's 5-7 hue best practice [p007, w007].
-- **Replay viewer**: Four-panel layout (scrubber + claims + coverage + stats), play/pause/speed, keyboard shortcuts, milestone markers, CSS transitions for claim animations [p014, p017].
-- **Known gaps**: No mobile/responsive design [r052]. No claim filtering for 50+ claim sprints [r027]. No sprint health composite indicator [r032]. Animation timing bugs at high playback speeds partially fixed [x016, p019].
-
-### Accessibility -- tested (14 claims, 4 sources, 3/6 types)
-
-- **WCAG 2.2 AA**: 13/13 applicable checks pass on the live dashboard. Five targeted fixes in ~25 lines: contrast ratio, semantic landmarks, keyboard support, aria-live, focus styles [p009, e004, r033].
-- **Google Fonts removed**: Templates now use system font stack, eliminating external dependency [p010].
-- **Gap**: Replay viewer has had no accessibility audit despite being the primary teaching artifact [r059]. No automated a11y testing in the pipeline [x008].
-
-### Output Format -- tested (12 claims, 5 sources, 5/6 types)
-
-- **Self-contained HTML verified**: All artifacts have zero external dependencies, work via file://, work offline [p008, e003].
-- **Automated guard**: `node wheat-compiler.js --scan` checks all HTML for external URLs, exits 1 on violation [p011].
-- **Multi-format output**: Same compilation.json feeds Markdown, PDF, HTML dashboard, and HTML presentation renderers [r038].
-- **Replay file size**: 1.8MB uncompressed (corrected from 763KB estimate), but gzip-compressible to ~180KB. Delta encoding rejected as premature optimization [x020, x021, x022].
-
-### Dogfooding -- tested (16 claims, 5 sources, 4/6 types)
-
-- **Self-referential loop confirmed**: The dashboard visualizes its own sprint. As claims are added, the dashboard updates in real time [p005, e005, w005].
-- **Git log as event stream**: Wheat commit format is machine-parseable, enabling sprint timeline reconstruction [r025].
-- **Known biases**: Selection bias in evidence -- technical claims reach tested tier easily while UX claims stay at stated [x010]. Witness claims all confirmatory (15/15 non-contradictory), though this is partially by design [r055, x023-x027].
-
-### Pedagogy -- web (13 claims, 1 source, 3/6 types) -- WARNING: echo chamber
-
-This is the sprint's most significant blind spot. All pedagogy claims come from a single research pass:
-
-- **The visualization shows what happened but not why** [r050]. No annotations explain Wheat concepts at key moments.
-- **No learning objectives defined** [r049]. No worked-example scaffolding [r060]. No interactive sandbox [r068].
-- **Recommendations exist**: Five learning objectives proposed [r064], contextual annotations designed [r065], three-act structure outlined [r066]. But none are prototyped or tested.
-- **Tension**: Pedagogical scaffolding risks making the tool feel like a tutorial rather than a professional tool [r067].
-
-### Quality -- tested (13 claims, 3 sources, 5/6 types)
-
-- **Evidence tier system** maps to scientific method's evidence pyramid [r031]. /calibrate loop remains untested (no production data).
-- **Compiler determinism**: Three determinism leaks found and fixed -- canonical JSON hashing, lexicographic tiebreak, compiled_at excluded from certificate [f009].
-- **No automated tests**: Zero test suites for compiler, build tool, or server. Six-test minimal suite recommended [r053, r057].
-- **Subjective quality bar**: "I'll know it when I see it" (d005) is unfalsifiable. Samurai Jack-themed presentation validated stakeholder taste but not rigor [f007, x007].
-
-### Audience -- documented (3 claims, 2 sources, 3/6 types)
-
-- Thin topic: only 3 claims. Target is a developer comfortable with Node.js and JSON [d003, r040].
-- **No user testing**: The "self-explanatory without external docs" constraint (d003) is asserted but never validated [r051].
-
-### Scope -- documented (3 claims, 2 sources, 3/6 types)
-
-- Sprint expanded well beyond original question into compiler features, accessibility, presentations, and replay. Productive but would be risky under time constraints [r039].
-- Velocity: ~10 artifacts, 17 commands, 153 claims in a single session [r034].
-
-## Risks & Open Questions
-
-**High severity:**
-1. **Pedagogy gap** (r048-r050, r056): The visualization does not yet teach. No learning objectives, no annotations, no scaffolding. This directly undermines the sprint question.
-2. **No automated tests** (r053, r057): 685-line compiler with 5 CLI modes and zero repeatable assertions. Silent regressions are inevitable.
-3. **Replay viewer accessibility** (r059): Primary teaching artifact has no WCAG audit.
-
-**Medium severity:**
-4. **No user testing** (r051): Audience assumptions unvalidated.
-5. **Confirmation bias in witnesses** (r055, x026): All external validation sought agreement.
-6. **Manual conflict detection** (x009): Contradictory claims can coexist undetected.
-7. **No mobile/responsive design** (r052): Desktop-only layouts.
-8. **claims.json ergonomics** (r029): 153 claims = 3000+ lines of JSON, unwieldy for manual editing.
-
-**Low severity / deferred:**
-9. Compiler pipeline runs all passes even when early passes produce warnings [x006].
-10. Scalability bottleneck shifts from compiler to I/O and rendering at 1000+ claims [x004].
-11. Replay pacing still has batch-commit jumps despite hybrid framing [p015].
-12. Git-based frame extraction requires repo at generation time [r047].
-
-## Recommendations
-
-**Immediate (ship-blocking):**
-1. **Define learning objectives** for the replay viewer and add contextual annotations at key frames [r064, r065, r056].
-2. **Add a minimal test suite** for wheat-compiler.js -- 6 tests covering happy path, error cases, and determinism [r057].
-3. **Run WCAG audit on replay viewer** and apply the same 5-fix pattern that worked for the dashboard [r059, r021].
-
-**Next sprint:**
-4. Add claim filtering (topic, type, evidence tier) to the dashboard [r027].
-5. Add a sprint health composite indicator [r032].
-6. Implement compiler --watch mode for tighter dev feedback loop [r024].
-7. Add constraint-aware coverage analysis to silence false-positive W_WEAK_EVIDENCE warnings [r012].
-8. Include a cold-start example with seed claims for new users [r041].
-
-**Future:**
-9. Implement guided replay with three-act structure and sandbox mode [r066, r068].
-10. Add mobile/responsive CSS [r052].
-11. Add compiler --json-events for IDE/tooling integration [r035].
-12. Support incremental/diff-aware briefs [r030].
-
-## Blind Spots
-
-Identified via /blind-spot analysis (r048-r059):
-
-1. **Pedagogy**: The biggest gap. Sprint built the instrument but not the lesson plan.
-2. **Audience validation**: No real users tested. Self-explanatory claim is an assumption.
-3. **Mobile/responsive**: All layouts are desktop-only.
-4. **Automated testing**: Zero test suites across all components.
-5. **Witness confirmation bias**: External validation only sought agreement.
-6. **Estimate gaps**: UX recommendations have no sizing -- stakeholders cannot prioritize.
-7. **Replay viewer a11y**: Primary teaching artifact not audited.
-8. **Error handling in build-replay.js**: Undefined behavior on corrupt git objects.
+1. **Enable GitHub Pages** at `/docs` — landing page, replay, brief, and presentation are ready [p023, p024].
+2. **Add pedagogical annotations** to key replay frames — phase transitions, first conflict, evidence upgrades [r056, r065, p022]. This was the sprint's biggest gap: the visualization *shows* but doesn't *teach* [r048, r049].
+3. **Address accessibility gaps** in the replay viewer — it has had no audit unlike the dashboard [r059]. Five targeted fixes would bring it to WCAG AA [r021].
+4. **Add `--watch` mode** to the compiler for a tighter dev loop [r024].
 
 ## Evidence Summary
 
-| Tier | Count | % |
-|------|-------|---|
-| production | 0 | 0.0% |
-| tested | 34 | 23.1% |
-| documented | 25 | 17.0% |
-| web | 75 | 51.0% |
-| stated | 13 | 8.8% |
+### Architecture (48 claims, max: tested, status: strong)
 
-**Notes**: No claims have reached production tier (no real users yet). The high web percentage reflects extensive /witness corroboration passes. 34 tested claims span 5 of 9 topics. The 13 stated claims are predominantly constraints and feedback -- their natural and correct tier.
+The core architecture is a zero-dependency Node.js stack: HTTP server with SSE for live updates [p001], `fs.watch` for file monitoring [r002], and the Wheat compiler as the processing pipeline. The server is 133 lines with no npm dependencies [p001]. The compiler handles 1000 claims in 59ms [e001], though full-loop cost including I/O is higher [x004]. Frame extraction uses `git show <hash>:claims.json` at each commit [r046], with hybrid sub-framing to smooth batch commits [x015, p015]. A key resolved conflict: the prototype proved the server needed more lines than estimated (133 vs ~80), but remained zero-dependency [p001 > r008].
 
-## Appendix: Superseded Claims
+### Pedagogy (23 claims, max: tested, status: strong)
 
-| ID | Original claim | Superseded by | Reason |
-|----|---------------|---------------|--------|
-| r001 | Use SSE server as primary architecture | f001 | Stakeholder prefers static HTML; SSE is dev-only tool |
-| p004 | fs.watch fires reliably on macOS | e007 | fs.watch dies on atomic file replacement (inode change) |
-| x014 | Claim-level framing for replay | x015 | Hybrid framing preserves git fidelity while solving pacing |
-| x018 | Replay.html is ~763KB | x020 | Actual size is 1.8MB after hybrid sub-framing |
+The sprint's most significant finding: the visualization shows *what* happened but never explains *why* [r050]. Only ~5 of the original claims addressed teaching [r048]. The sandbox prototype validates that interactive claim creation teaches Wheat's core mechanics [p025, r068]. Phase-colored timeline framing was chosen over three-act gating [x031, x029] to preserve the sprint's natural interleaving rather than imposing false linearity [x032]. Guided annotations at milestone frames are the recommended approach [r056, r065].
 
-## Appendix: Resolved Conflicts
+### UX Pattern (26 claims, max: tested, status: strong)
 
-| Risk | Resolution | Outcome |
-|------|-----------|---------|
-| x012: Uneven replay pacing | e010: Hybrid framing adopted | Batch commits >3 claims auto-split into sub-frames |
-| x013: Batch commits conflate narrative | e010: Hybrid framing adopted | Sub-frames grouped by topic for coherence |
+AST Explorer's split-pane pattern (claims left, compilation right) is the UI foundation [r004]. The compiler pipeline uses a linear stepper visualization [r005]. Animation timing was fixed at higher playback speeds [x016], empty-delta frames now show metadata context [x017], and milestone markers avoid division-by-zero at single-frame replays [x019]. Claim filtering is recommended at 50+ claims [r027]. Mobile/responsive design is unaddressed [r052].
 
+### Accessibility (14 claims, max: tested, status: strong)
+
+The live dashboard was audited and scored "usable but not compliant" [e004]. Key gaps: no ARIA landmarks [r018], no keyboard support on claim rows [r019], SSE updates not announced to screen readers [r020]. Five fixes would achieve WCAG AA [r021]. The replay viewer has had no accessibility audit [r059]. Google Fonts in the explainer template violate self-containment [r022].
+
+### Dogfooding (16 claims, max: tested, status: strong)
+
+Self-referential design is validated — the sprint produces its own demo artifact [d001]. Circular dependency risk exists (dashboard value depends on sprint quality) but is accepted [x001]. Selection bias in evidence is acknowledged: most `tested` claims are about the dashboard/compiler because that's what gets prototyped [x010]. Witness corroboration showed narrow diversity — all 15 witnesses supported existing claims, none contradicted [r055, x027].
+
+### Quality (11 claims, max: tested, status: strong)
+
+Test suite added in P0 release prep: 8 tests covering happy path, empty claims, malformed JSON, schema validation, conflict detection, burn residue, determinism, and evidence tier sorting. The `--scan` tool enforces self-containment across all HTML artifacts. Success criteria remain subjective [d005] — future sprints should set measurable targets [r037, x007].
+
+### Output Format (12 claims, max: tested, status: strong)
+
+Self-contained HTML constraint is enforced [d002, e003]. The server resolves the live-updating-vs-self-contained tension: SSE for development, static HTML for distribution [r007]. Incremental brief updates are recommended for future sprints [r030].
+
+### Scope (3 claims, max: documented, status: moderate)
+
+Full creative freedom granted [d004]. Scope expanded significantly beyond the original question — from "build a visualization" to compiler features, accessibility, pedagogy [r039]. This is a natural consequence of the self-referential design.
+
+### Audience (3 claims, max: documented, status: moderate)
+
+Target is a single developer seeing Wheat for the first time [d003]. This topic has the thinnest coverage in the sprint — only 2 substantive claims [r051]. No prototype tested actual first-time user comprehension.
+
+## Tradeoffs and Risks
+
+| Risk | Evidence | Mitigation |
+|---|---|---|
+| Replay viewer has no accessibility audit [r059] | documented | Run same audit as dashboard; apply r021 fixes |
+| Mobile/responsive unaddressed [r052] | documented | Accept for v1; desktop is primary target |
+| Batch commits create uneven replay pacing [x012] | documented | Hybrid sub-framing implemented [x015, p015] |
+| `fs.watch` silently dies on atomic file replacement [e007] | tested | Re-watch on rename event; documented workaround |
+| Self-referential bias in evidence selection [x010] | web | Acknowledged; mitigated by witness diversity |
+| No automated accessibility testing in pipeline [x008] | web | Add axe-core to test suite in future sprint |
+| Unfalsifiable success criterion [x007] | web | Set measurable targets per r037 |
+
+## Resolved Conflicts
+
+1. **p001 vs r008** (architecture): Prototype proved server is 133 lines, not ~80 as estimated. Winner: **p001** (tested > web). The estimate was wrong but the conclusion held — zero dependencies confirmed.
+
+2. **x011 vs r042** (architecture): Challenge found 28% of commits are batch commits with 5+ claims, contradicting the assumption of gradual evolution. Winner: **x011** (documented > web). Led to the hybrid sub-framing solution [x015].
+
+## Appendix: Claim Inventory
+
+156 resolved claims across 9 topics. Full inventory in `compilation.json`.
+
+| Topic | Claims | Max Evidence | Status | Types |
+|---|---|---|---|---|
+| architecture | 48 | tested | strong | 25 factual, 12 risk, 7 rec, 3 feedback, 1 estimate |
+| ux-pattern | 26 | tested | strong | 12 factual, 7 risk, 5 rec, 1 feedback, 1 constraint |
+| pedagogy | 23 | tested | strong | 11 factual, 6 risk, 6 rec |
+| dogfooding | 16 | tested | strong | 8 factual, 5 risk, 2 rec, 1 constraint |
+| accessibility | 14 | tested | strong | 7 factual, 6 risk, 1 rec |
+| output-format | 12 | tested | strong | 7 factual, 2 risk, 1 rec, 1 constraint, 1 feedback |
+| quality | 11 | tested | strong | 4 factual, 3 feedback, 2 risk, 1 rec, 1 constraint |
+| audience | 3 | documented | moderate | 1 constraint, 1 factual, 1 risk |
+| scope | 3 | documented | moderate | 1 constraint, 1 estimate, 1 risk |
+
+---
 <div class="certificate">
-
-**Compilation Certificate**
-Compiler: Wheat v0.2.0 | Claims hash: 150e17e | Status: BLOCKED | Errors: 3 (E_CONFLICT: r055/x023, r055/x024, r049/r064)
-Unresolved conflicts must be resolved via /resolve before shipping.
+Compilation certificate: sha256:38b4f2a0e57f4d9da95260adedfd6316fc59c85cacc07cf69d78cb83ae0551c5 | Compiler: wheat v0.2.0 | Claims: 156 resolved / 165 total | Compiled: 2026-03-11T12:23:33.337Z
 </div>

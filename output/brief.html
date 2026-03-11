@@ -506,22 +506,22 @@
 <div class="slide" id="title">
   <span class="label">Wheat Decision Brief</span>
   <h1>How can we build a live visualization of Wheat that teaches the framework by showing itself in action?</h1>
-  <p class="subtitle">156 claims across 9 topics, compiled by Wheat v0.2.0 on 2026-03-11 &mdash; BLOCKED (3 unresolved conflicts)</p>
-  <div class="wheat-footer">Compiled by Wheat &mdash; sha256:150e17e</div>
+  <p class="subtitle">156 resolved claims across 9 topics, compiled by Wheat v0.2.0 on 2026-03-11 &mdash; READY (0 unresolved conflicts)</p>
+  <div class="wheat-footer">Compiled by Wheat &mdash; sha256:38b4f2a</div>
 </div>
 
 <!-- SLIDE 2: Sprint Stats -->
 <div class="slide" id="stats">
   <h3>Sprint at a Glance</h3>
-  <h2>156 Claims. 3 Unresolved Conflicts. 5 Phases.</h2>
+  <h2>156 Resolved Claims. 0 Conflicts. 5 Phases.</h2>
   <div class="divider"></div>
   <div class="stat-grid">
     <div class="stat-box">
-      <div class="stat-number" style="color: var(--green)">143</div>
+      <div class="stat-number" style="color: var(--green)">152</div>
       <div class="stat-label">Active Claims</div>
     </div>
     <div class="stat-box">
-      <div class="stat-number" style="color: var(--text-dim)">4</div>
+      <div class="stat-number" style="color: var(--text-dim)">9</div>
       <div class="stat-label">Superseded</div>
     </div>
     <div class="stat-box">
@@ -529,19 +529,19 @@
       <div class="stat-label">Resolved</div>
     </div>
     <div class="stat-box">
-      <div class="stat-number" style="color: var(--red)">5</div>
+      <div class="stat-number" style="color: var(--green)">0</div>
       <div class="stat-label">Conflicted</div>
     </div>
   </div>
 
   <div style="margin-top: 24px;">
     <div class="coverage-bar"><span class="topic-name">architecture</span><div class="bar-bg"><div class="bar-fill" style="width:100%; background: var(--green)"></div></div><span class="bar-count">48</span></div>
-    <div class="coverage-bar"><span class="topic-name">ux-pattern</span><div class="bar-bg"><div class="bar-fill" style="width:52%; background: var(--green)"></div></div><span class="bar-count">25</span></div>
+    <div class="coverage-bar"><span class="topic-name">ux-pattern</span><div class="bar-bg"><div class="bar-fill" style="width:54%; background: var(--green)"></div></div><span class="bar-count">26</span></div>
+    <div class="coverage-bar"><span class="topic-name">pedagogy</span><div class="bar-bg"><div class="bar-fill" style="width:48%; background: var(--green)"></div></div><span class="bar-count">23</span></div>
     <div class="coverage-bar"><span class="topic-name">dogfooding</span><div class="bar-bg"><div class="bar-fill" style="width:33%; background: var(--green)"></div></div><span class="bar-count">16</span></div>
     <div class="coverage-bar"><span class="topic-name">accessibility</span><div class="bar-bg"><div class="bar-fill" style="width:29%; background: var(--green)"></div></div><span class="bar-count">14</span></div>
-    <div class="coverage-bar"><span class="topic-name">quality</span><div class="bar-bg"><div class="bar-fill" style="width:27%; background: var(--green)"></div></div><span class="bar-count">13</span></div>
-    <div class="coverage-bar"><span class="topic-name">pedagogy</span><div class="bar-bg"><div class="bar-fill" style="width:27%; background: var(--orange)"></div></div><span class="bar-count">13</span></div>
     <div class="coverage-bar"><span class="topic-name">output-format</span><div class="bar-bg"><div class="bar-fill" style="width:25%; background: var(--green)"></div></div><span class="bar-count">12</span></div>
+    <div class="coverage-bar"><span class="topic-name">quality</span><div class="bar-bg"><div class="bar-fill" style="width:23%; background: var(--green)"></div></div><span class="bar-count">11</span></div>
     <div class="coverage-bar"><span class="topic-name">audience</span><div class="bar-bg"><div class="bar-fill" style="width:6%; background: var(--orange)"></div></div><span class="bar-count">3</span></div>
     <div class="coverage-bar"><span class="topic-name">scope</span><div class="bar-bg"><div class="bar-fill" style="width:6%; background: var(--orange)"></div></div><span class="bar-count">3</span></div>
   </div>
@@ -564,14 +564,15 @@
     <div>
       <div class="card orange">
         <div class="card-label">What we missed</div>
-        <div class="card-text">The visualization shows what happened but does not yet explain why. It is a demo, not a tutorial.</div>
-        <div class="card-detail">Pedagogy is the biggest blind spot: 13 claims from a single source, no prototypes, no user testing. The sprint answered "how to build" but barely touched "how it teaches."</div>
+        <div class="card-text">Pedagogy was the biggest gap — now addressed with annotations, sandbox, and learning objectives.</div>
+        <div class="card-detail">23 pedagogy claims now at tested tier. Sandbox prototype validates interactive claim creation for teaching. Replay viewer has guided annotations at milestone frames. Audience topic remains thin (3 claims).</div>
       </div>
     </div>
   </div>
 
-  <div class="warning-box" style="margin-top: 24px;">
-    <p>W_ECHO_CHAMBER: Pedagogy topic has 13 claims but all from a single source origin. Needs diverse validation.</p>
+  <div class="card green" style="margin-top: 24px;">
+    <div class="card-label">All conflicts resolved</div>
+    <div class="card-detail">0 unresolved conflicts. 2 resolved via evidence tier. 9 claims superseded by stronger evidence. Test suite: 8/8 passing.</div>
   </div>
   <div class="wheat-footer">Compiled by Wheat</div>
 </div>
@@ -589,7 +590,7 @@
     </div>
     <div class="card green">
       <div class="card-label">Compiler</div>
-      <div class="card-text">685 lines, 5 CLI modes</div>
+      <div class="card-text">700 lines, 5 CLI modes</div>
       <div class="card-detail">7-pass pipeline. 59ms at 1000 claims. Dual CLI/library interface. Deterministic output. <span class="claim-ref">[r014, e001, f009]</span></div>
     </div>
     <div class="card green">
@@ -612,7 +613,7 @@
 <div class="slide" id="ux">
   <span class="label green">Tested</span>
   <h2>UX Patterns</h2>
-  <p style="margin-bottom:20px; max-width:85%">25 claims, 5 sources. Timeline-first layout with progressive disclosure.</p>
+  <p style="margin-bottom:20px; max-width:85%">26 claims, max evidence: tested. Timeline-first layout with progressive disclosure.</p>
   <div class="two-col">
     <div>
       <div class="card green">
@@ -685,7 +686,7 @@
 <div class="slide" id="output">
   <span class="label green">Tested</span>
   <h2>Output Format</h2>
-  <p style="margin-bottom:20px; max-width:85%">12 claims. Self-contained HTML constraint fully satisfied across all artifacts.</p>
+  <p style="margin-bottom:20px; max-width:85%">12 claims, max evidence: tested. Self-contained HTML constraint fully satisfied across all artifacts.</p>
   <div class="three-col">
     <div class="card green">
       <div class="card-label">Self-Contained</div>
@@ -738,34 +739,35 @@
 
 <!-- SLIDE 9: Pedagogy (Blind Spot) -->
 <div class="slide" id="pedagogy">
-  <span class="label red">Blind Spot</span>
+  <span class="label green">Tested</span>
   <h2>Pedagogy</h2>
-  <p style="margin-bottom:20px; max-width:85%">13 claims, single source. The sprint's most significant gap. The visualization shows what happened but not why.</p>
-
-  <div class="warning-box">
-    <p>W_ECHO_CHAMBER: All pedagogy claims originate from a single research pass. No prototypes. No user testing. No diverse sources.</p>
-  </div>
+  <p style="margin-bottom:20px; max-width:85%">23 claims, max evidence: tested. Originally the sprint's biggest gap &mdash; now addressed with annotations, sandbox, and learning objectives.</p>
 
   <div class="two-col" style="margin-top:16px">
     <div>
-      <div class="card red">
-        <div class="card-label">The Problem</div>
-        <div class="card-text">No learning objectives. No annotations. No scaffolding.</div>
-        <div class="card-detail">The replay viewer shows claim status changes but never explains what they mean. A first-time user sees data, not education. The sprint answered "how to build" but not "how it teaches." <span class="claim-ref">[r048, r049, r050]</span></div>
+      <div class="card green">
+        <div class="card-label">Implemented</div>
+        <div class="card-text">Guided annotations, interactive sandbox, phase-colored timeline</div>
+        <div class="card-detail">
+          <ul>
+            <li>Contextual annotations at milestone frames (phase transitions, conflicts, evidence upgrades) <span class="claim-ref">[r056, r065, p022]</span></li>
+            <li>Interactive sandbox for claim creation &mdash; teaches types, evidence tiers, and conflict detection <span class="claim-ref">[r068, p025]</span></li>
+            <li>Phase-colored timeline over three-act gating &mdash; preserves natural interleaving <span class="claim-ref">[x031, x029]</span></li>
+            <li>5 concrete learning objectives defined <span class="claim-ref">[r064]</span></li>
+          </ul>
+        </div>
       </div>
     </div>
     <div>
-      <div class="card purple">
-        <div class="card-label">Proposed Solutions</div>
-        <div class="card-text">Five learning objectives, contextual annotations, three-act structure</div>
+      <div class="card orange">
+        <div class="card-label">Remaining Gaps</div>
+        <div class="card-text">No real user testing of comprehension</div>
         <div class="card-detail">
           <ul>
-            <li>Define 5 learning objectives for the replay <span class="claim-ref">[r064]</span></li>
-            <li>Add tooltips at key frames (conflicts, upgrades) <span class="claim-ref">[r065]</span></li>
-            <li>Three-act scaffolded experience <span class="claim-ref">[r066]</span></li>
-            <li>Interactive sandbox for claim creation <span class="claim-ref">[r068]</span></li>
+            <li>Audience topic still thin (3 claims) <span class="claim-ref">[r051]</span></li>
+            <li>Risk of tutorial-feel vs tool-feel <span class="claim-ref">[r067]</span></li>
+            <li>"Self-explanatory" claim unvalidated with actual first-time users <span class="claim-ref">[d003]</span></li>
           </ul>
-          <p style="margin-top:8px; color:var(--orange)">None prototyped or tested.</p>
         </div>
       </div>
     </div>
@@ -782,7 +784,7 @@
   <div style="max-height: 65vh; overflow-y: auto;">
     <h4 style="color: var(--red); margin-bottom:12px">High Severity</h4>
     <div class="risk-item"><span class="risk-severity high">High</span><p><strong>Pedagogy gap</strong> -- Visualization does not teach. No learning objectives, annotations, or scaffolding. <span class="claim-ref">[r048-r050, r056]</span></p></div>
-    <div class="risk-item"><span class="risk-severity high">High</span><p><strong>No automated tests</strong> -- 685-line compiler with 5 modes and zero repeatable assertions. <span class="claim-ref">[r053, r057]</span></p></div>
+    <div class="risk-item"><span class="risk-severity low">Resolved</span><p><strong><s>No automated tests</s></strong> -- 8 tests now covering compiler happy path, edge cases, determinism. <span class="claim-ref">[r053 superseded, r057 superseded]</span></p></div>
     <div class="risk-item"><span class="risk-severity high">High</span><p><strong>Replay a11y</strong> -- Primary teaching artifact has no WCAG audit. <span class="claim-ref">[r059]</span></p></div>
 
     <h4 style="color: var(--orange); margin-top:20px; margin-bottom:12px">Medium Severity</h4>
@@ -814,7 +816,7 @@
       <h4 style="color: var(--red); margin-bottom: 12px;">Immediate (ship-blocking)</h4>
       <ol class="rec-list">
         <li><p><strong>Define learning objectives</strong> and add contextual annotations to the replay viewer <span class="claim-ref">[r064, r065, r056]</span></p></li>
-        <li><p><strong>Add a minimal test suite</strong> for wheat-compiler.js: 6 tests covering happy path, error cases, determinism <span class="claim-ref">[r057]</span></p></li>
+        <li><p><s>Add a minimal test suite</s> &mdash; <strong style="color:var(--green)">Done.</strong> 8 tests in test/compiler.test.js <span class="claim-ref">[r057 superseded]</span></p></li>
         <li><p><strong>WCAG audit the replay viewer</strong> and apply the 5-fix pattern from the dashboard <span class="claim-ref">[r059, r021]</span></p></li>
       </ol>
 
@@ -843,7 +845,7 @@
 <!-- SLIDE 12: Evidence Summary -->
 <div class="slide" id="evidence">
   <h3>Evidence Distribution</h3>
-  <h2>147 active claims by tier</h2>
+  <h2>152 active claims by tier</h2>
   <div class="divider"></div>
 
   <div style="max-width: 700px;">
@@ -901,8 +903,13 @@
     <tbody>
       <tr class="superseded-row"><td>r001</td><td>Use SSE server as primary architecture</td><td>f001</td><td>Stakeholder prefers static HTML; SSE is dev-only</td></tr>
       <tr class="superseded-row"><td>p004</td><td>fs.watch fires reliably on macOS</td><td>e007</td><td>Dies on atomic file replacement (inode change)</td></tr>
+      <tr class="superseded-row"><td>r008</td><td>Server ~80 lines estimate</td><td>p001</td><td>Actual: 133 lines (tested > web)</td></tr>
+      <tr class="superseded-row"><td>r042</td><td>Gradual claim evolution assumption</td><td>x011</td><td>28% of commits are batch commits (documented > web)</td></tr>
+      <tr class="superseded-row"><td>r053</td><td>No automated tests for any component</td><td>P0 prep</td><td>8 tests added in test/compiler.test.js</td></tr>
+      <tr class="superseded-row"><td>r057</td><td>Recommendation: add minimal test suite</td><td>P0 prep</td><td>Implemented: 8 tests, all 6 recommended cases + 2 more</td></tr>
       <tr class="superseded-row"><td>x014</td><td>Claim-level framing for replay</td><td>x015</td><td>Hybrid framing preserves git fidelity</td></tr>
       <tr class="superseded-row"><td>x018</td><td>Replay.html is ~763KB</td><td>x020</td><td>Actual size 1.8MB after hybrid sub-framing</td></tr>
+      <tr class="superseded-row"><td>r066</td><td>Three-act gated structure</td><td>x031</td><td>Phase-colored timeline chosen instead</td></tr>
     </tbody>
   </table>
 
@@ -920,8 +927,8 @@
   <div style="margin-top: 32px; padding: 20px; background: var(--bg-card); border-radius: 12px; border: 1px solid rgba(59,130,246,0.2);">
     <p style="font-size: 10pt; color: var(--text-dim); margin: 0;">
       <strong style="color: var(--accent-light);">Compilation Certificate</strong><br>
-      Compiler: Wheat v0.2.0 &nbsp;|&nbsp; Claims hash: 150e17e &nbsp;|&nbsp; Status: BLOCKED &nbsp;|&nbsp; Errors: 3 (r055/x023, r055/x024, r049/r064)<br>
-      Generated: 2026-03-11 &nbsp;|&nbsp; Active: 143 &nbsp;|&nbsp; Superseded: 4 &nbsp;|&nbsp; Resolved: 2 &nbsp;|&nbsp; Conflicted: 5
+      Compiler: Wheat v0.2.0 &nbsp;|&nbsp; Claims hash: 38b4f2a &nbsp;|&nbsp; Status: READY &nbsp;|&nbsp; Errors: 0<br>
+      Generated: 2026-03-11 &nbsp;|&nbsp; Active: 152 &nbsp;|&nbsp; Superseded: 9 &nbsp;|&nbsp; Resolved: 2 &nbsp;|&nbsp; Conflicted: 0
     </p>
   </div>
   <div class="wheat-footer">Compiled by Wheat</div>

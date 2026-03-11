@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Problem Statement — Wheat Live Visualization</title>
+<style>
+  :root {
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.12);
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; scroll-behavior: smooth; }
+  html { overflow-y: scroll; scroll-snap-type: y mandatory; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    font-size: 11pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+  }
+  .slide {
+    width: 100%; height: 100vh; padding: 60px 80px;
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative; overflow: hidden; scroll-snap-align: start;
+  }
+  .slide::before {
+    content: ''; position: absolute; top: 0; right: 0;
+    width: 40%; height: 100%;
+    background: radial-gradient(ellipse at top right, rgba(59,130,246,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  h1 {
+    font-size: 42pt; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  h2 { font-size: 28pt; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 24px; color: #fff; }
+  p { font-size: 14pt; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px; max-width: 85%; }
+  .subtitle { font-size: 18pt; color: var(--text-muted); font-weight: 300; max-width: 70%; }
+  .label {
+    display: inline-block; font-size: 9pt; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent-light); background: rgba(59,130,246,0.12);
+    padding: 4px 12px; border-radius: 4px; margin-bottom: 16px;
+  }
+  .label.orange { color: var(--orange); background: var(--orange-dim); }
+  .label.red { color: var(--red); background: var(--red-dim); }
+  .label.green { color: var(--green); background: var(--green-dim); }
+  .divider { width: 60px; height: 3px; background: var(--accent); border-radius: 2px; margin: 16px 0 24px 0; }
+  .two-col { display: flex; gap: 60px; align-items: flex-start; }
+  .two-col > div { flex: 1; }
+  .card {
+    background: var(--bg-card); border-radius: 16px; padding: 28px 32px;
+    border: 1px solid rgba(255,255,255,0.06);
+    position: relative; overflow: hidden; margin-bottom: 16px;
+  }
+  .card::after {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 4px; height: 100%; background: var(--accent);
+    border-radius: 4px 0 0 4px;
+  }
+  .card.orange::after { background: var(--orange); }
+  .card.red::after { background: var(--red); }
+  .card.green::after { background: var(--green); }
+  .card.purple::after { background: var(--purple); }
+  .card-label {
+    font-size: 9pt; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 6px;
+  }
+  .card .card-label { color: var(--accent-light); }
+  .card.orange .card-label { color: var(--orange); }
+  .card.red .card-label { color: var(--red); }
+  .card.green .card-label { color: var(--green); }
+  .card.purple .card-label { color: var(--purple); }
+  .card-text { font-size: 14pt; color: var(--text); line-height: 1.5; font-weight: 500; }
+  .card-detail { font-size: 11pt; color: var(--text-muted); margin-top: 8px; }
+  .claim-ref { font-size: 8pt; color: var(--text-dim); font-family: monospace; }
+  .wheat-footer {
+    position: absolute; bottom: 24px; right: 40px;
+    font-size: 8pt; color: var(--text-dim); letter-spacing: 0.05em;
+  }
+  .slide-nav {
+    position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 8px; z-index: 100;
+  }
+  .slide-nav a {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--text-dim); display: block; transition: all 0.2s;
+  }
+  .slide-nav a:hover, .slide-nav a.active { background: var(--accent); transform: scale(1.5); }
+  h3 { font-size: 13pt; font-weight: 600; color: var(--accent-light); margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<nav class="slide-nav">
+  <a href="#s1"></a>
+  <a href="#s2"></a>
+  <a href="#s3"></a>
+</nav>
+
+<!-- Slide 1: Title -->
+<div class="slide" id="s1">
+  <span class="label">Wheat Research Sprint — Define Phase</span>
+  <h1>Visualizing Wheat,<br>With Wheat</h1>
+  <p class="subtitle">How can we build a live visualization that teaches the framework by showing itself in action?</p>
+  <div class="wheat-footer">Compiled by Wheat &middot; sha256:864871b &middot; 2026-03-11</div>
+</div>
+
+<!-- Slide 2: Context -->
+<div class="slide" id="s2">
+  <span class="label orange">Context</span>
+  <h2>What we're solving</h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <h3>The problem</h3>
+      <p>Wheat is a pipeline — claims flow through a compiler into artifacts. But you can't see that flow. The system is invisible unless you read the code.</p>
+      <p>We want to make it visible. Not with docs, but with a live artifact that <em>is</em> the proof.</p>
+    </div>
+    <div>
+      <h3>The audience</h3>
+      <p>A developer opening Wheat for the first time. No prior context. The visualization should explain itself.</p>
+      <p>Success: they get it without reading a README.</p>
+    </div>
+  </div>
+  <div class="wheat-footer">5 claims &middot; 5 topics &middot; all stated-level evidence</div>
+</div>
+
+<!-- Slide 3: Constraints -->
+<div class="slide" id="s3">
+  <span class="label red">Constraints</span>
+  <h2>What we know so far</h2>
+  <div class="divider"></div>
+
+  <div class="card orange">
+    <div class="card-label">Dogfooding</div>
+    <div class="card-text">Must be built through the Wheat pipeline itself — it demonstrates the system by being a product of it</div>
+    <div class="card-detail"><span class="claim-ref">[d001]</span> evidence: stated</div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Output Format</div>
+    <div class="card-text">Self-contained HTML — inline CSS/JS, no external dependencies, opens in any browser</div>
+    <div class="card-detail"><span class="claim-ref">[d002]</span> evidence: stated</div>
+  </div>
+
+  <div class="card green">
+    <div class="card-label">Creative Freedom</div>
+    <div class="card-text">No constraints on approach, tech, or ambition level — go as far as needed</div>
+    <div class="card-detail"><span class="claim-ref">[d004]</span> evidence: stated</div>
+  </div>
+
+  <div class="card purple">
+    <div class="card-label">Quality Bar</div>
+    <div class="card-text">"I'll know it when I see it" — must be visually compelling enough to sell itself on first impression</div>
+    <div class="card-detail"><span class="claim-ref">[d005]</span> evidence: stated</div>
+  </div>
+
+  <div class="wheat-footer">Next: /research or /prototype to upgrade evidence &middot; /status for dashboard</div>
+</div>
+
+</body>
+</html>

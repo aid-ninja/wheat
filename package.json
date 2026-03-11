@@ -23,7 +23,7 @@
     "build-pdf": "node build-pdf.js",
     "test": "node --test test/",
     "replay": "node build-replay.js",
-    "sync-docs": "cp output/replay.html output/brief.html output/presentation.html docs/"
+    "sync-docs": "cp output/replay.html output/brief.html output/presentation.html output/dashboard.html output/problem-statement.html docs/ && cp research/accessibility.html docs/research-accessibility.html && cp research/command-suite-expansion.html docs/research-commands.html && cp research/evidence-gap-analysis.html docs/research-evidence-gaps.html && cp research/live-ui-architecture.html docs/research-architecture.html && cp research/pedagogy.html docs/research-pedagogy.html && cp research/replay-ui.html docs/research-replay-ui.html && cp evidence/sprint-evaluation.html docs/evidence-evaluation.html"
   },
   "dependencies": {},
   "optionalDependencies": {

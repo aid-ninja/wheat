@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-11T12:06:05.173Z",
-  "claims_hash": "a4643b4",
+  "compiled_at": "2026-03-11T12:23:33.337Z",
+  "claims_hash": "38b4f2a",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -2891,29 +2891,6 @@
       ]
     },
     {
-      "id": "r053",
-      "type": "risk",
-      "topic": "quality",
-      "content": "There are zero automated tests for any Wheat component: the compiler (wheat-compiler.js), the build tool (build-replay.js), the server (wheat-server.js), or the init script (wheat-init.js). All validation has been manual or one-off evaluation claims. Without a test suite, every future change risks silent regressions. The compiler has 5 CLI modes, 7 pipeline passes, and handles edge cases (empty JSON, burn-residue) — all untested by repeatable assertions.",
-      "source": {
-        "origin": "research",
-        "artifact": null,
-        "connector": null
-      },
-      "evidence": "documented",
-      "status": "active",
-      "phase_added": "evaluate",
-      "timestamp": "2026-03-11T22:05:00Z",
-      "conflicts_with": [],
-      "resolved_by": null,
-      "tags": [
-        "blind-spot",
-        "testing",
-        "regression",
-        "test-suite"
-      ]
-    },
-    {
       "id": "r054",
       "type": "risk",
       "topic": "architecture",
@@ -2980,29 +2957,6 @@
         "guided-annotations",
         "tutorial-mode",
         "aha-moments"
-      ]
-    },
-    {
-      "id": "r057",
-      "type": "recommendation",
-      "topic": "quality",
-      "content": "Add a minimal test suite for wheat-compiler.js covering: (1) happy path — valid claims.json produces 'ready' status, (2) empty file — produces error not crash, (3) malformed JSON — produces error not crash, (4) unresolved conflict — produces 'blocked' status, (5) burn-residue — produces 'blocked' status, (6) determinism — same input always produces same output (excluding compiled_at). Six tests would cover the critical paths and prevent regressions. Can be done with Node.js assert module — zero dependencies.",
-      "source": {
-        "origin": "research",
-        "artifact": null,
-        "connector": null
-      },
-      "evidence": "web",
-      "status": "active",
-      "phase_added": "evaluate",
-      "timestamp": "2026-03-11T22:09:00Z",
-      "conflicts_with": [],
-      "resolved_by": null,
-      "tags": [
-        "blind-spot",
-        "test-suite",
-        "compiler-tests",
-        "zero-deps"
       ]
     },
     {
@@ -3978,7 +3932,7 @@
       ]
     },
     "quality": {
-      "claims": 13,
+      "claims": 11,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -3999,9 +3953,7 @@
         "r031",
         "r037",
         "e009",
-        "f009",
-        "r053",
-        "r057"
+        "f009"
       ],
       "constraint_count": 4,
       "source_origins": [
@@ -4222,11 +4174,9 @@
     "r050": 0,
     "r051": 0,
     "r052": 0,
-    "r053": 0,
     "r054": 0,
     "r055": 0,
     "r056": 0,
-    "r057": 0,
     "r058": 0,
     "r059": 0,
     "p019": 0,
@@ -4286,13 +4236,13 @@
     "initiated": "2026-03-11",
     "phase": "evaluate",
     "total_claims": 165,
-    "active_claims": 154,
+    "active_claims": 152,
     "conflicted_claims": 0,
-    "superseded_claims": 7,
+    "superseded_claims": 9,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:a4643b43beb87d54a92c3c774aff677063060697ebe2ad8df7f62ec513e159e5",
+    "input_hash": "sha256:38b4f2a0e57f4d9da95260adedfd6316fc59c85cacc07cf69d78cb83ae0551c5",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

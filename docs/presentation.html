@@ -781,10 +781,10 @@
         <div class="card-text">Pedagogy gap</div>
         <div class="card-detail">Built the instrument but not the lesson plan. Directly undermines the sprint question. <span class="claim-ref">[r048-r050]</span></div>
       </div>
-      <div class="card red">
-        <div class="card-label">High Severity</div>
-        <div class="card-text">No automated tests</div>
-        <div class="card-detail">685-line compiler with 5 CLI modes and zero repeatable assertions. <span class="claim-ref">[r053, r057]</span></div>
+      <div class="card green">
+        <div class="card-label">Resolved</div>
+        <div class="card-text"><s>No automated tests</s> &mdash; 8 tests added</div>
+        <div class="card-detail">test/compiler.test.js covers happy path, edge cases, conflict detection, determinism. Zero deps. <span class="claim-ref">[r053, r057 superseded]</span></div>
       </div>
     </div>
     <div>
@@ -922,9 +922,9 @@
         <div class="card-text">Close the pedagogy gap</div>
         <div class="card-detail">Learning objectives, contextual annotations, worked examples. This is the one thing that determines whether the visualization teaches or just demos.</div>
       </div>
-      <div class="card orange" style="margin-bottom: 16px;">
-        <div class="card-text">Add compiler test suite</div>
-        <div class="card-detail">6 tests, zero deps. Prevents silent regressions in the 685-line pipeline.</div>
+      <div class="card green" style="margin-bottom: 16px;">
+        <div class="card-text"><s>Add compiler test suite</s> &mdash; Done</div>
+        <div class="card-detail">8 tests, zero deps. Covers happy path, edge cases, conflict detection, burn residue, determinism, evidence sorting.</div>
       </div>
       <div class="card orange">
         <div class="card-text">Audit replay viewer accessibility</div>

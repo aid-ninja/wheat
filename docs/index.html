@@ -8,8 +8,17 @@
   :root {
     --bg-dark: #0f172a;
     --bg-card: #1e293b;
+    --bg-card-hover: #263548;
     --accent: #3b82f6;
     --accent-light: #60a5fa;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.12);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.12);
+    --cyan: #22d3ee;
+    --cyan-dim: rgba(34,211,238,0.12);
     --text: #f1f5f9;
     --text-muted: #94a3b8;
     --text-dim: #64748b;
@@ -22,121 +31,356 @@
     background: var(--bg-dark);
     color: var(--text);
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     -webkit-font-smoothing: antialiased;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    right: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+    pointer-events: none;
   }
 
   .container {
-    max-width: 640px;
-    padding: 48px 32px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 32px 48px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero {
     text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 8pt;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-light);
+    background: rgba(59,130,246,0.12);
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
   }
 
   h1 {
-    font-size: 32pt;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 8px;
+    font-size: 42pt;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #fff 0%, var(--accent-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
-
-  h1 span { color: var(--accent-light); }
 
   .tagline {
-    font-size: 12pt;
+    font-size: 13pt;
     color: var(--text-muted);
-    margin-bottom: 40px;
-    line-height: 1.6;
+    line-height: 1.7;
+    max-width: 560px;
+    margin: 0 auto 32px;
   }
 
-  .links {
+  .stats {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    align-items: center;
+    justify-content: center;
+    gap: 32px;
   }
 
-  a {
-    display: inline-block;
+  .stat { text-align: center; }
+
+  .stat-number {
+    font-size: 22pt;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-label {
+    font-size: 8pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* Section headers */
+  .section {
+    margin-bottom: 40px;
+  }
+
+  .section-header {
+    font-size: 9pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .section-header.blue { color: var(--accent-light); }
+  .section-header.green { color: var(--green); }
+  .section-header.purple { color: var(--purple); }
+  .section-header.cyan { color: var(--cyan); }
+
+  /* Link cards */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  a.card {
+    display: block;
     background: var(--bg-card);
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.06);
     color: var(--text);
     text-decoration: none;
-    padding: 14px 28px;
-    border-radius: 10px;
-    font-size: 11pt;
-    width: 320px;
-    transition: background 0.15s, border-color 0.15s;
+    padding: 18px 20px;
+    border-radius: 12px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
   }
 
-  a:hover {
-    background: rgba(59,130,246,0.12);
-    border-color: var(--accent);
+  a.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.2s;
   }
 
-  a .label {
+  a.card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(255,255,255,0.12);
+    transform: translateY(-2px);
+  }
+
+  a.card:hover::before { opacity: 1; }
+
+  a.card.accent::before { background: var(--accent-light); }
+  a.card.green::before { background: var(--green); }
+  a.card.purple::before { background: var(--purple); }
+  a.card.orange::before { background: var(--orange); }
+  a.card.cyan::before { background: var(--cyan); }
+
+  a.card .card-label {
     font-weight: 600;
     display: block;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
+    font-size: 11pt;
   }
 
-  a .desc {
+  a.card .card-desc {
     font-size: 9pt;
     color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  a.card .card-tag {
+    display: inline-block;
+    font-size: 7pt;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-top: 8px;
+  }
+
+  a.card.accent .card-tag { color: var(--accent-light); background: rgba(59,130,246,0.12); }
+  a.card.green .card-tag { color: var(--green); background: var(--green-dim); }
+  a.card.purple .card-tag { color: var(--purple); background: var(--purple-dim); }
+  a.card.orange .card-tag { color: var(--orange); background: var(--orange-dim); }
+  a.card.cyan .card-tag { color: var(--cyan); background: var(--cyan-dim); }
+
+  /* Featured card (replay) */
+  a.featured {
+    grid-column: 1 / -1;
+    padding: 24px 28px;
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(59,130,246,0.06) 100%);
+    border-color: rgba(59,130,246,0.15);
+  }
+
+  a.featured .card-label {
+    font-size: 14pt;
+    font-weight: 700;
+  }
+
+  a.featured .card-desc {
+    font-size: 10pt;
+    color: var(--text-muted);
   }
 
   .footer {
-    margin-top: 48px;
+    text-align: center;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.06);
     font-size: 9pt;
     color: var(--text-dim);
+    line-height: 1.6;
   }
 
-  .footer a {
+  .footer a.card {
     display: inline;
     background: none;
     border: none;
     padding: 0;
-    width: auto;
     color: var(--accent-light);
     font-size: 9pt;
+    transform: none;
+    border-radius: 0;
   }
 
-  .footer a:hover {
-    text-decoration: underline;
-    background: none;
+  .footer a.card::before { display: none; }
+  .footer a.card:hover { text-decoration: underline; background: none; transform: none; }
+
+  @media (max-width: 640px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    a.featured { padding: 18px 20px; }
+    a.featured .card-label { font-size: 12pt; }
+    h1 { font-size: 28pt; }
+    .stats { gap: 20px; }
+    .stat-number { font-size: 18pt; }
   }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1><span>Wheat</span></h1>
-  <p class="tagline">
-    A structured research framework for Claude Code. Track claims, compile evidence, detect conflicts, and produce decision documents — all from your terminal.
-  </p>
 
-  <div class="links">
-    <a href="replay.html">
-      <span class="label">Sprint Replay</span>
-      <span class="desc">Interactive time-travel through a research sprint</span>
-    </a>
-    <a href="brief.html">
-      <span class="label">Decision Brief</span>
-      <span class="desc">Compiled recommendation document</span>
-    </a>
-    <a href="presentation.html">
-      <span class="label">Presentation</span>
-      <span class="desc">Stakeholder slide deck</span>
-    </a>
-    <a href="https://github.com/aid-ninja/wheat">
-      <span class="label">GitHub Repository</span>
-      <span class="desc">Source code, docs, and issue tracker</span>
-    </a>
+  <div class="hero">
+    <span class="badge">Research-Driven Development</span>
+    <h1>Wheat</h1>
+    <p class="tagline">
+      A structured research framework for Claude Code. Track claims, compile evidence, detect conflicts, and produce decision documents — all from your terminal.
+    </p>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-number" style="color: var(--accent-light)">156</div>
+        <div class="stat-label">Claims</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number" style="color: var(--green)">9</div>
+        <div class="stat-label">Topics</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number" style="color: var(--orange)">0</div>
+        <div class="stat-label">Conflicts</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number" style="color: var(--text-muted)">0</div>
+        <div class="stat-label">Dependencies</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Output Artifacts -->
+  <div class="section">
+    <div class="section-header blue">Output Artifacts</div>
+    <div class="grid-2">
+      <a href="replay.html" class="card accent featured">
+        <span class="card-label">Sprint Replay</span>
+        <span class="card-desc">Interactive time-travel through a research sprint — 99 frames, milestone markers, sandbox mode</span>
+        <span class="card-tag">Interactive</span>
+      </a>
+      <a href="brief.html" class="card green">
+        <span class="card-label">Decision Brief</span>
+        <span class="card-desc">Compiled recommendation document with full evidence chain</span>
+        <span class="card-tag">13 slides</span>
+      </a>
+      <a href="presentation.html" class="card green">
+        <span class="card-label">Presentation</span>
+        <span class="card-desc">Stakeholder deck with coverage maps and risk matrix</span>
+        <span class="card-tag">12 slides</span>
+      </a>
+      <a href="dashboard.html" class="card accent">
+        <span class="card-label">Sprint Dashboard</span>
+        <span class="card-desc">Live status view with claim counts, coverage bars, and conflict graph</span>
+        <span class="card-tag">Dashboard</span>
+      </a>
+      <a href="problem-statement.html" class="card accent">
+        <span class="card-label">Problem Statement</span>
+        <span class="card-desc">Initial sprint question and constraints</span>
+        <span class="card-tag">Define phase</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Research Deep Dives -->
+  <div class="section">
+    <div class="section-header purple">Research Deep Dives</div>
+    <div class="grid-3">
+      <a href="research-architecture.html" class="card purple">
+        <span class="card-label">Architecture</span>
+        <span class="card-desc">SSE, fs.watch, zero-dep server design</span>
+      </a>
+      <a href="research-replay-ui.html" class="card purple">
+        <span class="card-label">Replay UI</span>
+        <span class="card-desc">Frame extraction, scrubber, sub-framing</span>
+      </a>
+      <a href="research-pedagogy.html" class="card purple">
+        <span class="card-label">Pedagogy</span>
+        <span class="card-desc">Teaching through visualization</span>
+      </a>
+      <a href="research-accessibility.html" class="card purple">
+        <span class="card-label">Accessibility</span>
+        <span class="card-desc">WCAG 2.2 AA audit and fixes</span>
+      </a>
+      <a href="research-commands.html" class="card purple">
+        <span class="card-label">Command Suite</span>
+        <span class="card-desc">Slash command architecture</span>
+      </a>
+      <a href="research-evidence-gaps.html" class="card purple">
+        <span class="card-label">Evidence Gaps</span>
+        <span class="card-desc">Blind spot analysis</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Evidence -->
+  <div class="section">
+    <div class="section-header cyan">Evidence</div>
+    <div class="grid-2">
+      <a href="evidence-evaluation.html" class="card cyan">
+        <span class="card-label">Sprint Evaluation</span>
+        <span class="card-desc">Prototype testing results, WCAG audit, scalability benchmarks</span>
+        <span class="card-tag">Tested tier</span>
+      </a>
+      <a href="https://github.com/aid-ninja/wheat" class="card orange">
+        <span class="card-label">GitHub Repository</span>
+        <span class="card-desc">Source code, issue tracker, and contributing guide</span>
+        <span class="card-tag">MIT License</span>
+      </a>
+    </div>
   </div>
 
   <div class="footer">
-    Built with <a href="https://github.com/aid-ninja/wheat">Wheat</a> — zero dependencies, fully self-contained.
+    Built with <a href="https://github.com/aid-ninja/wheat" class="card">Wheat</a> — zero dependencies, fully self-contained.
   </div>
+
 </div>
 </body>
 </html>
