@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evidence Gap Analysis — Wheat Research</title>
+<style>
+  :root {
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.12);
+    --cyan: #22d3ee;
+    --cyan-dim: rgba(34,211,238,0.12);
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-dark); color: var(--text);
+    font-size: 11pt; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-y: scroll; scroll-snap-type: y mandatory;
+  }
+
+  .slide {
+    width: 100%; height: 100vh;
+    padding: 60px 80px;
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative; overflow: hidden;
+    scroll-snap-align: start;
+  }
+  .slide::before {
+    content: ''; position: absolute; top: 0; right: 0; width: 40%; height: 100%;
+    background: radial-gradient(ellipse at top right, rgba(59,130,246,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  h1 {
+    font-size: 42pt; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  h2 { font-size: 32pt; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 24px; color: #fff; }
+  h3 { font-size: 14pt; font-weight: 600; color: var(--accent-light); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+  p { font-size: 14pt; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px; max-width: 85%; }
+  .subtitle { font-size: 18pt; color: var(--text-muted); font-weight: 300; max-width: 70%; }
+
+  .label {
+    display: inline-block; font-size: 9pt; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent-light); background: rgba(59,130,246,0.12);
+    padding: 4px 12px; border-radius: 4px; margin-bottom: 16px;
+  }
+  .label.green { color: var(--green); background: var(--green-dim); }
+  .label.orange { color: var(--orange); background: var(--orange-dim); }
+  .label.red { color: var(--red); background: var(--red-dim); }
+
+  .divider { width: 60px; height: 3px; background: var(--accent); border-radius: 2px; margin: 16px 0 24px; }
+
+  .two-col { display: flex; gap: 40px; align-items: flex-start; }
+  .two-col > div { flex: 1; }
+  .three-col { display: flex; gap: 24px; }
+  .three-col > div { flex: 1; }
+
+  .card {
+    background: var(--bg-card); border-radius: 16px; padding: 28px 32px;
+    border: 1px solid rgba(255,255,255,0.06); position: relative; overflow: hidden;
+  }
+  .card::after {
+    content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+    background: var(--accent); border-radius: 4px 0 0 4px;
+  }
+  .card.green::after { background: var(--green); }
+  .card.orange::after { background: var(--orange); }
+  .card.red::after { background: var(--red); }
+  .card.purple::after { background: var(--purple); }
+  .card.cyan::after { background: var(--cyan); }
+
+  .card-label {
+    font-size: 9pt; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 8px;
+  }
+  .card.green .card-label { color: var(--green); }
+  .card.orange .card-label { color: var(--orange); }
+  .card.red .card-label { color: var(--red); }
+  .card.purple .card-label { color: var(--purple); }
+  .card.cyan .card-label { color: var(--cyan); }
+
+  .card-text { font-size: 15pt; color: var(--text); line-height: 1.5; font-weight: 500; }
+  .card-detail { font-size: 11pt; color: var(--text-muted); line-height: 1.5; margin-top: 10px; }
+
+  .claim-ref { font-size: 8pt; color: var(--text-dim); font-family: monospace; }
+
+  .verdict {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11pt; font-weight: 600; padding: 6px 16px;
+    border-radius: 8px; margin-top: 8px;
+  }
+  .verdict.ok { background: var(--green-dim); color: var(--green); }
+  .verdict.action { background: var(--orange-dim); color: var(--orange); }
+  .verdict.fix { background: var(--accent); background: rgba(59,130,246,0.12); color: var(--accent-light); }
+
+  .tier-bar {
+    display: flex; align-items: center; gap: 12px; margin: 8px 0;
+  }
+  .tier-label { font-size: 10pt; color: var(--text-dim); min-width: 90px; text-align: right; }
+  .tier-track { flex: 1; height: 8px; background: rgba(255,255,255,0.04); border-radius: 4px; overflow: hidden; }
+  .tier-fill { height: 100%; border-radius: 4px; }
+
+  .slide-nav {
+    position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 8px; z-index: 100;
+  }
+  .slide-nav a {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim);
+    display: block; transition: all 0.2s; text-decoration: none;
+  }
+  .slide-nav a:hover, .slide-nav a.active { background: var(--accent); transform: scale(1.5); }
+
+  .wheat-footer {
+    position: absolute; bottom: 24px; right: 40px;
+    font-size: 8pt; color: var(--text-dim); letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+
+<nav class="slide-nav">
+  <a href="#s1"></a><a href="#s2"></a><a href="#s3"></a><a href="#s4"></a><a href="#s5"></a>
+</nav>
+
+<!-- Slide 1: Title -->
+<div class="slide" id="s1">
+  <span class="label orange">Wheat Research Sprint</span>
+  <h1>Evidence Gap Analysis</h1>
+  <p class="subtitle">Why 4 topics show weak evidence warnings — and which ones actually need fixing.</p>
+  <div class="wheat-footer">Compiled by Wheat &middot; Claims r009&ndash;r012</div>
+</div>
+
+<!-- Slide 2: The Warnings -->
+<div class="slide" id="s2">
+  <span class="label orange">The Problem</span>
+  <h2>4 topics flagged as weak</h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <p>The compiler warns when a topic's highest evidence is below <strong style="color:var(--purple)">documented</strong> (tier 3). But are all 4 warnings real gaps?</p>
+      <div style="margin-top: 24px">
+        <div class="tier-bar">
+          <span class="tier-label" style="color:var(--text-dim)">stated (1)</span>
+          <div class="tier-track"><div class="tier-fill" style="width:20%; background:var(--text-dim)"></div></div>
+        </div>
+        <div class="tier-bar">
+          <span class="tier-label" style="color:var(--accent-light)">web (2)</span>
+          <div class="tier-track"><div class="tier-fill" style="width:40%; background:var(--accent-light)"></div></div>
+        </div>
+        <div class="tier-bar">
+          <span class="tier-label" style="color:var(--purple)">documented (3)</span>
+          <div class="tier-track"><div class="tier-fill" style="width:60%; background:var(--purple)"></div></div>
+        </div>
+        <div class="tier-bar">
+          <span class="tier-label" style="color:var(--green)">tested (4)</span>
+          <div class="tier-track"><div class="tier-fill" style="width:80%; background:var(--green)"></div></div>
+        </div>
+        <div class="tier-bar">
+          <span class="tier-label" style="color:var(--orange)">production (5)</span>
+          <div class="tier-track"><div class="tier-fill" style="width:100%; background:var(--orange)"></div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card orange" style="margin-bottom:16px">
+        <div class="card-label">output-format &middot; web</div>
+        <div class="card-text">3 claims (d002, r007, f002)</div>
+        <div class="card-detail">Has a risk claim at web tier. Upgradeable via testing.</div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--text-dim); margin-bottom:12px">
+        <div class="card-label" style="color:var(--text-dim)">audience &middot; stated</div>
+        <div class="card-text">1 claim (d003)</div>
+        <div class="card-detail">Pure constraint. Stated is correct tier.</div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--text-dim); margin-bottom:12px">
+        <div class="card-label" style="color:var(--text-dim)">scope &middot; stated</div>
+        <div class="card-text">1 claim (d004)</div>
+        <div class="card-detail">Pure constraint. Stated is correct tier.</div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--text-dim)">
+        <div class="card-label" style="color:var(--text-dim)">quality &middot; stated</div>
+        <div class="card-text">2 claims (d005, f004)</div>
+        <div class="card-detail">Constraint + feedback. Inherently stakeholder-level.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 3: The Insight -->
+<div class="slide" id="s3">
+  <span class="label green">Key Finding</span>
+  <h2>3 of 4 are false alarms</h2>
+  <div class="divider"></div>
+  <div class="three-col">
+    <div class="card green">
+      <div class="card-label">audience, scope, quality</div>
+      <div class="card-text">Constraints can't be "upgraded"</div>
+      <div class="card-detail">
+        When a stakeholder says "audience is developers" — that's a <em>decision</em>, not a hypothesis.
+        The evidence tier <code>stated</code> is correct by definition.
+        You can't "test" or "research" a constraint into a higher tier.
+        <br><br>
+        <span class="verdict ok">No action needed — by design</span>
+      </div>
+    </div>
+    <div class="card orange">
+      <div class="card-label">output-format</div>
+      <div class="card-text">This one is a real gap</div>
+      <div class="card-detail">
+        The risk claim <span class="claim-ref">[r007]</span> about server-vs-static tension is at <code>web</code> tier.
+        We've <em>already built</em> both approaches — the static HTML works at file://.
+        We just haven't recorded a prototype finding about it.
+        <br><br>
+        <span class="verdict action">Upgradeable via /prototype test</span>
+      </div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--purple)">
+      <div class="card-label" style="color:var(--purple)">Compiler gap</div>
+      <div class="card-text">The compiler should know the difference</div>
+      <div class="card-detail">
+        Topics dominated by constraints should use a different metric — "constraint completeness" rather than evidence tier.
+        A topic with 5 well-defined constraints is not "weak."
+        <br><br>
+        <span class="verdict fix">Compiler improvement proposed</span>
+      </div>
+    </div>
+  </div>
+  <div class="wheat-footer"><span class="claim-ref">[r009] [r010] [r011]</span></div>
+</div>
+
+<!-- Slide 4: Recommendations -->
+<div class="slide" id="s4">
+  <span class="label">Recommendations</span>
+  <h2>Three paths forward</h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <h3 style="color:var(--green)">1. Test output-format</h3>
+      <p>Open <code>output/dashboard.html</code> via <code>file://</code>. Verify zero network requests, all CSS/JS inline, works offline. Record as prototype claim with <code>tested</code> evidence. This clears the one real warning.</p>
+
+      <h3 style="color:var(--purple); margin-top:24px">2. Improve the compiler</h3>
+      <p>Add constraint-aware coverage analysis. Topics where &gt;50% of claims are type <code>constraint</code> or <code>feedback</code> should not emit <code>W_WEAK_EVIDENCE</code>. Instead, emit <code>W_CONSTRAINT_ONLY</code> as an informational note. <span class="claim-ref">[r012]</span></p>
+
+      <h3 style="color:var(--text-dim); margin-top:24px">3. Accept and move on</h3>
+      <p>The simplest path: these warnings are non-blocking. The compiler status is READY. The warnings exist to surface gaps — once you've analyzed them and confirmed they're not real gaps, the warnings have done their job.</p>
+    </div>
+    <div>
+      <div class="card green" style="margin-bottom:16px">
+        <div class="card-label">Impact of path 1</div>
+        <div class="card-text">Warnings drop from 4 to 3</div>
+        <div class="card-detail">output-format upgrades to tested. The 3 constraint-only topics remain flagged (acceptable noise until compiler is improved).</div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--purple)">
+        <div class="card-label" style="color:var(--purple)">Impact of path 2</div>
+        <div class="card-text">Warnings drop from 4 to 0</div>
+        <div class="card-detail">Compiler becomes aware of the constraint/evidence distinction. All 4 topics stop generating false positives. Better signal-to-noise for future sprints.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 5: Summary -->
+<div class="slide" id="s5">
+  <span class="label green">Summary</span>
+  <h2>Most "weak" topics<br>aren't actually weak</h2>
+  <div class="divider"></div>
+  <p style="font-size:16pt; max-width:60%">
+    Constraints and feedback are <em>inherently</em> stakeholder-level claims.
+    The compiler's evidence tier system was designed for testable hypotheses, not for definitional boundaries.
+  </p>
+  <p style="font-size:14pt; max-width:60%; margin-top:16px">
+    <strong style="color:var(--text)">One real gap:</strong> output-format can be upgraded by testing the static HTML artifact.<br>
+    <strong style="color:var(--text)">Three false alarms:</strong> audience, scope, quality are correctly at stated-level.<br>
+    <strong style="color:var(--text)">One improvement:</strong> compiler should distinguish constraints from testable claims.
+  </p>
+  <div class="wheat-footer">Wheat Research Sprint &middot; r009&ndash;r012</div>
+</div>
+
+</body>
+</html>

@@ -1,17 +1,18 @@
 {
-  "compiled_at": "2026-03-11T06:50:37.731Z",
-  "claims_hash": "e348819",
+  "compiled_at": "2026-03-11T07:00:39.431Z",
+  "claims_hash": "01a93ec",
   "compiler_version": "0.1.0",
   "status": "ready",
   "errors": [],
   "warnings": [
     {
       "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"output-format\" has only web-level evidence (3 claims)",
+      "message": "Topic \"output-format\" has only web-level evidence (4 claims)",
       "claims": [
         "d002",
         "r007",
-        "f002"
+        "f002",
+        "r010"
       ]
     },
     {
@@ -30,10 +31,12 @@
     },
     {
       "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"quality\" has only stated-level evidence (2 claims)",
+      "message": "Topic \"quality\" has only web-level evidence (4 claims)",
       "claims": [
         "d005",
-        "f004"
+        "f004",
+        "r009",
+        "r011"
       ]
     }
   ],
@@ -554,6 +557,94 @@
         "reverse-chrono",
         "scroll-position"
       ]
+    },
+    {
+      "id": "r009",
+      "type": "factual",
+      "topic": "quality",
+      "content": "3 of 4 'weak evidence' compiler warnings are false alarms. Topics audience, scope, and quality consist entirely of constraint/feedback claims whose natural evidence tier is 'stated'. Constraints are stakeholder decisions, not testable hypotheses — 'stated' is their correct and final tier. The compiler's evidence tier system was designed for testable claims, not definitional boundaries.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/evidence-gap-analysis.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T08:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "evidence-analysis",
+        "false-alarm",
+        "constraint-semantics"
+      ]
+    },
+    {
+      "id": "r010",
+      "type": "factual",
+      "topic": "output-format",
+      "content": "The output-format topic is the only real evidence gap among the 4 warnings. It has a risk claim (r007) at web tier about server-vs-static tension. This is upgradeable to 'tested' by verifying that output/dashboard.html works as self-contained HTML: opens via file://, zero external network requests, all CSS/JS inline, works offline.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/evidence-gap-analysis.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T08:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "evidence-gap",
+        "output-format",
+        "upgradeable"
+      ]
+    },
+    {
+      "id": "r011",
+      "type": "risk",
+      "topic": "quality",
+      "content": "The compiler's W_WEAK_EVIDENCE warning system has a semantic blind spot: it treats all claim types equally, but constraint claims (type: constraint, feedback) are inherently 'stated' tier and cannot be upgraded. This creates persistent false-positive warnings on constraint-heavy topics, reducing signal-to-noise ratio for future sprints.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/evidence-gap-analysis.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T08:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "compiler-gap",
+        "false-positive",
+        "signal-noise"
+      ]
+    },
+    {
+      "id": "r012",
+      "type": "recommendation",
+      "topic": "architecture",
+      "content": "The compiler should add constraint-aware coverage analysis: topics where >50% of claims are type 'constraint' or 'feedback' should not emit W_WEAK_EVIDENCE. Instead, emit W_CONSTRAINT_ONLY as an informational note. This preserves the warning for genuinely under-researched topics while silencing noise on definitional ones.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/evidence-gap-analysis.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T08:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "compiler-improvement",
+        "constraint-aware",
+        "coverage-analysis"
+      ]
     }
   ],
   "conflict_graph": {
@@ -581,18 +672,20 @@
       ]
     },
     "output-format": {
-      "claims": 3,
+      "claims": 4,
       "max_evidence": "web",
       "status": "weak",
       "types": [
         "constraint",
         "risk",
-        "feedback"
+        "feedback",
+        "factual"
       ],
       "claim_ids": [
         "d002",
         "r007",
-        "f002"
+        "f002",
+        "r010"
       ]
     },
     "audience": {
@@ -618,25 +711,30 @@
       ]
     },
     "quality": {
-      "claims": 2,
-      "max_evidence": "stated",
+      "claims": 4,
+      "max_evidence": "web",
       "status": "weak",
       "types": [
         "constraint",
-        "feedback"
+        "feedback",
+        "factual",
+        "risk"
       ],
       "claim_ids": [
         "d005",
-        "f004"
+        "f004",
+        "r009",
+        "r011"
       ]
     },
     "architecture": {
-      "claims": 7,
+      "claims": 8,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
         "factual",
-        "feedback"
+        "feedback",
+        "recommendation"
       ],
       "claim_ids": [
         "r002",
@@ -645,7 +743,8 @@
         "p002",
         "p004",
         "f001",
-        "f003"
+        "f003",
+        "r012"
       ]
     },
     "ux-pattern": {
@@ -676,7 +775,7 @@
       "complete": true
     },
     "research": {
-      "claims": 8,
+      "claims": 12,
       "complete": true
     },
     "prototype": {
@@ -699,14 +798,14 @@
     ],
     "initiated": "2026-03-11",
     "phase": "prototype",
-    "total_claims": 26,
-    "active_claims": 24,
+    "total_claims": 30,
+    "active_claims": 28,
     "conflicted_claims": 0,
     "superseded_claims": 2,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:e348819150d5d71e095f094c2a87b3e4f8b722a0f06205fdb5617ea8c8520386",
+    "input_hash": "sha256:01a93ec435ddf3c638abbe95d52881cf88f2f82831abd5e4a7aa25b395aad052",
     "compiler_version": "0.1.0",
     "deterministic": true
   }

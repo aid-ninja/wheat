@@ -370,6 +370,62 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["user-feedback", "reverse-chrono", "scroll-position"]
+    },
+    {
+      "id": "r009",
+      "type": "factual",
+      "topic": "quality",
+      "content": "3 of 4 'weak evidence' compiler warnings are false alarms. Topics audience, scope, and quality consist entirely of constraint/feedback claims whose natural evidence tier is 'stated'. Constraints are stakeholder decisions, not testable hypotheses — 'stated' is their correct and final tier. The compiler's evidence tier system was designed for testable claims, not definitional boundaries.",
+      "source": { "origin": "research", "artifact": "research/evidence-gap-analysis.md", "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T08:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["evidence-analysis", "false-alarm", "constraint-semantics"]
+    },
+    {
+      "id": "r010",
+      "type": "factual",
+      "topic": "output-format",
+      "content": "The output-format topic is the only real evidence gap among the 4 warnings. It has a risk claim (r007) at web tier about server-vs-static tension. This is upgradeable to 'tested' by verifying that output/dashboard.html works as self-contained HTML: opens via file://, zero external network requests, all CSS/JS inline, works offline.",
+      "source": { "origin": "research", "artifact": "research/evidence-gap-analysis.md", "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T08:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["evidence-gap", "output-format", "upgradeable"]
+    },
+    {
+      "id": "r011",
+      "type": "risk",
+      "topic": "quality",
+      "content": "The compiler's W_WEAK_EVIDENCE warning system has a semantic blind spot: it treats all claim types equally, but constraint claims (type: constraint, feedback) are inherently 'stated' tier and cannot be upgraded. This creates persistent false-positive warnings on constraint-heavy topics, reducing signal-to-noise ratio for future sprints.",
+      "source": { "origin": "research", "artifact": "research/evidence-gap-analysis.md", "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T08:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["compiler-gap", "false-positive", "signal-noise"]
+    },
+    {
+      "id": "r012",
+      "type": "recommendation",
+      "topic": "architecture",
+      "content": "The compiler should add constraint-aware coverage analysis: topics where >50% of claims are type 'constraint' or 'feedback' should not emit W_WEAK_EVIDENCE. Instead, emit W_CONSTRAINT_ONLY as an informational note. This preserves the warning for genuinely under-researched topics while silencing noise on definitional ones.",
+      "source": { "origin": "research", "artifact": "research/evidence-gap-analysis.md", "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T08:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["compiler-improvement", "constraint-aware", "coverage-analysis"]
     }
   ]
 }
