@@ -267,19 +267,19 @@ function analyzeCoverage(claims) {
     }
   });
 
-  // Convert sets to arrays and compute status
+  // Convert sets to arrays and compute status (deterministic key ordering)
   const result = {};
-  Object.entries(coverage).forEach(([topic, entry]) => {
+  Object.entries(coverage).sort(([a], [b]) => a.localeCompare(b)).forEach(([topic, entry]) => {
     let status = 'weak';
     if (entry.max_evidence_rank >= EVIDENCE_TIERS.tested) status = 'strong';
     else if (entry.max_evidence_rank >= EVIDENCE_TIERS.documented) status = 'moderate';
 
     // Type diversity: how many of the 6 possible types are present
-    const allTypes = [...entry.types];
+    const allTypes = [...entry.types].sort();
     const missingTypes = VALID_TYPES.filter(t => !allTypes.includes(t));
 
-    // Source origins
-    const sourceOrigins = [...entry.source_origins];
+    // Source origins (sorted for determinism)
+    const sourceOrigins = [...entry.source_origins].sort();
 
     result[topic] = {
       claims: entry.claims,
@@ -313,9 +313,9 @@ function checkReadiness(errors, unresolvedConflicts, coverage) {
     });
   });
 
-  // Weak coverage is a warning, not a blocker
+  // Weak coverage is a warning, not a blocker (sorted for determinism)
   const warnings = [];
-  Object.entries(coverage).forEach(([topic, entry]) => {
+  Object.entries(coverage).sort(([a], [b]) => a.localeCompare(b)).forEach(([topic, entry]) => {
     if (entry.status === 'weak') {
       // Constraint-dominated topics (>50% constraint/feedback) get a softer warning
       const constraintRatio = (entry.constraint_count || 0) / entry.claims;
@@ -595,6 +595,26 @@ function scanSelfContainment(dirs) {
 
 // ─── CLI ─────────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
+
+// --help / -h
+if (args.includes('--help') || args.includes('-h')) {
+  console.log(`Wheat Compiler v0.2.0 — Bran-based compilation for research claims
+
+Usage:
+  node wheat-compiler.js              Compile claims.json → compilation.json
+  node wheat-compiler.js --summary    Compile and print human-readable summary
+  node wheat-compiler.js --check      Compile and exit with error if blocked
+  node wheat-compiler.js --gate       Staleness check + readiness gate
+  node wheat-compiler.js --scan       Check HTML artifacts for external dependencies
+  node wheat-compiler.js --next [N]   Recommend next N actions by priority
+  node wheat-compiler.js --diff A B   Diff two compilation.json files
+  node wheat-compiler.js --input X --output Y   Compile arbitrary claims file
+
+Options:
+  --help, -h    Show this help message
+  --json        Output as JSON (with --next)`);
+  process.exit(0);
+}
 
 // --scan mode: check HTML artifacts for external dependencies
 if (args.includes('--scan')) {

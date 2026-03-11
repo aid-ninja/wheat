@@ -17,6 +17,41 @@
 const fs = require('fs');
 const path = require('path');
 
+// --help / -h
+const _guardArgs = process.argv.slice(2);
+if (_guardArgs.includes('--help') || _guardArgs.includes('-h')) {
+  console.log(`Wheat Guard v0.1.0 — Pre-commit hook for claim integrity
+
+Usage:
+  node wheat-guard.js                 Run guard checks on claims.json
+  node wheat-guard.js --help          Show this help message
+
+Validates claims.json schema and checks for common issues before commits.
+Install as a git hook or run manually.`);
+  process.exit(0);
+}
+
+// ─── Load config ─────────────────────────────────────────────────────────────
+function loadConfig() {
+  const configPath = path.join(__dirname, 'wheat.config.json');
+  const defaults = {
+    dirs: { output: 'output' },
+    compiler: { claims: 'claims.json', compilation: 'compilation.json' },
+  };
+  try {
+    const raw = fs.readFileSync(configPath, 'utf8');
+    const config = JSON.parse(raw);
+    return {
+      dirs: { ...defaults.dirs, ...(config.dirs || {}) },
+      compiler: { ...defaults.compiler, ...(config.compiler || {}) },
+    };
+  } catch {
+    return defaults;
+  }
+}
+
+const config = loadConfig();
+
 const toolInput = process.argv[2] || '{}';
 let input;
 try {
@@ -33,14 +68,14 @@ const projectRoot = __dirname;
 const rel = path.relative(projectRoot, filePath);
 
 // ── Guard 1: Writes to output/ require fresh compilation ──
-if (rel.startsWith('output/') && !rel.endsWith('.gitkeep')) {
-  const compilationPath = path.join(projectRoot, 'compilation.json');
-  const claimsPath = path.join(projectRoot, 'claims.json');
+if (rel.startsWith(config.dirs.output + '/') && !rel.endsWith('.gitkeep')) {
+  const compilationPath = path.join(projectRoot, config.compiler.compilation);
+  const claimsPath = path.join(projectRoot, config.compiler.claims);
 
   // Must exist
   if (!fs.existsSync(compilationPath)) {
     process.stderr.write(
-      'BLOCKED: No compilation.json found. Run `node wheat-compiler.js` before generating output artifacts.\n' +
+      `BLOCKED: No ${config.compiler.compilation} found. Run \`node wheat-compiler.js\` before generating output artifacts.\n` +
       'The Wheat pipeline requires: claims.json → compiler → compilation.json → artifact'
     );
     process.exit(2);
@@ -48,7 +83,7 @@ if (rel.startsWith('output/') && !rel.endsWith('.gitkeep')) {
 
   if (!fs.existsSync(claimsPath)) {
     process.stderr.write(
-      'BLOCKED: No claims.json found. Run /init to bootstrap the sprint first.'
+      `BLOCKED: No ${config.compiler.claims} found. Run /init to bootstrap the sprint first.`
     );
     process.exit(2);
   }
@@ -59,7 +94,7 @@ if (rel.startsWith('output/') && !rel.endsWith('.gitkeep')) {
 
   if (claimsMtime > compilationMtime) {
     process.stderr.write(
-      'BLOCKED: compilation.json is stale (claims.json was modified after last compilation).\n' +
+      `BLOCKED: ${config.compiler.compilation} is stale (${config.compiler.claims} was modified after last compilation).\n` +
       'Run `node wheat-compiler.js` to recompile before generating output artifacts.'
     );
     process.exit(2);
@@ -78,25 +113,25 @@ if (rel.startsWith('output/') && !rel.endsWith('.gitkeep')) {
     }
   } catch {
     process.stderr.write(
-      'BLOCKED: compilation.json is corrupted. Run `node wheat-compiler.js` to regenerate.'
+      `BLOCKED: ${config.compiler.compilation} is corrupted. Run \`node wheat-compiler.js\` to regenerate.`
     );
     process.exit(2);
   }
 }
 
 // ── Guard 2: claims.json writes must maintain meta fields ──
-if (rel === 'claims.json' && input.content) {
+if (rel === config.compiler.claims && input.content) {
   try {
     const newClaims = JSON.parse(input.content);
     if (!newClaims.meta || !newClaims.meta.question) {
       process.stderr.write(
-        'BLOCKED: claims.json must have meta.question set. Run /init first.'
+        `BLOCKED: ${config.compiler.claims} must have meta.question set. Run /init first.`
       );
       process.exit(2);
     }
     if (!newClaims.claims || !Array.isArray(newClaims.claims)) {
       process.stderr.write(
-        'BLOCKED: claims.json must have a "claims" array.'
+        `BLOCKED: ${config.compiler.claims} must have a "claims" array.`
       );
       process.exit(2);
     }

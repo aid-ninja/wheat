@@ -2,11 +2,30 @@
   "name": "wheat",
   "version": "0.1.0",
   "description": "Research-driven development framework powered by Bran compilation",
+  "license": "MIT",
+  "author": "Aid Idrizovic",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aidanidrizovic/wheat"
+  },
+  "keywords": [
+    "research",
+    "claims",
+    "compiler",
+    "claude-code",
+    "structured-research"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "compile": "node wheat-compiler.js",
-    "build-pdf": "node build-pdf.js"
+    "build-pdf": "node build-pdf.js",
+    "test": "node --test test/",
+    "replay": "node build-replay.js"
   },
-  "dependencies": {
+  "dependencies": {},
+  "optionalDependencies": {
     "md-to-pdf": "^5.2.4"
   }
 }

@@ -16,6 +16,23 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
+// --help / -h
+const _replayArgs = process.argv.slice(2);
+if (_replayArgs.includes('--help') || _replayArgs.includes('-h')) {
+  console.log(`Wheat Replay Builder v0.1.0 — Generate interactive sprint replay from git history
+
+Usage:
+  node build-replay.js                Build output/replay.html from git history
+  node build-replay.js --dry-run      Show frame count without generating HTML
+  node build-replay.js --help         Show this help message
+
+Extracts claims.json at each git commit, compiles snapshots, computes deltas,
+detects milestones, and generates a self-contained HTML replay viewer.
+
+Output: output/replay.html`);
+  process.exit(0);
+}
+
 const ROOT = __dirname;
 const COMPILER = path.join(ROOT, 'wheat-compiler.js');
 const OUTPUT_DIR = path.join(ROOT, 'output');
@@ -2392,6 +2409,14 @@ function main() {
   const milestones = detectMilestones(compilations, deltas);
   const milestoneCount = milestones.filter(Boolean).length;
   console.log(`  Found ${milestoneCount} milestone events`);
+
+  // --dry-run: report counts and exit without generating HTML
+  if (_replayArgs.includes('--dry-run')) {
+    // Cleanup temp files
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+    console.log(`\nWould generate ${validCount} frames, ${milestoneCount} milestones`);
+    process.exit(0);
+  }
 
   // Step 6: Build frames
   const frames = buildFrames(commits, compilations, deltas, milestones);

@@ -1,0 +1,13 @@
+{
+  "dirs": {
+    "output": "output",
+    "research": "research",
+    "prototypes": "prototypes",
+    "evidence": "evidence",
+    "templates": "templates"
+  },
+  "compiler": {
+    "claims": "claims.json",
+    "compilation": "compilation.json"
+  }
+}

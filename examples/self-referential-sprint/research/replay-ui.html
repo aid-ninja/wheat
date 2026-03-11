@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Replay UI — Interactive Sprint Timeline</title>
+<style>
+  :root {
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263548;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.12);
+    --pink: #f472b6;
+    --pink-dim: rgba(244,114,182,0.12);
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    scroll-behavior: smooth;
+  }
+
+  html {
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    font-size: 11pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+  }
+
+  .slide {
+    width: 100%;
+    min-height: 100vh;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    scroll-snap-align: start;
+  }
+
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40%;
+    height: 100%;
+    background: radial-gradient(ellipse at top right, rgba(59,130,246,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  h1 {
+    font-size: 42pt;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  h2 {
+    font-size: 28pt;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+
+  h3 {
+    font-size: 14pt;
+    font-weight: 600;
+    color: var(--accent-light);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  p {
+    font-size: 14pt;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+    max-width: 85%;
+  }
+
+  .subtitle {
+    font-size: 18pt;
+    color: var(--text-muted);
+    font-weight: 300;
+    max-width: 70%;
+  }
+
+  .label {
+    display: inline-block;
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-light);
+    background: rgba(59,130,246,0.12);
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+
+  .label.green { color: var(--green); background: var(--green-dim); }
+  .label.orange { color: var(--orange); background: var(--orange-dim); }
+  .label.red { color: var(--red); background: var(--red-dim); }
+  .label.purple { color: var(--purple); background: var(--purple-dim); }
+
+  .divider {
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin: 16px 0 24px 0;
+  }
+
+  .two-col {
+    display: flex;
+    gap: 48px;
+    align-items: flex-start;
+  }
+
+  .two-col > div { flex: 1; }
+
+  .three-col {
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .three-col > div { flex: 1; }
+
+  .card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 28px;
+    border: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px 0 0 4px;
+  }
+
+  .card.green::after { background: var(--green); }
+  .card.orange::after { background: var(--orange); }
+  .card.red::after { background: var(--red); }
+  .card.purple::after { background: var(--purple); }
+
+  .card-label {
+    font-size: 9pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent-light);
+    margin-bottom: 8px;
+  }
+
+  .card.green .card-label { color: var(--green); }
+  .card.orange .card-label { color: var(--orange); }
+  .card.red .card-label { color: var(--red); }
+  .card.purple .card-label { color: var(--purple); }
+
+  .card-text {
+    font-size: 15pt;
+    color: var(--text);
+    line-height: 1.5;
+    font-weight: 500;
+  }
+
+  .card-detail {
+    font-size: 12pt;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-top: 10px;
+  }
+
+  .claim-ref {
+    font-size: 8pt;
+    color: var(--text-dim);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 10pt;
+    background: rgba(255,255,255,0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent-light);
+  }
+
+  pre {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 24px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 10pt;
+    line-height: 1.7;
+    color: var(--text-muted);
+    overflow-x: auto;
+    border: 1px solid rgba(255,255,255,0.06);
+    margin: 16px 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 11pt;
+  }
+
+  th {
+    text-align: left;
+    padding: 10px 16px;
+    background: var(--bg-card);
+    color: var(--accent-light);
+    font-weight: 600;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 2px solid rgba(59,130,246,0.3);
+  }
+
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: var(--text-muted);
+  }
+
+  .diagram {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 32px;
+    border: 1px solid rgba(255,255,255,0.06);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 10pt;
+    line-height: 1.8;
+    color: var(--text-muted);
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  .flow-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 8px 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    margin: 4px;
+  }
+
+  .flow-arrow {
+    color: var(--text-dim);
+    font-size: 14pt;
+  }
+
+  .slide-nav {
+    position: fixed;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+  }
+
+  .slide-nav a {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    display: block;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .slide-nav a:hover,
+  .slide-nav a.active {
+    background: var(--accent);
+    transform: scale(1.5);
+  }
+
+  .wheat-footer {
+    position: absolute;
+    bottom: 24px;
+    right: 40px;
+    font-size: 8pt;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  .highlight { color: var(--accent-light); font-weight: 600; }
+  .highlight-green { color: var(--green); font-weight: 600; }
+  .highlight-orange { color: var(--orange); font-weight: 600; }
+  .highlight-red { color: var(--red); font-weight: 600; }
+  .highlight-purple { color: var(--purple); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<nav class="slide-nav">
+  <a href="#title"></a>
+  <a href="#problem"></a>
+  <a href="#architecture"></a>
+  <a href="#pipeline"></a>
+  <a href="#scrubber"></a>
+  <a href="#animation"></a>
+  <a href="#diff"></a>
+  <a href="#layout"></a>
+  <a href="#risks"></a>
+  <a href="#next"></a>
+</nav>
+
+<!-- Slide 1: Title -->
+<div class="slide" id="title">
+  <span class="label">Wheat Research</span>
+  <h1>Replay UI</h1>
+  <p class="subtitle">An interactive timeline that plays back a Wheat sprint commit-by-commit — claims appearing, evidence upgrading, coverage growing — in a single self-contained HTML file.</p>
+  <div class="wheat-footer">Compiled by Wheat &middot; r042&ndash;r047</div>
+</div>
+
+<!-- Slide 2: Problem -->
+<div class="slide" id="problem">
+  <span class="label green">The Problem</span>
+  <h2>Sprints tell a story.<br>Git log buries it.</h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <p>A Wheat sprint is a sequence of research decisions — each commit changes the claim landscape. But <code>git log --oneline</code> shows flat text, not the <span class="highlight">shape of the investigation</span>.</p>
+      <p>We want to <span class="highlight-green">watch the sprint unfold</span>: see the first claims appear, evidence accumulate, conflicts emerge and resolve, coverage fill in topic by topic.</p>
+    </div>
+    <div>
+      <div class="card green">
+        <div class="card-label">Use Cases</div>
+        <div class="card-text">Learning</div>
+        <div class="card-detail">New developer watches a sprint replay to understand how Wheat works by seeing it work.</div>
+      </div>
+      <div class="card purple">
+        <div class="card-label">Use Cases</div>
+        <div class="card-text">Archival</div>
+        <div class="card-detail">Reset main to start fresh, but keep the old sprint watchable as a self-contained artifact.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 3: Architecture -->
+<div class="slide" id="architecture">
+  <span class="label">Core Pattern</span>
+  <h2>Pre-Computed Frames</h2>
+  <div class="divider"></div>
+  <p>The dominant pattern across Observable, D3, and data journalism: bake an array of state snapshots, render one at a time, animate between them.</p>
+  <div class="three-col" style="margin-top: 24px;">
+    <div class="card">
+      <div class="card-label">1. Frame Array</div>
+      <div class="card-text">frames[i] = full state</div>
+      <div class="card-detail">Each git commit that touches claims.json becomes one frame. The frame contains the compiled claims, coverage map, stats, and delta from the previous frame. Embedded as inline JSON. <span class="claim-ref">[r042]</span></div>
+    </div>
+    <div class="card green">
+      <div class="card-label">2. Stateless Render</div>
+      <div class="card-text">render(frame) &rarr; DOM</div>
+      <div class="card-detail">One function that takes a frame object and updates the entire UI to match. No accumulated state, no side effects. The frame is the single source of truth.</div>
+    </div>
+    <div class="card purple">
+      <div class="card-label">3. Controller</div>
+      <div class="card-text">play / pause / scrub</div>
+      <div class="card-detail">Manages currentFrame, playing, speed. Drives a requestAnimationFrame loop. The scrubber slider and the play button both write to the same state.</div>
+    </div>
+  </div>
+  <p style="margin-top: 20px;"><span class="claim-ref">[r042]</span> For ~30 frames &times; ~100 claims, inline data is well under 1MB. The HTML file is fully self-contained.</p>
+</div>
+
+<!-- Slide 4: Data Pipeline -->
+<div class="slide" id="pipeline">
+  <span class="label orange">Data Pipeline</span>
+  <h2>From Git to Frames</h2>
+  <div class="divider"></div>
+  <p>Reuses the existing compiler infrastructure — no new diff engine needed. <span class="claim-ref">[r046]</span></p>
+  <pre>
+git log --oneline -- claims.json          <span class="highlight"># list commits</span>
+
+git show &lt;hash&gt;:claims.json               <span class="highlight"># snapshot at each commit</span>
+
+node wheat-compiler.js --input snapshot   <span class="highlight"># compile each snapshot</span>
+
+node wheat-compiler.js --diff prev curr   <span class="highlight"># delta between consecutive</span>
+
+<span class="highlight-green">&rarr; const FRAMES = [ ... ]</span>               <span class="highlight"># bake into HTML</span></pre>
+  <div class="two-col" style="margin-top: 20px;">
+    <div>
+      <h3>Frame Object</h3>
+      <pre>
+{
+  commit: { hash, message, date },
+  compilation: {
+    claims, coverage, stats
+  },
+  delta: {
+    added: ["p001", "p002"],
+    removed: [],
+    upgraded: [{ id: "r001",
+      field: "evidence",
+      from: "web", to: "tested" }]
+  },
+  milestone: "entered prototype phase"
+}</pre>
+    </div>
+    <div>
+      <div class="card orange">
+        <div class="card-label">Key Insight</div>
+        <div class="card-text">Compiler is the diff engine</div>
+        <div class="card-detail">The compiler's <code>diffCompilations()</code> already computes claim adds, removes, status changes, coverage changes, and conflict graph changes. We just need to call it in a loop and collect the results.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 5: Scrubber UX -->
+<div class="slide" id="scrubber">
+  <span class="label purple">Interaction</span>
+  <h2>Timeline Scrubber</h2>
+  <div class="divider"></div>
+  <p>Three components: range slider, play/pause, keyboard shortcuts. <span class="claim-ref">[r043]</span></p>
+  <div class="diagram" style="margin: 24px 0;">  <span class="highlight-green">&#9654;</span>  <span class="highlight">&#9473;&#9473;&#9473;&#9473;&#9679;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;</span>  Frame 12/30  <span class="highlight-orange">2x</span>
+
+  wheat: /prototype "live-dashboard" &mdash; added p001, p002, p003, p004, p005</div>
+  <div class="three-col" style="margin-top: 16px;">
+    <div class="card">
+      <div class="card-label">Range Input</div>
+      <div class="card-detail"><code>&lt;input type="range" step="1"&gt;</code> for discrete frame snapping. Custom-styled thumb and track. JS-driven gradient fill for progress.</div>
+    </div>
+    <div class="card green">
+      <div class="card-label">Play / Pause</div>
+      <div class="card-detail"><code>requestAnimationFrame</code> loop. Auto-pauses when user grabs slider. Speed: 1x, 2x, 4x, instant.</div>
+    </div>
+    <div class="card purple">
+      <div class="card-label">Keyboard</div>
+      <div class="card-detail"><code>&larr;/&rarr;</code> step &plusmn;1 frame. <code>Space</code> play/pause. <code>Home/End</code> jump to first/last.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 6: Animation -->
+<div class="slide" id="animation">
+  <span class="label green">Transitions</span>
+  <h2>Animating Claim Changes</h2>
+  <div class="divider"></div>
+  <p>CSS transitions handle most cases. FLIP technique for reordering. <span class="claim-ref">[r044]</span></p>
+  <table>
+    <tr>
+      <th>Change</th>
+      <th>Technique</th>
+      <th>Duration</th>
+    </tr>
+    <tr>
+      <td><span class="highlight-green">Claim appears</span></td>
+      <td><code>opacity: 0&rarr;1</code> + <code>translateY(10px&rarr;0)</code></td>
+      <td>300ms, staggered</td>
+    </tr>
+    <tr>
+      <td><span class="highlight-red">Claim removed</span></td>
+      <td><code>opacity: 1&rarr;0</code> + <code>scale(0.95)</code></td>
+      <td>200ms</td>
+    </tr>
+    <tr>
+      <td><span class="highlight-orange">Evidence upgrade</span></td>
+      <td>Background color pulse (amber flash)</td>
+      <td>400ms</td>
+    </tr>
+    <tr>
+      <td><span class="highlight-purple">Reorder</span></td>
+      <td>FLIP: measure &rarr; DOM change &rarr; inverse transform &rarr; animate</td>
+      <td>350ms</td>
+    </tr>
+  </table>
+  <div class="two-col" style="margin-top: 20px;">
+    <div class="card orange">
+      <div class="card-label">FLIP Technique</div>
+      <div class="card-detail"><strong>F</strong>irst: measure element positions. <strong>L</strong>ast: apply DOM change, measure again. <strong>I</strong>nvert: apply inverse transform (element appears in old position). <strong>P</strong>lay: remove transform with CSS transition &rarr; element animates to new position. Requires <code>requestAnimationFrame</code> between Invert and Play.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Counters</div>
+      <div class="card-detail">Animated numbers via <code>requestAnimationFrame</code> with exponential ease-out: <code>current += (target - current) * 0.15</code>. Converges visually in ~15 frames (~250ms at 60fps).</div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 7: Diff Display -->
+<div class="slide" id="diff">
+  <span class="label orange">Diffs</span>
+  <h2>Showing What Changed</h2>
+  <div class="divider"></div>
+  <p>Simple set operations on claim IDs — no generic JSON diff library needed. <span class="claim-ref">[r045]</span></p>
+  <div class="two-col">
+    <div>
+      <h3>Algorithm</h3>
+      <pre>
+prevIDs = new Set(prev.claims.map(c => c.id))
+currIDs = new Set(curr.claims.map(c => c.id))
+
+<span class="highlight-green">added</span>   = [...currIDs].filter(id => !prevIDs.has(id))
+<span class="highlight-red">removed</span> = [...prevIDs].filter(id => !currIDs.has(id))
+
+<span class="highlight-orange">upgraded</span> = [...currIDs]
+  .filter(id => prevIDs.has(id))
+  .filter(id => {
+    prev_c = prev.claims.find(c => c.id === id)
+    curr_c = curr.claims.find(c => c.id === id)
+    return prev_c.evidence !== curr_c.evidence
+        || prev_c.status  !== curr_c.status
+  })</pre>
+    </div>
+    <div>
+      <h3>Display Layers</h3>
+      <div class="card green">
+        <div class="card-label">Summary Bar</div>
+        <div class="card-detail">Always visible: "Frame 12: <span class="highlight-green">+3 claims</span>, <span class="highlight-orange">1 upgraded</span>, <span class="highlight-purple">new topic: dogfooding</span>"</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Inline Badges</div>
+        <div class="card-detail">Each claim gets a colored dot when it was added or changed in the current frame. Fades after 2 frames.</div>
+      </div>
+      <div class="card purple">
+        <div class="card-label">Milestone Detection</div>
+        <div class="card-detail">Auto-detect: phase transitions, first "ready" compilation, evidence tier jumps, conflict resolution events. Shown as highlighted markers on the timeline.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 8: Layout -->
+<div class="slide" id="layout">
+  <span class="label">Layout</span>
+  <h2>Replay Screen</h2>
+  <div class="divider"></div>
+  <div class="diagram">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474;  <span class="highlight">Sprint Replay: "Wheat live visualization"</span>                      &#9474;
+&#9474;  <span class="highlight-green">&#9654;</span> &#9473;&#9473;&#9473;&#9679;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;  Frame 12/30  <span class="highlight-orange">2x</span>                  &#9474;
+&#9474;  wheat: /prototype "live-dashboard" &mdash; p001-p005                  &#9474;
+&#9500;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9508;
+&#9474;  <span class="highlight">Claims (grouped)</span>         &#9474;  <span class="highlight-green">Coverage Map</span>                    &#9474;
+&#9474;  &#9484;&#9472; dogfooding &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9474;  &#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9617;&#9617; dogfooding  <span class="highlight-green">tested</span>   &#9474;
+&#9474;  &#9474; <span class="highlight-green">+ p001</span> [tested]    &#9474; &#9474;  &#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9617;&#9617;&#9617;&#9617; output-format <span class="highlight-orange">web</span>  &#9474;
+&#9474;  &#9474; <span class="highlight-green">+ p002</span> [tested]    &#9474; &#9474;  &#9608;&#9608;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617; audience     <span class="highlight-red">stated</span>  &#9474;
+&#9474;  &#9474;   d001  [stated]    &#9474; &#9474;                                   &#9474;
+&#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9474;  <span class="highlight">Stats</span>                           &#9474;
+&#9474;  &#9484;&#9472; architecture &#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9474;  Claims: 15 <span class="highlight-green">(+5)</span>                 &#9474;
+&#9474;  &#9474;   r001  [web]       &#9474; &#9474;  Topics: 4 <span class="highlight-green">(+1)</span>                  &#9474;
+&#9474;  &#9474;   r002  [web]       &#9474; &#9474;  Conflicts: 0                    &#9474;
+&#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9474;  Evidence: <span class="highlight-orange">56% web</span> 32% tested   &#9474;
+&#9500;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9508;
+&#9474;  <span class="highlight-green">+5 claims</span> (3 factual, 2 recommendation) &middot; <span class="highlight-purple">milestone: prototype phase</span>  &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</div>
+  <p style="margin-top: 20px;">Four synchronized panels — all driven by the same <code>currentFrame</code>. Claims panel groups by topic with inline delta badges. Coverage map shows stacked evidence-tier bars. Stats panel animates counters. Bottom bar shows the commit message and detected milestone.</p>
+</div>
+
+<!-- Slide 9: Risks -->
+<div class="slide" id="risks">
+  <span class="label red">Risks</span>
+  <h2>What Could Go Wrong</h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <div class="card red">
+        <div class="card-label">Git Dependency</div>
+        <div class="card-text">Frame extraction needs git history</div>
+        <div class="card-detail"><code>git show &lt;hash&gt;:claims.json</code> only works in a repo with intact history. Force-push or rebase destroys frames. Mitigation: the generated HTML is self-contained and survives repo deletion. <span class="claim-ref">[r047]</span></div>
+      </div>
+      <div class="card orange">
+        <div class="card-label">File Size</div>
+        <div class="card-text">Inline data scales with frames &times; claims</div>
+        <div class="card-detail">30 frames &times; 100 claims &approx; 300KB of JSON. Manageable. But a 500-commit sprint with 1000 claims could hit several MB. Compress by storing only deltas instead of full snapshots.</div>
+      </div>
+    </div>
+    <div>
+      <div class="card orange">
+        <div class="card-label">Browser Compatibility</div>
+        <div class="card-text">View Transitions API is new</div>
+        <div class="card-detail">Baseline Oct 2025, but older browsers won't support it. CSS transitions are the safe fallback. FLIP technique works everywhere. Plan: use View Transitions with graceful degradation.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Compiler Version Skew</div>
+        <div class="card-text">Recompiling old claims with today's compiler</div>
+        <div class="card-detail">The current /replay design applies the latest compiler to historical data. This is intentional (shows "what would have happened"), but means the replay doesn't perfectly reconstruct the original compilation output.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 10: Next Steps -->
+<div class="slide" id="next">
+  <span class="label green">Next Steps</span>
+  <h2>From Research to Prototype</h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <h3>Implementation Order</h3>
+      <div class="card green">
+        <div class="card-label">Step 1</div>
+        <div class="card-text">Frame extraction script</div>
+        <div class="card-detail">Extend wheat-compiler.js (or a new replay-build.js) to walk git history and produce the FRAMES array as JSON.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Step 2</div>
+        <div class="card-text">Static render</div>
+        <div class="card-detail">Build the four-panel layout. Render a single frame correctly before adding animation.</div>
+      </div>
+      <div class="card purple">
+        <div class="card-label">Step 3</div>
+        <div class="card-text">Scrubber + playback</div>
+        <div class="card-detail">Wire up the controller: range input, play/pause, keyboard shortcuts, speed control.</div>
+      </div>
+      <div class="card orange">
+        <div class="card-label">Step 4</div>
+        <div class="card-text">Transitions + polish</div>
+        <div class="card-detail">Add CSS transitions, FLIP for reordering, animated counters, milestone highlights.</div>
+      </div>
+    </div>
+    <div>
+      <h3>Claims from this research</h3>
+      <table>
+        <tr><th>ID</th><th>Finding</th></tr>
+        <tr><td><span class="claim-ref">r042</span></td><td>Pre-computed frame architecture</td></tr>
+        <tr><td><span class="claim-ref">r043</span></td><td>Scrubber UX (range + play + keys)</td></tr>
+        <tr><td><span class="claim-ref">r044</span></td><td>CSS transitions + FLIP for animations</td></tr>
+        <tr><td><span class="claim-ref">r045</span></td><td>Set-based claim diffs, not generic JSON diff</td></tr>
+        <tr><td><span class="claim-ref">r046</span></td><td>Pipeline reuses compiler --input/--diff</td></tr>
+        <tr><td><span class="claim-ref">r047</span></td><td>Risk: git dependency for frame extraction</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<script>
+  // Slide navigation highlighting
+  const slides = document.querySelectorAll('.slide');
+  const navLinks = document.querySelectorAll('.slide-nav a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = [...slides].indexOf(entry.target);
+        navLinks.forEach((l, i) => l.classList.toggle('active', i === idx));
+      }
+    });
+  }, { threshold: 0.5 });
+  slides.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
