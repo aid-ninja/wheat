@@ -325,6 +325,32 @@
     font-weight: 500;
   }
 
+  /* Pipeline visualization */
+  .pipeline {
+    margin-bottom: 56px;
+    position: relative;
+  }
+
+  .pipeline-canvas {
+    width: 100%;
+    height: 340px;
+    display: block;
+  }
+
+  .pipeline-label {
+    text-align: center;
+    font-size: 8pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    margin-top: 12px;
+  }
+
+  @media (max-width: 640px) {
+    .pipeline-canvas { height: 500px; }
+  }
+
   /* Get Started steps */
   .grid-3 {
     display: grid;
@@ -656,6 +682,13 @@
       <strong>Research today is fragmented.</strong> Findings live in chat threads, docs, and someone's memory. Decisions get made without traceability.<br><br>
       <strong>Wheat makes every claim defensible</strong> — from first question to final brief.
     </p>
+  </div>
+
+  <!-- Pipeline Visualization -->
+  <div class="pipeline">
+    <div class="section-header gold">How It Works</div>
+    <canvas class="pipeline-canvas" id="pipeline-canvas"></canvas>
+    <div class="pipeline-label">Claims flow through 7 compiler passes — from question to auditable artifact</div>
   </div>
 
   <!-- Get Started -->
@@ -999,6 +1032,318 @@
     init();
     draw();
   }
+})();
+</script>
+
+<script>
+// Pipeline visualization
+(function() {
+  var canvas = document.getElementById('pipeline-canvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var dpr = window.devicePixelRatio || 1;
+  var W, H;
+
+  function resize() {
+    var rect = canvas.getBoundingClientRect();
+    W = rect.width;
+    H = rect.height;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Pipeline stages
+  var stages = [
+    { id: 'commands', label: 'Slash Commands', sub: '/research, /prototype ...', color: [96,165,250] },
+    { id: 'claims',   label: 'claims.json',    sub: 'Typed, evidence-graded',    color: [34,197,94] },
+    { id: 'compiler', label: 'Compiler',        sub: '7 passes',                  color: [240,160,48] },
+    { id: 'compiled', label: 'compilation.json',sub: 'Resolved, certified',       color: [167,139,250] },
+    { id: 'artifacts',label: 'Artifacts',       sub: 'HTML, PDF, slides',         color: [34,211,238] },
+  ];
+
+  // Compiler passes (shown inside compiler node when active)
+  var passes = [
+    'Schema', 'Types', 'Sort', 'Conflicts', 'Resolve', 'Coverage', 'Readiness'
+  ];
+
+  // Particles flowing through pipeline
+  var particles = [];
+  var time = 0;
+  var activeStage = 0;
+  var stageTimer = 0;
+  var STAGE_DURATION = 90; // frames per stage
+  var compilerPassIndex = 0;
+  var compilerPassTimer = 0;
+
+  function getNodePositions() {
+    var mobile = W < 500;
+    var positions = [];
+    if (mobile) {
+      var startY = 30;
+      var gap = (H - 60) / (stages.length - 1);
+      for (var i = 0; i < stages.length; i++) {
+        positions.push({ x: W / 2, y: startY + i * gap });
+      }
+    } else {
+      var startX = 60;
+      var gap = (W - 120) / (stages.length - 1);
+      for (var i = 0; i < stages.length; i++) {
+        positions.push({ x: startX + i * gap, y: H / 2 });
+      }
+    }
+    return positions;
+  }
+
+  function spawnParticle(fromIdx) {
+    if (fromIdx >= stages.length - 1) return;
+    var pos = getNodePositions();
+    var from = pos[fromIdx];
+    var to = pos[fromIdx + 1];
+    var col = stages[fromIdx].color;
+    particles.push({
+      x: from.x, y: from.y,
+      tx: to.x, ty: to.y,
+      progress: 0,
+      speed: 0.012 + Math.random() * 0.008,
+      r: 2.5 + Math.random() * 1.5,
+      col: col,
+      alpha: 0.7 + Math.random() * 0.3,
+      fromIdx: fromIdx,
+    });
+  }
+
+  function drawNode(x, y, stage, index, isActive) {
+    var col = stage.color;
+    var glow = isActive ? 0.25 : 0.06;
+    var nodeR = 28;
+
+    // Glow
+    var grad = ctx.createRadialGradient(x, y, 0, x, y, nodeR * 3);
+    grad.addColorStop(0, 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',' + glow + ')');
+    grad.addColorStop(1, 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0)');
+    ctx.beginPath();
+    ctx.arc(x, y, nodeR * 3, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Node circle
+    ctx.beginPath();
+    ctx.arc(x, y, nodeR, 0, Math.PI * 2);
+    ctx.fillStyle = isActive
+      ? 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.15)'
+      : 'rgba(255,255,255,0.03)';
+    ctx.fill();
+    ctx.strokeStyle = isActive
+      ? 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.5)'
+      : 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Pulse ring on active
+    if (isActive) {
+      var pulse = 0.5 + 0.5 * Math.sin(time * 0.05);
+      ctx.beginPath();
+      ctx.arc(x, y, nodeR + 6 + pulse * 4, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',' + (0.15 * (1 - pulse)) + ')';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // Label
+    ctx.fillStyle = isActive ? 'rgba(241,245,249,0.95)' : 'rgba(148,163,184,0.8)';
+    ctx.font = '600 9px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(stage.label, x, y + nodeR + 18);
+
+    // Sub label
+    var subText = stage.sub;
+    // Show current compiler pass when compiler is active
+    if (index === 2 && isActive) {
+      subText = 'Pass ' + (compilerPassIndex + 1) + ': ' + passes[compilerPassIndex];
+    }
+    ctx.fillStyle = 'rgba(100,116,139,0.7)';
+    ctx.font = '500 7.5px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.fillText(subText, x, y + nodeR + 30);
+
+    // Icon text inside node
+    var icons = ['/cmd', '{ }', '7x', '.json', 'out'];
+    ctx.fillStyle = isActive
+      ? 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.9)'
+      : 'rgba(148,163,184,0.4)';
+    ctx.font = '700 10px SF Mono, Fira Code, Consolas, monospace';
+    ctx.fillText(icons[index], x, y + 4);
+  }
+
+  function drawConnection(from, to, stage, isActive) {
+    var col = stage.color;
+    ctx.beginPath();
+    ctx.moveTo(from.x + 28, from.y);
+    ctx.lineTo(to.x - 28, to.y);
+    ctx.strokeStyle = isActive
+      ? 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.2)'
+      : 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash(isActive ? [] : [4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Arrow
+    var angle = Math.atan2(to.y - from.y, to.x - from.x);
+    var ax = to.x - 28 - Math.cos(angle) * 2;
+    var ay = to.y - Math.sin(angle) * 2;
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(ax - 6 * Math.cos(angle - 0.4), ay - 6 * Math.sin(angle - 0.4));
+    ctx.lineTo(ax - 6 * Math.cos(angle + 0.4), ay - 6 * Math.sin(angle + 0.4));
+    ctx.closePath();
+    ctx.fillStyle = isActive
+      ? 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.3)'
+      : 'rgba(255,255,255,0.06)';
+    ctx.fill();
+  }
+
+  function drawConnectionVertical(from, to, stage, isActive) {
+    var col = stage.color;
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y + 28);
+    ctx.lineTo(to.x, to.y - 28);
+    ctx.strokeStyle = isActive
+      ? 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.2)'
+      : 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash(isActive ? [] : [4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Arrow
+    var ax = to.x;
+    var ay = to.y - 30;
+    ctx.beginPath();
+    ctx.moveTo(ax, ay + 6);
+    ctx.lineTo(ax - 5, ay - 2);
+    ctx.lineTo(ax + 5, ay - 2);
+    ctx.closePath();
+    ctx.fillStyle = isActive
+      ? 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.3)'
+      : 'rgba(255,255,255,0.06)';
+    ctx.fill();
+  }
+
+  function drawParticle(p) {
+    var col = p.col;
+    var alpha = p.alpha * (1 - Math.abs(p.progress - 0.5) * 0.6);
+
+    // Trail
+    var trailLen = 0.08;
+    var tp = Math.max(0, p.progress - trailLen);
+    var tx = p.x - (p.x - (p.x + (p.tx - p.x) * (tp / (p.progress || 1)))) * 0;
+    // Simplified: just draw glow + core
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',' + (alpha * 0.2) + ')';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',' + alpha + ')';
+    ctx.fill();
+  }
+
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    time++;
+
+    var pos = getNodePositions();
+    var mobile = W < 500;
+
+    // Advance stage
+    stageTimer++;
+    if (stageTimer >= STAGE_DURATION) {
+      stageTimer = 0;
+      activeStage = (activeStage + 1) % stages.length;
+      compilerPassIndex = 0;
+    }
+
+    // Advance compiler pass display
+    if (activeStage === 2) {
+      compilerPassTimer++;
+      if (compilerPassTimer >= Math.floor(STAGE_DURATION / passes.length)) {
+        compilerPassTimer = 0;
+        compilerPassIndex = (compilerPassIndex + 1) % passes.length;
+      }
+    }
+
+    // Spawn particles from active stage
+    if (activeStage < stages.length - 1 && time % 8 === 0) {
+      spawnParticle(activeStage);
+    }
+
+    // Draw connections
+    for (var i = 0; i < stages.length - 1; i++) {
+      var connActive = i === activeStage || i === activeStage - 1;
+      if (mobile) {
+        drawConnectionVertical(pos[i], pos[i + 1], stages[i], connActive);
+      } else {
+        drawConnection(pos[i], pos[i + 1], stages[i], connActive);
+      }
+    }
+
+    // Update and draw particles
+    for (var i = particles.length - 1; i >= 0; i--) {
+      var p = particles[i];
+      p.progress += p.speed;
+
+      // Ease in-out
+      var t = p.progress;
+      var eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+      // Offset from line for organic feel
+      var perpX = -(p.ty - p.y);
+      var perpY = (p.tx - p.x);
+      var len = Math.sqrt(perpX * perpX + perpY * perpY) || 1;
+      perpX /= len; perpY /= len;
+      var wave = Math.sin(t * Math.PI * 3 + i) * 4;
+
+      var startX = mobile ? pos[p.fromIdx].x : pos[p.fromIdx].x + 28;
+      var startY = mobile ? pos[p.fromIdx].y + 28 : pos[p.fromIdx].y;
+      var endX = mobile ? pos[p.fromIdx + 1].x : pos[p.fromIdx + 1].x - 28;
+      var endY = mobile ? pos[p.fromIdx + 1].y - 28 : pos[p.fromIdx + 1].y;
+
+      p.x = startX + (endX - startX) * eased + perpX * wave;
+      p.y = startY + (endY - startY) * eased + perpY * wave;
+
+      if (p.progress >= 1) {
+        particles.splice(i, 1);
+      } else {
+        drawParticle(p);
+      }
+    }
+
+    // Draw nodes
+    for (var i = 0; i < stages.length; i++) {
+      var isActive = i === activeStage;
+      drawNode(pos[i].x, pos[i].y, stages[i], i, isActive);
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  // Start when visible
+  var pipelineStarted = false;
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting && !pipelineStarted) {
+        pipelineStarted = true;
+        frame();
+      }
+    });
+  }, { threshold: 0.2 });
+  observer.observe(canvas);
 })();
 </script>
 </body>
