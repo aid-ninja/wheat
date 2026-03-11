@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wheat — Research-Driven Development</title>
+<title>wheat — Research-Driven Development</title>
 <style>
   :root {
     --bg-dark: #0f172a;
@@ -79,13 +79,53 @@
   .hero::after {
     content: '';
     position: absolute;
-    top: -40%;
+    top: -60%;
     left: 50%;
     transform: translateX(-50%);
-    width: 500px;
-    height: 400px;
-    background: radial-gradient(ellipse, rgba(240,160,48,0.06) 0%, transparent 70%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(240,160,48,0.10) 0%, rgba(240,160,48,0.04) 30%, transparent 65%);
     pointer-events: none;
+  }
+
+  .sun-rays {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 300px;
+    pointer-events: none;
+    opacity: 0.12;
+  }
+
+  .sun-rays::before,
+  .sun-rays::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+  }
+
+  .sun-rays::before {
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(240,160,48,0.5) 0%, transparent 70%);
+    animation: sunPulse 6s ease-in-out infinite;
+  }
+
+  .sun-rays::after {
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, rgba(240,160,48,0.2) 0%, transparent 60%);
+    animation: sunPulse 6s ease-in-out infinite 1s;
+  }
+
+  @keyframes sunPulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.7; }
   }
 
   .badge {
@@ -344,10 +384,11 @@
 <div class="container">
 
   <div class="hero">
-    <h1>Wheat</h1>
+    <div class="sun-rays"></div>
+    <h1>wheat</h1>
     <span class="badge">For Claude Code</span>
     <p class="tagline">
-      Turn open-ended research questions into structured, evidence-backed decisions. Wheat gives Claude Code a claims compiler — track findings, detect conflicts, and produce auditable artifacts.
+      A claims compiler for research sprints. Ask questions, gather evidence, resolve conflicts — ship decisions you can trace back to source.
     </p>
     <div class="stats">
       <div class="stat">
