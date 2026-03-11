@@ -2953,11 +2953,11 @@
         "connector": null
       },
       "evidence": "web",
-      "status": "active",
+      "status": "resolved",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T22:01:00Z",
       "conflicts_with": [],
-      "resolved_by": null,
+      "resolved_by": "r064",
       "tags": [
         "blind-spot",
         "learning-objectives",
@@ -3090,11 +3090,11 @@
         "connector": null
       },
       "evidence": "documented",
-      "status": "active",
+      "status": "resolved",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T22:07:00Z",
       "conflicts_with": [],
-      "resolved_by": null,
+      "resolved_by": "x024",
       "tags": [
         "blind-spot",
         "confirmation-bias",
@@ -3198,15 +3198,438 @@
       "id": "p019",
       "type": "factual",
       "topic": "ux-pattern",
-      "content": "Fixed three edge-case bugs in build-replay.js HTML template: (1) x016 — animation stagger delay now uses idx*20ms capped at 40% of frame interval, preventing animation cutoff at 2x/4x speed; (2) x017 — empty deltas now show 'Metadata update' instead of bare frame label; (3) x019 — milestone/scrubber positioning uses Math.max(FRAMES.length-1, 1) denominator, preventing NaN at single-frame edge case.",
-      "source": { "origin": "prototype", "artifact": "build-replay.js", "connector": null },
+      "content": "Fixed three edge-case bugs in build-replay.js HTML template: (1) x016 \u2014 animation stagger delay now uses idx*20ms capped at 40% of frame interval, preventing animation cutoff at 2x/4x speed; (2) x017 \u2014 empty deltas now show 'Metadata update' instead of bare frame label; (3) x019 \u2014 milestone/scrubber positioning uses Math.max(FRAMES.length-1, 1) denominator, preventing NaN at single-frame edge case.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T22:30:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["replay", "bug-fix", "x016", "x017", "x019"]
+      "tags": [
+        "replay",
+        "bug-fix",
+        "x016",
+        "x017",
+        "x019"
+      ]
+    },
+    {
+      "id": "r060",
+      "type": "factual",
+      "topic": "pedagogy",
+      "content": "The worked examples effect (Sweller, 1980s) shows that studying solved examples reduces cognitive load more effectively than solving equivalent problems, because learners don't resort to weak strategies like means-ends analysis. For Wheat's replay viewer, this means the replay IS a worked example: it shows a complete, solved research sprint rather than asking the learner to run one from scratch. However, the effect requires integrated text-and-diagram presentation (the split-attention effect) \u2014 showing the replay without inline annotations forces the learner to mentally integrate what they see with what it means, increasing extraneous cognitive load.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T23:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pedagogy",
+        "cognitive-load",
+        "worked-examples",
+        "sweller",
+        "split-attention"
+      ]
+    },
+    {
+      "id": "r061",
+      "type": "factual",
+      "topic": "pedagogy",
+      "content": "Progressive disclosure (Nielsen Norman Group) improves three of usability's five components: learnability, efficiency, and error rate. It works by synchronizing revealed complexity with user involvement \u2014 beginners see simple views, advanced users get power features on demand. The Wheat replay naturally accumulates claims over time (progressive by structure), but this is incremental, not scaffolded. True scaffolding requires gating: the learner shouldn't see conflict resolution until they understand claim creation, and shouldn't see evidence upgrades until they understand evidence tiers. The current replay shows everything at once per frame with no conceptual gating.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T23:01:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pedagogy",
+        "progressive-disclosure",
+        "scaffolding",
+        "nngroup",
+        "gating"
+      ]
+    },
+    {
+      "id": "r062",
+      "type": "factual",
+      "topic": "pedagogy",
+      "content": "Bret Victor's Explorable Explanations (2011) and Nicky Case's design patterns establish that effective interactive explanations share three properties: (1) they start with a compelling question the reader cares about, (2) they break complex systems into isolated mechanics taught one at a time before combining them, and (3) they let the reader create their own data points to form mental models. Case emphasizes that 'traditional teaching fails because it answers questions the student hasn't thought to ask.' For Wheat, the replay should open with a question ('How does a research sprint turn messy exploration into a structured recommendation?') before showing the mechanics.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T23:02:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pedagogy",
+        "explorable-explanations",
+        "bret-victor",
+        "nicky-case",
+        "question-driven"
+      ]
+    },
+    {
+      "id": "r063",
+      "type": "factual",
+      "topic": "pedagogy",
+      "content": "Three prior-art tools successfully teach by showing themselves: (1) LearnGitBranching \u2014 a 100% client-side app that visualizes git commit trees updating in real-time as users type commands, combining sandbox exploration with structured levels that isolate individual mechanics (branching, merging, rebasing). (2) Redux DevTools \u2014 makes invisible state flow visible through time-travel debugging, action inspection, and action replay, teaching state management patterns by letting developers see and manipulate them. (3) Observable notebooks \u2014 inline reactive documents where prose, code, and visualization are interleaved, so the explanation IS the running code. All three share a pattern: they make the invisible visible, they let users manipulate, and they annotate what's happening.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T23:03:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pedagogy",
+        "prior-art",
+        "learngitbranching",
+        "redux-devtools",
+        "observable",
+        "self-demonstrating"
+      ]
+    },
+    {
+      "id": "r064",
+      "type": "recommendation",
+      "topic": "pedagogy",
+      "content": "The Wheat replay viewer should define five concrete learning objectives for a first-time viewer: (1) UNDERSTAND that a Wheat sprint converts open-ended questions into typed, evidence-graded claims. (2) IDENTIFY the six claim types and when each is used. (3) EXPLAIN how evidence tiers work and why upgrading from 'stated' to 'tested' matters. (4) RECOGNIZE the conflict-resolution pattern: when claims contradict, challenges force resolution. (5) DESCRIBE how the compiler enforces quality gates before producing output artifacts. These follow Bloom's taxonomy (understand, identify, explain, recognize, describe) and are measurable via a self-check quiz at the end of the replay.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T23:04:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pedagogy",
+        "learning-objectives",
+        "blooms-taxonomy",
+        "measurable-outcomes"
+      ]
+    },
+    {
+      "id": "r065",
+      "type": "recommendation",
+      "topic": "pedagogy",
+      "content": "Add contextual annotations to the replay viewer that trigger on key frames: when a claim first appears, a tooltip explains 'This is a [type] claim \u2014 it records a [constraint/factual/estimate/risk/recommendation].' When evidence upgrades, an annotation explains 'This claim was upgraded from [old tier] to [new tier] because [artifact] provided direct verification.' When a conflict is created, an annotation explains 'These two claims contradict \u2014 /challenge created this tension, and /resolve will adjudicate it.' This directly addresses the split-attention effect (r060) by integrating explanation with visualization, and addresses r050's finding that the viewer shows WHAT but not WHY.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T23:05:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pedagogy",
+        "annotations",
+        "split-attention",
+        "contextual-help",
+        "replay-viewer"
+      ]
+    },
+    {
+      "id": "r066",
+      "type": "recommendation",
+      "topic": "pedagogy",
+      "content": "Structure the replay as a three-act scaffolded experience following Nicky Case's 'building-up' pattern: Act 1 (Explore, frames 1-10): introduce claims and claim types in isolation, with annotations for each new type encountered. Act 2 (Complicate, frames 11-25): introduce evidence upgrades, conflicts, and challenges \u2014 each with 'why this matters' annotations. Act 3 (Resolve, frames 26+): show the compiler enforcing gates and producing output, with a 'what you just learned' summary overlay. Add optional content gating between acts so learners must answer a 1-question check before proceeding. This converts the replay from an incremental log into a scaffolded learning experience.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T23:06:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pedagogy",
+        "scaffolding",
+        "three-act",
+        "nicky-case",
+        "content-gating"
+      ]
+    },
+    {
+      "id": "r067",
+      "type": "risk",
+      "topic": "pedagogy",
+      "content": "Adding pedagogical scaffolding (annotations, gating, learning objectives) risks making the replay viewer feel like a tutorial rather than a tool. Developers who already understand Wheat will find gating and tooltips patronizing. The prior art (LearnGitBranching, Redux DevTools) solves this with a dual-mode approach: sandbox mode for experts, guided mode for learners. The Wheat replay should offer a 'Learn' mode (annotations on, gating enabled, slower autoplay) and a 'Review' mode (annotations off, free scrubbing, full speed). Without dual-mode, the pedagogical features will annoy the expert audience or be invisible to the novice audience.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T23:07:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pedagogy",
+        "dual-mode",
+        "expert-novice",
+        "learn-review",
+        "prior-art"
+      ]
+    },
+    {
+      "id": "r068",
+      "type": "recommendation",
+      "topic": "pedagogy",
+      "content": "Following Bret Victor's principle that explorable explanations let readers 'create their own data points,' the Wheat visualization should include a sandbox mode where a learner can create a mock claim, set its type and evidence tier, then see how it would appear in the dashboard and how the compiler would handle it. This transforms the viewer from a passive replay into an active learning environment. The sandbox doesn't need a real backend \u2014 it can operate on a local in-memory claims array with a client-side compiler simulation. This is the highest-leverage pedagogical feature because it shifts the learner from observer to participant.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T23:08:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "pedagogy",
+        "sandbox",
+        "active-learning",
+        "bret-victor",
+        "client-side"
+      ]
+    },
+    {
+      "id": "x023",
+      "type": "factual",
+      "topic": "dogfooding",
+      "content": "r055 overstates the uniformity of witness results: 2 of 15 witness claims (w013, w015) are partial_support, not full_support. r055 says 'all 15 corroborate with full_support or partial_support \u2014 none discovered contradictory evidence.' While technically true that none contradict, lumping full and partial together obscures that 13% of witnesses found incomplete support. The claim is factually accurate but rhetorically misleading \u2014 it frames a spectrum as a monolith to make the confirmation bias case sound stronger.",
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null,
+        "challenged_claim": "r055"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T23:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "witness-accuracy",
+        "partial-support",
+        "nuance"
+      ]
+    },
+    {
+      "id": "x024",
+      "type": "factual",
+      "topic": "dogfooding",
+      "content": "The 'confirmation bias loop' framing in r055 misattributes a structural feature as a bug. The /witness command's documented purpose is corroboration \u2014 you point it at a specific claim and a URL you believe supports it. It is the research equivalent of a citation, not a hypothesis test. Expecting /witness to produce disconfirming evidence is like expecting a bibliography to contain rebuttals. The adversarial channel in Wheat is /challenge, not /witness, and this sprint has 22 challenge claims (x001-x022). The sprint's epistemic architecture is functioning as designed: /witness corroborates, /challenge attacks.",
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null,
+        "challenged_claim": "r055"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T23:31:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "witness-purpose",
+        "epistemic-architecture",
+        "by-design"
+      ]
+    },
+    {
+      "id": "x025",
+      "type": "factual",
+      "topic": "dogfooding",
+      "content": "In academic research, literature reviews exhibit the same pattern r055 criticizes: researchers cite sources that support their thesis. Confirmatory citation is the norm, not the exception \u2014 published papers overwhelmingly cite supporting evidence. Wheat's 15/15 non-contradictory witness rate is within normal range for a directed evidence-gathering process. The bias r055 identifies is real but universal \u2014 it is a property of directed citation, not a Wheat-specific defect.",
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null,
+        "challenged_claim": "r055"
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T23:32:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "academic-norms",
+        "citation-bias",
+        "baseline-rate"
+      ]
+    },
+    {
+      "id": "x026",
+      "type": "risk",
+      "topic": "dogfooding",
+      "content": "However, r055 identifies a genuine gap that the epistemic architecture defense does not fully dismiss: the sprint researcher CHOSE which URLs to witness against. A more rigorous approach would have included at least one 'adversarial witness' \u2014 deliberately searching for the strongest counterargument to a core claim and documenting what was found. Web searches confirm real counterarguments exist: (1) SSE has a 6-connection-per-domain limit in HTTP/1.1, problematic for multi-tab dashboards (Ably); (2) self-contained HTML has no browser caching \u2014 every page load re-downloads all inlined assets (Word to HTML); (3) split-pane layouts increase cognitive load by forcing divided attention, and best-practice guidance recommends a close button so users can focus on one pane (AWS Cloudscape). These counterarguments are readily findable and would have strengthened the sprint's credibility.",
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null,
+        "challenged_claim": "r055",
+        "counterevidence_urls": [
+          "https://ably.com/blog/websockets-vs-sse",
+          "https://wordtohtml.net/content/knowledge-base/base64-vs-hosted-images-in-html/",
+          "https://cloudscape.design/patterns/resource-management/view/split-view/"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T23:33:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "adversarial-witness",
+        "sse-limits",
+        "caching-gap",
+        "cognitive-load"
+      ]
+    },
+    {
+      "id": "x027",
+      "type": "recommendation",
+      "topic": "dogfooding",
+      "content": "Verdict on r055: PARTIALLY VALID but OVERSTATED. The factual count is correct (15/15 non-contradictory). The 'confirmation bias loop' label is too strong \u2014 it implies a systemic epistemic failure when the sprint has 22 /challenge claims as its dedicated adversarial channel. The real issue is narrower: the /witness workflow lacks a 'seek disconfirmation first' step. Suggested framework improvement: add an optional --devil-advocate flag to /witness that requires the researcher to search for the strongest counterargument before concluding support. When the witness still holds after adversarial search, the corroboration is epistemically stronger. This would close the gap r055 identifies without mischaracterizing the existing architecture as broken.",
+      "source": {
+        "origin": "challenge",
+        "artifact": null,
+        "connector": null,
+        "challenged_claim": "r055"
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T23:34:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "verdict",
+        "devil-advocate",
+        "framework-improvement"
+      ]
+    },
+    {
+      "id": "p020",
+      "type": "factual",
+      "topic": "pedagogy",
+      "content": "Guided annotations prototype implemented in build-replay.js. Milestone frames now display a contextual annotation panel with type-specific explanations of Wheat concepts (phase transitions, conflicts, evidence upgrades, witness corroboration, compiler status). The panel uses color-coded left-border accents matching milestone type, auto-shows on milestone frames during playback, and is dismissible via button or Esc key. Addresses r050's finding that the replay 'assumes prior knowledge it was designed to impart'.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T23:45:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "annotations",
+        "pedagogy",
+        "r050",
+        "r056"
+      ]
+    },
+    {
+      "id": "p021",
+      "type": "factual",
+      "topic": "pedagogy",
+      "content": "Auto-pause on milestone frames implemented. During playback, the replay pauses for 3 seconds at milestone frames to give the viewer time to read the annotation. Users can dismiss early (click or Esc) to resume immediately. This follows r056's recommendation and addresses the split-attention problem identified in r060 by co-locating the explanation with the event.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T23:45:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "auto-pause",
+        "milestone",
+        "pedagogy",
+        "r056",
+        "r060"
+      ]
+    },
+    {
+      "id": "p022",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "Milestone type classification system added to build-replay.js. The classifyMilestone() function parses milestone event strings into 12 typed categories (phase-transition, first-conflict, conflict-new, evidence-upgrade, challenge-disprove, witness-corroboration, compilation-unblocked, compilation-blocked, sprint-begins, new-topics, batch-claims, conflicts-resolved) with priority ordering when frames contain multiple event types. Each type maps to a color, label, and template function that generates context-aware annotation text.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T23:45:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "milestone-classification",
+        "annotation-map"
+      ]
     }
   ]
 }

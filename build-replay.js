@@ -163,6 +163,167 @@ function detectMilestones(compilations, deltas) {
   return milestones;
 }
 
+// ─── Step 5a: Classify milestone types and generate annotations ─────────────
+const ANNOTATION_MAP = {
+  'phase-transition': {
+    color: '#3b82f6',
+    label: 'Phase Transition',
+    template: (ms) => {
+      const match = ms.match(/Phase:\s*(\w+)\s*->\s*(\w+)/);
+      if (match) {
+        return `The sprint just moved from <strong>${match[1]}</strong> to <strong>${match[2]}</strong>. In Wheat, each phase adds different types of evidence — define gathers constraints, research finds facts, prototype produces tested evidence, and evaluate weighs trade-offs.`;
+      }
+      return 'The sprint transitioned to a new phase. Each Wheat phase progressively strengthens the evidence base.';
+    },
+  },
+  'first-conflict': {
+    color: '#ef4444',
+    label: 'First Conflict',
+    template: () => 'A conflict appeared — two claims disagree. Wheat\'s compiler detected this automatically. Use <code>/resolve</code> to pick a winner based on evidence tier.',
+  },
+  'conflict-new': {
+    color: '#ef4444',
+    label: 'New Conflict',
+    template: () => 'New conflicts emerged between claims. The compiler flags these so nothing ships with contradictory evidence. Run <code>/resolve</code> to adjudicate.',
+  },
+  'evidence-upgrade': {
+    color: '#22c55e',
+    label: 'Evidence Upgrade',
+    template: (ms) => {
+      const upgrades = [...ms.matchAll(/(\w+):\s*(\w+)\s*->\s*(\w+)/g)];
+      if (upgrades.length > 0) {
+        const parts = upgrades.map(m => `<strong>${m[1]}</strong> from ${m[2]} to ${m[3]}`).join(', ');
+        return `Evidence upgraded: ${parts}. A <code>/prototype</code> or <code>/witness</code> proved the claim works in practice, moving it up the evidence ladder.`;
+      }
+      return 'This topic just got upgraded to stronger evidence. A /prototype proved the claim works in practice.';
+    },
+  },
+  'challenge-disprove': {
+    color: '#f472b6',
+    label: 'Challenge Result',
+    template: () => 'A <code>/challenge</code> found a claim was wrong. It\'s now superseded. This is how Wheat self-corrects — adversarial testing removes weak claims before they reach decisions.',
+  },
+  'witness-corroboration': {
+    color: '#a78bfa',
+    label: 'Witness Corroboration',
+    template: () => 'External evidence supports this claim. <code>/witness</code> found an independent source that agrees, strengthening the evidence from a single observation to corroborated fact.',
+  },
+  'compilation-unblocked': {
+    color: '#22c55e',
+    label: 'Compiler Unblocked',
+    template: () => 'The compiler was blocked by conflicts. After <code>/resolve</code>, it\'s ready again — all claims are consistent and output artifacts can be produced.',
+  },
+  'compilation-blocked': {
+    color: '#ef4444',
+    label: 'Compiler Blocked',
+    template: () => 'The compiler just became <strong>blocked</strong>. Unresolved conflicts prevent output artifacts from being generated. Run <code>/resolve</code> to clear the blockage.',
+  },
+  'sprint-begins': {
+    color: '#3b82f6',
+    label: 'Sprint Start',
+    template: () => 'The sprint begins. Wheat tracks every claim, its evidence tier, and relationships to other claims. Watch how the knowledge base grows commit by commit.',
+  },
+  'new-topics': {
+    color: '#a78bfa',
+    label: 'New Topics',
+    template: (ms) => {
+      const match = ms.match(/New topic\(s\):\s*(.+?)(\s*\||$)/);
+      if (match) {
+        return `New research area(s) discovered: <strong>${match[1]}</strong>. Wheat\'s coverage map now tracks evidence depth for each topic independently.`;
+      }
+      return 'New topics entered the sprint. The coverage map expands as research uncovers new areas to investigate.';
+    },
+  },
+  'batch-claims': {
+    color: '#a78bfa',
+    label: 'Batch Addition',
+    template: (ms) => {
+      const match = ms.match(/\+(\d+) claims added/);
+      if (match) {
+        return `A large batch of <strong>${match[1]} claims</strong> was added in one commit. This typically happens during a deep <code>/research</code> pass or a speedrun session.`;
+      }
+      return 'A batch of claims was added. Wheat replays batch commits as sub-frames so you can see each claim arrive.';
+    },
+  },
+  'conflicts-resolved': {
+    color: '#22c55e',
+    label: 'Conflicts Resolved',
+    template: () => 'Conflicts were resolved. The winning claim keeps its evidence tier; the loser is superseded but preserved in the audit trail.',
+  },
+};
+
+function classifyMilestone(milestoneStr, frameIndex, allMilestones) {
+  if (!milestoneStr) return null;
+
+  const types = [];
+
+  // Sprint begins
+  if (milestoneStr.includes('Sprint begins')) {
+    types.push('sprint-begins');
+  }
+
+  // Phase transition
+  if (/Phase:\s*\w+\s*->\s*\w+/.test(milestoneStr)) {
+    types.push('phase-transition');
+  }
+
+  // Evidence upgrades
+  if (/\w+:\s*(stated|web|documented|tested|production)\s*->\s*(stated|web|documented|tested|production)/.test(milestoneStr)) {
+    types.push('evidence-upgrade');
+  }
+
+  // Conflicts — check if this is the first conflict ever
+  if (/\d+ new conflict\(s\)/.test(milestoneStr)) {
+    const priorHasConflict = allMilestones.slice(0, frameIndex).some(
+      m => m && /\d+ new conflict\(s\)/.test(m)
+    );
+    types.push(priorHasConflict ? 'conflict-new' : 'first-conflict');
+  }
+
+  // Conflicts resolved
+  if (/\d+ conflict\(s\) resolved/.test(milestoneStr)) {
+    types.push('conflicts-resolved');
+  }
+
+  // Status changes
+  if (/Status:\s*blocked\s*->\s*ready/.test(milestoneStr)) {
+    types.push('compilation-unblocked');
+  }
+  if (/Status:\s*ready\s*->\s*blocked/.test(milestoneStr)) {
+    types.push('compilation-blocked');
+  }
+
+  // New topics
+  if (/New topic\(s\):/.test(milestoneStr)) {
+    types.push('new-topics');
+  }
+
+  // Batch claims
+  if (/\+\d+ claims added/.test(milestoneStr)) {
+    types.push('batch-claims');
+  }
+
+  // Pick the most interesting type (priority order)
+  const PRIORITY = [
+    'first-conflict', 'compilation-unblocked', 'compilation-blocked',
+    'challenge-disprove', 'phase-transition', 'evidence-upgrade',
+    'witness-corroboration', 'conflicts-resolved', 'conflict-new',
+    'sprint-begins', 'new-topics', 'batch-claims',
+  ];
+
+  const primary = PRIORITY.find(t => types.includes(t)) || types[0];
+  if (!primary) return null;
+
+  const annotation = ANNOTATION_MAP[primary];
+  return {
+    type: primary,
+    label: annotation.label,
+    color: annotation.color,
+    text: annotation.template(milestoneStr),
+    allTypes: types,
+  };
+}
+
 // ─── Step 5b: Detect batch commits ──────────────────────────────────────────
 const BATCH_THRESHOLD = 3; // commits adding more than this many claims are "batch"
 
@@ -173,6 +334,8 @@ function isBatchCommit(delta) {
 
 // ─── Step 6: Build FRAMES array (with hybrid sub-framing) ───────────────────
 function buildFrames(commits, compilations, deltas, milestones) {
+  // Pre-classify all milestones so first-conflict detection works
+  const classifiedMilestones = milestones.map((ms, i) => classifyMilestone(ms, i, milestones));
   const frames = [];
   // Track the previous compilation's claim set for sub-frame interpolation
   let prevClaimIds = new Set();
@@ -298,6 +461,7 @@ function buildFrames(commits, compilations, deltas, milestones) {
           },
           delta: subDelta,
           milestone: s === 0 ? milestones[i] : null,
+          annotation: s === 0 ? classifiedMilestones[i] : null,
           // ── Hybrid framing metadata ──
           subframe: true,
           parentFrame: commitFrameStart,
@@ -322,6 +486,7 @@ function buildFrames(commits, compilations, deltas, milestones) {
         },
         delta: baseDelta,
         milestone: milestones[i],
+        annotation: classifiedMilestones[i],
         subframe: false,
         parentFrame: null,
         subIndex: null,
@@ -996,6 +1161,93 @@ function generateHTML(frames) {
     font-size: 7pt;
     background: rgba(255,255,255,0.05);
   }
+
+  /* ─── Annotation panel ──────────────────────────────────────────────── */
+  .annotation-panel {
+    padding: 12px 24px 12px 20px;
+    background: var(--bg-card);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+    display: none;
+    align-items: flex-start;
+    gap: 12px;
+    animation: annotationSlideIn 0.3s ease-out;
+    position: relative;
+  }
+
+  .annotation-panel.visible {
+    display: flex;
+  }
+
+  @keyframes annotationSlideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .annotation-accent {
+    width: 4px;
+    border-radius: 2px;
+    align-self: stretch;
+    flex-shrink: 0;
+  }
+
+  .annotation-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .annotation-label {
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .annotation-text {
+    font-size: 9.5pt;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .annotation-text strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .annotation-text code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 8.5pt;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--accent-light);
+  }
+
+  .annotation-dismiss {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 10pt;
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .annotation-dismiss:hover {
+    color: var(--text);
+    border-color: rgba(255,255,255,0.25);
+  }
+
+  .annotation-pause-hint {
+    font-size: 7.5pt;
+    color: var(--text-dim);
+    margin-top: 4px;
+    font-style: italic;
+  }
 </style>
 </head>
 <body>
@@ -1017,6 +1269,17 @@ function generateHTML(frames) {
     </div>
   </div>
   <div class="commit-msg" id="commitMsg">—</div>
+</div>
+
+<!-- Annotation panel (shown on milestone frames) -->
+<div class="annotation-panel" id="annotationPanel">
+  <div class="annotation-accent" id="annotationAccent"></div>
+  <div class="annotation-body">
+    <div class="annotation-label" id="annotationLabel"></div>
+    <div class="annotation-text" id="annotationText"></div>
+    <div class="annotation-pause-hint" id="annotationPauseHint"></div>
+  </div>
+  <button class="annotation-dismiss" id="annotationDismiss" title="Dismiss (Esc)">&#10005;</button>
 </div>
 
 <!-- Main panels -->
@@ -1065,6 +1328,7 @@ function generateHTML(frames) {
   <kbd>&larr;</kbd> <kbd>&rarr;</kbd> step &nbsp;
   <kbd>Space</kbd> play/pause &nbsp;
   <kbd>N</kbd> next commit &nbsp;
+  <kbd>Esc</kbd> dismiss annotation &nbsp;
   <kbd>Home</kbd> <kbd>End</kbd> jump
 </div>
 
@@ -1078,6 +1342,9 @@ let playing = false;
 let speed = 1; // frames per second
 let lastFrameTime = 0;
 let animFrameId = null;
+let annotationDismissed = false; // tracks if user dismissed current annotation
+let milestonePauseTimer = null;  // timer for auto-pause on milestones
+const MILESTONE_PAUSE_MS = 3000; // auto-pause duration on milestone frames
 
 // Animated counter targets
 const counterState = {
@@ -1109,6 +1376,12 @@ const deltaBar = document.getElementById('deltaBar');
 const milestoneMarkers = document.getElementById('milestoneMarkers');
 const subframeIndicator = document.getElementById('subframeIndicator');
 const nextCommitBtn = document.getElementById('nextCommitBtn');
+const annotationPanel = document.getElementById('annotationPanel');
+const annotationAccent = document.getElementById('annotationAccent');
+const annotationLabel = document.getElementById('annotationLabel');
+const annotationText = document.getElementById('annotationText');
+const annotationDismissBtn = document.getElementById('annotationDismiss');
+const annotationPauseHint = document.getElementById('annotationPauseHint');
 
 // Pre-compute commit boundaries for "next commit" navigation
 const commitBoundaries = []; // indices where a new commit starts
@@ -1164,12 +1437,36 @@ if (FRAMES.length > 0) {
 scrubber.addEventListener('input', () => {
   if (playing) togglePlay(); // auto-pause on scrub
   currentFrame = parseInt(scrubber.value);
+  annotationDismissed = false; // reset on scrub
+  if (milestonePauseTimer) {
+    clearTimeout(milestonePauseTimer);
+    milestonePauseTimer = null;
+  }
   render(FRAMES[currentFrame]);
 });
 
 playBtn.addEventListener('click', togglePlay);
 
 nextCommitBtn.addEventListener('click', goToNextCommit);
+
+annotationDismissBtn.addEventListener('click', () => {
+  annotationDismissed = true;
+  annotationPanel.classList.remove('visible');
+  // If paused at milestone, clear the pause timer and resume
+  if (milestonePauseTimer) {
+    clearTimeout(milestonePauseTimer);
+    milestonePauseTimer = null;
+    if (!playing) resumeFromMilestonePause();
+  }
+});
+
+function resumeFromMilestonePause() {
+  // Resume playback after milestone pause (only if we were playing before)
+  if (annotationPanel._wasPlaying) {
+    annotationPanel._wasPlaying = false;
+    togglePlay();
+  }
+}
 
 const SPEEDS = [1, 2, 4];
 let speedIdx = 0;
@@ -1213,6 +1510,18 @@ document.addEventListener('keydown', (e) => {
       if (playing) togglePlay();
       goToPrevCommit();
       break;
+    case 'Escape':
+      e.preventDefault();
+      if (annotationPanel.classList.contains('visible')) {
+        annotationDismissed = true;
+        annotationPanel.classList.remove('visible');
+        if (milestonePauseTimer) {
+          clearTimeout(milestonePauseTimer);
+          milestonePauseTimer = null;
+          resumeFromMilestonePause();
+        }
+      }
+      break;
     case 'Home':
       e.preventDefault();
       if (playing) togglePlay();
@@ -1231,6 +1540,11 @@ function goToFrame(idx) {
   currentFrame = idx;
   scrubber.value = idx;
   updateScrubberFill();
+  annotationDismissed = false; // reset on frame change
+  if (milestonePauseTimer) {
+    clearTimeout(milestonePauseTimer);
+    milestonePauseTimer = null;
+  }
   render(FRAMES[idx]);
 }
 
@@ -1287,7 +1601,27 @@ function playLoop(timestamp) {
       currentFrame++;
       scrubber.value = currentFrame;
       updateScrubberFill();
-      render(FRAMES[currentFrame]);
+
+      const frame = FRAMES[currentFrame];
+      // Reset dismissed state for new milestone frames
+      annotationDismissed = false;
+      render(frame);
+
+      // Auto-pause on milestone frames with annotations
+      if (frame.annotation) {
+        annotationPanel._wasPlaying = true;
+        togglePlay(); // pause
+        annotationPauseHint.textContent = 'Auto-resuming in a moment... Click \\u2715 or press Esc to dismiss.';
+        milestonePauseTimer = setTimeout(() => {
+          milestonePauseTimer = null;
+          annotationPauseHint.textContent = '';
+          if (!playing && annotationPanel._wasPlaying) {
+            annotationPanel._wasPlaying = false;
+            togglePlay(); // resume
+          }
+        }, MILESTONE_PAUSE_MS);
+        return;
+      }
     } else {
       togglePlay(); // stop at end
       return;
@@ -1341,6 +1675,9 @@ function render(frame) {
 
   // Delta bar
   renderDelta(frame);
+
+  // Annotation panel
+  renderAnnotation(frame);
 }
 
 // ─── Claims Panel ────────────────────────────────────────────────────────────
@@ -1517,6 +1854,28 @@ function renderDelta(frame) {
   }
 
   deltaBar.innerHTML = parts.join(' ');
+}
+
+// ─── Annotation Panel ────────────────────────────────────────────────────────
+function renderAnnotation(frame) {
+  if (!frame.annotation || annotationDismissed) {
+    annotationPanel.classList.remove('visible');
+    return;
+  }
+
+  const ann = frame.annotation;
+  annotationAccent.style.background = ann.color;
+  annotationLabel.style.color = ann.color;
+  annotationLabel.textContent = ann.label;
+  annotationText.innerHTML = ann.text;
+
+  if (milestonePauseTimer) {
+    annotationPauseHint.textContent = 'Auto-resuming in a moment... Click \\u2715 or press Esc to dismiss.';
+  } else {
+    annotationPauseHint.textContent = '';
+  }
+
+  annotationPanel.classList.add('visible');
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
