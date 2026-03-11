@@ -882,6 +882,27 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["witness", "corroboration", "fs-watch", "macos"]
+    },
+    {
+      "id": "w005",
+      "type": "factual",
+      "topic": "dogfooding",
+      "content": "External corroboration for p005: The self-referential dogfooding pattern is well-established. Keen IO built 'analytics for your analytics' — their Native Analytics dashboard displayed by their own analytics platform. GitLab dogfoods their Insights visualization tool internally. Bubble builds their entire website on their own platform. Wheat's 'dashboard that displays claims about itself' follows this proven pattern of tools demonstrating their own capabilities.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "p005",
+        "relationship": "full_support",
+        "urls": ["https://keen.io/blog/what-we-learned-dogfooding-our-native-analytics-product/"]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["witness", "corroboration", "dogfooding", "self-referential", "keen-io"]
     }
   ]
 }
