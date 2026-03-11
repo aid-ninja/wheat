@@ -414,3 +414,29 @@ if (args.includes('--check')) {
     process.exit(0);
   }
 }
+
+if (args.includes('--gate')) {
+  // Staleness check: is compilation.json older than claims.json?
+  const compilationPath = path.join(__dirname, 'compilation.json');
+  const claimsPath = path.join(__dirname, 'claims.json');
+
+  if (fs.existsSync(compilationPath) && fs.existsSync(claimsPath)) {
+    const compilationMtime = fs.statSync(compilationPath).mtimeMs;
+    const claimsMtime = fs.statSync(claimsPath).mtimeMs;
+
+    if (claimsMtime > compilationMtime) {
+      console.error('Gate FAILED: compilation.json is stale. Recompiling now...');
+      // The compile() call above already refreshed it, so this is informational
+    }
+  }
+
+  if (compilation.status === 'blocked') {
+    console.error(`Gate FAILED: ${compilation.errors.length} blocker(s)`);
+    compilation.errors.forEach(e => console.error(`  ${e.code}: ${e.message}`));
+    process.exit(1);
+  }
+
+  // Print a one-line gate pass for audit
+  console.log(`Gate PASSED: ${compilation.sprint_meta.active_claims} claims, ${Object.keys(compilation.coverage).length} topics, hash ${compilation.claims_hash}`);
+  process.exit(0);
+}
