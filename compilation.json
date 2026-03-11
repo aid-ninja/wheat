@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-11T06:45:29.265Z",
-  "claims_hash": "cc69f25",
+  "compiled_at": "2026-03-11T06:50:37.731Z",
+  "claims_hash": "e348819",
   "compiler_version": "0.1.0",
   "status": "ready",
   "errors": [],
@@ -532,6 +532,28 @@
         "phase-coding",
         "visual-hierarchy"
       ]
+    },
+    {
+      "id": "f006",
+      "type": "constraint",
+      "topic": "ux-pattern",
+      "content": "New information (latest claims, events, compilations) should populate from the top of the timeline, not the bottom. Reverse chronological order — newest first, like a social feed or activity log. The user shouldn't have to scroll to see what just changed.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-11T07:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "user-feedback",
+        "reverse-chrono",
+        "scroll-position"
+      ]
     }
   ],
   "conflict_graph": {
@@ -627,13 +649,14 @@
       ]
     },
     "ux-pattern": {
-      "claims": 7,
+      "claims": 8,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
         "recommendation",
         "factual",
-        "feedback"
+        "feedback",
+        "constraint"
       ],
       "claim_ids": [
         "r004",
@@ -642,7 +665,8 @@
         "p003",
         "f005",
         "p006",
-        "p007"
+        "p007",
+        "f006"
       ]
     }
   },
@@ -664,7 +688,7 @@
       "complete": false
     },
     "feedback": {
-      "claims": 5,
+      "claims": 6,
       "complete": true
     }
   },
@@ -675,14 +699,14 @@
     ],
     "initiated": "2026-03-11",
     "phase": "prototype",
-    "total_claims": 25,
-    "active_claims": 23,
+    "total_claims": 26,
+    "active_claims": 24,
     "conflicted_claims": 0,
     "superseded_claims": 2,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:cc69f25d3c1dbacbf629d283b82ab02252be670cf089be59ea0c817bd37deaea",
+    "input_hash": "sha256:e348819150d5d71e095f094c2a87b3e4f8b722a0f06205fdb5617ea8c8520386",
     "compiler_version": "0.1.0",
     "deterministic": true
   }

@@ -356,6 +356,20 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["color-system", "phase-coding", "visual-hierarchy"]
+    },
+    {
+      "id": "f006",
+      "type": "constraint",
+      "topic": "ux-pattern",
+      "content": "New information (latest claims, events, compilations) should populate from the top of the timeline, not the bottom. Reverse chronological order — newest first, like a social feed or activity log. The user shouldn't have to scroll to see what just changed.",
+      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-11T07:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["user-feedback", "reverse-chrono", "scroll-position"]
     }
   ]
 }

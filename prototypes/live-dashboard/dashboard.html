@@ -645,11 +645,34 @@ function renderTimeline(git) {
 
   let h = '';
 
-  phaseOrder.forEach((phase, pi) => {
+  // "Now" node at the top — newest first
+  h += `<div class="tl-now">
+    <div class="tl-now-dot"></div>
+    <div class="tl-now-text">Watching claims.json &mdash; compiled at ${new Date(comp.compiled_at).toLocaleTimeString()}</div>
+  </div>`;
+
+  // Warnings right below "now"
+  const warns = comp.warnings || [];
+  if (warns.length) {
+    h += '<div class="tl-spacer"></div>';
+    warns.forEach(w => {
+      h += `<div class="tl-event">
+        <div class="tl-event-dot" style="background:var(--accent-dim); color:var(--accent);">!</div>
+        <div class="tl-event-body warning">${esc(w.message)}</div>
+      </div>`;
+    });
+  }
+
+  // Phases in reverse order — newest first
+  const reversedPhases = [...phaseOrder].reverse();
+  let firstPhase = true;
+
+  reversedPhases.forEach((phase) => {
     const list = grouped[phase];
     if (!list.length) return;
 
-    if (pi > 0) h += '<div class="tl-spacer"></div>';
+    h += '<div class="tl-spacer"></div>';
+    firstPhase = false;
 
     // Phase header
     h += `<div class="tl-phase ph-${phase}">
@@ -661,11 +684,23 @@ function renderTimeline(git) {
       </div>
     </div>`;
 
-    // Claims
-    list.forEach(c => {
+    // Claims in reverse order within each phase (newest first)
+    const reversed = [...list].reverse();
+    reversed.forEach(c => {
       const prefix = c.id.charAt(0);
       const isSup = c.status === 'superseded';
       const truncated = c.content.length > 90 ? c.content.substring(0, 90) + '...' : c.content;
+
+      // If this claim was superseded, show resolution event above it
+      if (isSup && resolved[c.id]) {
+        const r = resolved[c.id];
+        h += `<div class="tl-event">
+          <div class="tl-event-dot" style="background:var(--green-dim); color:var(--green);">&#10003;</div>
+          <div class="tl-event-body resolved">
+            <strong>${r.winner}</strong> superseded <strong>${r.loser}</strong> &mdash; ${esc(r.reason)}
+          </div>
+        </div>`;
+      }
 
       h += `<div class="tl-claim ph-${phase} ${isSup ? 'superseded' : ''}" data-id="${c.id}">
         <div class="tl-claim-dot"></div>
@@ -687,38 +722,8 @@ function renderTimeline(git) {
           ${c.tags && c.tags.length ? `<div class="tl-detail-tags">${c.tags.map(t => `<span class="tl-tag">${t}</span>`).join('')}</div>` : ''}
         </div>
       </div>`;
-
-      // If this claim was superseded, show resolution event
-      if (isSup && resolved[c.id]) {
-        const r = resolved[c.id];
-        h += `<div class="tl-event">
-          <div class="tl-event-dot" style="background:var(--green-dim); color:var(--green);">&#10003;</div>
-          <div class="tl-event-body resolved">
-            <strong>${r.winner}</strong> superseded <strong>${r.loser}</strong> &mdash; ${esc(r.reason)}
-          </div>
-        </div>`;
-      }
     });
   });
-
-  // Warnings as events at the end
-  const warns = comp.warnings || [];
-  if (warns.length) {
-    h += '<div class="tl-spacer"></div>';
-    warns.forEach(w => {
-      h += `<div class="tl-event">
-        <div class="tl-event-dot" style="background:var(--accent-dim); color:var(--accent);">!</div>
-        <div class="tl-event-body warning">${esc(w.message)}</div>
-      </div>`;
-    });
-  }
-
-  // "Now" node
-  h += `<div class="tl-spacer"></div>
-  <div class="tl-now">
-    <div class="tl-now-dot"></div>
-    <div class="tl-now-text">Watching claims.json &mdash; compiled at ${new Date(comp.compiled_at).toLocaleTimeString()}</div>
-  </div>`;
 
   body.innerHTML = h;
 }
