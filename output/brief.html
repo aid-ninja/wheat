@@ -233,7 +233,7 @@
     <span><strong>Date</strong> 2026-03-11</span>
     <span><strong>Audience</strong> Developer learning Wheat</span>
     <span><strong>Phase</strong> Compiled</span>
-    <span><strong>Claims</strong> 51 (50 active)</span>
+    <span><strong>Claims</strong> 55 (53 active)</span>
     <span><strong>Status</strong> READY</span>
   </div>
 </header>
@@ -242,7 +242,7 @@
 
   <h2>Executive Summary</h2>
   <div class="summary-box">
-    <p>The sprint successfully built a live, self-referential visualization of the Wheat framework — a real-time dashboard that teaches Wheat by being a product of it. A zero-dependency Node.js SSE server watches <code>claims.json</code>, auto-compiles, and pushes updates to a timeline-first browser dashboard. All 5 original constraints are satisfied, 51 claims across 8 topics have been validated (including adversarial challenges and external corroboration), and the system scales to 1000+ claims with sub-60ms compile times.</p>
+    <p>The sprint successfully built a live, self-referential visualization of the Wheat framework — a real-time dashboard that teaches Wheat by being a product of it. A zero-dependency Node.js SSE server watches <code>claims.json</code>, auto-compiles, and pushes updates to a timeline-first browser dashboard. All 5 original constraints are satisfied, 55 claims across 8 topics have been validated (including adversarial challenges, external corroboration, and template fixes), and the system scales to 1000+ claims with sub-60ms compile times.</p>
   </div>
 
   <h2>Recommendation</h2>
@@ -262,10 +262,10 @@
     <div class="topic-header">
       <span class="topic-name">Architecture</span>
       <span class="topic-pill pill-tested">tested</span>
-      <span class="topic-claims">15 claims &middot; 5 sources &middot; 4 types &middot; corroborated</span>
+      <span class="topic-claims">16 claims &middot; 5 sources &middot; 4 types &middot; 2x corroborated</span>
     </div>
     <div class="topic-body">
-      Zero-dependency Node.js stack: <code>wheat-server.js</code> (133 lines) with SSE push, <code>fs.watch</code> with 150ms debounce, auto-compile in ~50ms <span class="claim-ref">p001, p004</span>. SSE auto-reconnect handled natively by browser <span class="claim-ref">p002</span>. Compiler v0.2.0 (685 lines) scales linearly: 59ms at 1000 claims <span class="claim-ref">e001, r014</span>. 17 commands in 3 tiers with 3 QA feedback loops <span class="claim-ref">r013, r016</span>. SSE architecture externally corroborated as the standard pattern <span class="claim-ref">w001</span>.
+      Zero-dependency Node.js stack: <code>wheat-server.js</code> (133 lines) with SSE push, <code>fs.watch</code> with 150ms debounce, auto-compile in ~50ms <span class="claim-ref">p001, p004</span>. SSE auto-reconnect handled natively by browser <span class="claim-ref">p002</span>. Compiler v0.2.0 (685 lines) scales linearly: 59ms at 1000 claims <span class="claim-ref">e001, r014</span>. 17 commands in 3 tiers with 3 QA feedback loops <span class="claim-ref">r013, r016</span>. SSE architecture externally corroborated <span class="claim-ref">w001</span>. Auto-reconnect confirmed by MDN/WHATWG <span class="claim-ref">w002</span>.
     </div>
   </div>
 
@@ -284,10 +284,10 @@
     <div class="topic-header">
       <span class="topic-name">Accessibility</span>
       <span class="topic-pill pill-tested">tested</span>
-      <span class="topic-claims">8 claims &middot; 3 sources &middot; 3 types</span>
+      <span class="topic-claims">9 claims &middot; 3 sources &middot; 3 types</span>
     </div>
     <div class="topic-body">
-      13/13 WCAG 2.2 AA checks pass <span class="claim-ref">e004</span>. Five fixes in ~25 lines: contrast raised to 5.08:1, semantic landmarks, keyboard nav with Enter/Space, aria-live for SSE updates, focus-visible outlines <span class="claim-ref">r021, p009</span>. Residual: template Google Fonts import should be removed <span class="claim-ref">r022</span>.
+      13/13 WCAG 2.2 AA checks pass <span class="claim-ref">e004</span>. Five fixes in ~25 lines: contrast raised to 5.08:1, semantic landmarks, keyboard nav with Enter/Space, aria-live for SSE updates, focus-visible outlines <span class="claim-ref">r021, p009</span>. Google Fonts import removed from both templates — now using system font stack <span class="claim-ref">p010, r022</span>.
     </div>
   </div>
 
@@ -295,10 +295,10 @@
     <div class="topic-header">
       <span class="topic-name">Output Format</span>
       <span class="topic-pill pill-tested">tested</span>
-      <span class="topic-claims">6 claims &middot; 4 sources &middot; 4 types</span>
+      <span class="topic-claims">7 claims &middot; 4 sources &middot; 4 types</span>
     </div>
     <div class="topic-body">
-      7/7 HTML artifacts verified self-contained: zero external dependencies, 7.3–26.3KB, all open via <code>file://</code> <span class="claim-ref">e003, p008</span>. Live server for dev, static for sharing <span class="claim-ref">r007, f002, f003</span>.
+      7/7 HTML artifacts verified self-contained: zero external dependencies, 7.3–26.3KB, all open via <code>file://</code> <span class="claim-ref">e003, p008</span>. Live server for dev, static for sharing <span class="claim-ref">r007, f002, f003</span>. Risk: no automated guard against regression <span class="claim-ref">x003</span>.
     </div>
   </div>
 
@@ -355,11 +355,12 @@
     <tbody>
       <tr class="risk-row"><td>r007</td><td>Server vs self-contained tension</td><td>Resolved</td><td>Two artifacts: server for dev, static for sharing</td></tr>
       <tr class="risk-row"><td>e002</td><td>Compiler crashes on malformed JSON</td><td>Fixed</td><td>try/catch added; clean error messages</td></tr>
-      <tr class="risk-row"><td>r022</td><td>Template imports external Google Fonts</td><td>Open</td><td>Remove @import; use system font stack</td></tr>
+      <tr class="risk-row"><td>r022</td><td>Template imports external Google Fonts</td><td>Fixed</td><td>Removed @import; system font stack (p010)</td></tr>
       <tr class="risk-row"><td>r018</td><td>No ARIA landmarks (initial state)</td><td>Fixed</td><td>Semantic HTML added (p009)</td></tr>
       <tr class="risk-row"><td>r019</td><td>No keyboard navigation (initial state)</td><td>Fixed</td><td>tabindex, role, keydown added (p009)</td></tr>
       <tr class="risk-row"><td>x001</td><td>Dogfooding cold-start: empty sprint = empty dashboard</td><td>Open</td><td>Seed with example sprint; value at 5+ claims</td></tr>
       <tr class="risk-row"><td>x002</td><td>Timeline implies linear phases; sprints are nonlinear</td><td>Open</td><td>Add phase-mixing indicators; document nonlinear nature</td></tr>
+      <tr class="risk-row"><td>x003</td><td>Self-containment has no automated regression guard</td><td>Open</td><td>Add compiler pass or pre-commit hook</td></tr>
     </tbody>
   </table>
 
@@ -372,7 +373,7 @@
     <span style="color:var(--text-dim);flex:1">Server is 133 lines (not ~80 estimated). Evidence tier: tested (4) &gt; web (2).</span>
   </div>
 
-  <h2>Appendix: Full Claim Inventory (50 Active)</h2>
+  <h2>Appendix: Full Claim Inventory (53 Active)</h2>
 
   <table>
     <thead>
@@ -429,12 +430,15 @@
       <tr><td>x001</td><td>risk</td><td>dogfooding</td><td>web</td><td>Cold-start: empty sprint = empty dashboard</td></tr>
       <tr><td>x002</td><td>risk</td><td>ux-pattern</td><td>web</td><td>Timeline implies linear phases; sprints nonlinear</td></tr>
       <tr><td>w001</td><td>factual</td><td>architecture</td><td>web</td><td>External corroboration: SSE+Node.js is standard pattern</td></tr>
+      <tr><td>w002</td><td>factual</td><td>architecture</td><td>web</td><td>External corroboration: SSE auto-reconnect (MDN/WHATWG)</td></tr>
+      <tr><td>p010</td><td>factual</td><td>accessibility</td><td>tested</td><td>Google Fonts removed; system font stack</td></tr>
+      <tr><td>x003</td><td>risk</td><td>output-format</td><td>web</td><td>No automated self-containment regression guard</td></tr>
     </tbody>
   </table>
 
   <div class="certificate">
     <strong>Compilation Certificate</strong><br>
-    sha256:1a1e1c8... &middot; wheat v0.2.0 &middot; 51 claims (50 active, 1 superseded) &middot; 2026-03-11T08:50:14.726Z
+    sha256:8804e253dbabc... &middot; wheat v0.2.0 &middot; 55 claims (53 active, 2 superseded) &middot; 2026-03-11T16:15:00Z
   </div>
 
 </main>

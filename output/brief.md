@@ -20,7 +20,7 @@ css: |-
 
 ## Executive Summary
 
-The sprint successfully built a live, self-referential visualization of the Wheat framework — a real-time dashboard that teaches Wheat by being a product of it. The approach works: a zero-dependency Node.js SSE server watches `claims.json`, auto-compiles, and pushes updates to a timeline-first browser dashboard. All 5 original constraints are satisfied, 51 claims across 8 topics have been validated (including adversarial challenges and external corroboration), and the system scales to 1000+ claims with sub-60ms compile times.
+The sprint successfully built a live, self-referential visualization of the Wheat framework — a real-time dashboard that teaches Wheat by being a product of it. The approach works: a zero-dependency Node.js SSE server watches `claims.json`, auto-compiles, and pushes updates to a timeline-first browser dashboard. All 5 original constraints are satisfied, 55 claims across 8 topics have been validated (including adversarial challenges, external corroboration, and template fixes), and the system scales to 1000+ claims with sub-60ms compile times.
 
 ## Recommendation
 
@@ -33,19 +33,19 @@ The sprint successfully built a live, self-referential visualization of the Whea
 
 ## Evidence Summary
 
-### Architecture (15 claims, tested + corroborated)
+### Architecture (16 claims, tested + 2x corroborated)
 
 The system architecture is a zero-dependency Node.js stack: `wheat-server.js` (133 lines) serves a single-page dashboard via HTTP with SSE push updates [p001]. `fs.watch` with 150ms debounce provides reliable file change detection on macOS [p004]. SSE auto-reconnect is handled natively by the browser's `EventSource` API — no retry logic needed [p002]. The compiler (v0.2.0, 685 lines) runs a 7-pass pipeline and scales linearly: 45ms at 42 claims, 59ms at 1000 claims [e001, r014].
 
 Browser-only approaches were ruled out — the File System Access API is Chrome-only and still requires a server for CLI integration [r003]. The HMR-style hash notification pattern keeps SSE payloads lightweight [r006].
 
-The compiler expanded from 10 to 17 commands in 3 tiers, with 9 new capabilities including `--diff` mode, corroboration tracking, and constraint-aware coverage [r013, r014, r015]. Three QA feedback loops were introduced: self-correction (`/challenge`), external validation (`/witness`), and meta-learning (`/calibrate`) [r016]. The SSE architecture was externally corroborated via DigitalOcean and community tutorials confirming zero-dependency Node.js SSE as the standard pattern for real-time dashboards [w001].
+The compiler expanded from 10 to 17 commands in 3 tiers, with 9 new capabilities including `--diff` mode, corroboration tracking, and constraint-aware coverage [r013, r014, r015]. Three QA feedback loops were introduced: self-correction (`/challenge`), external validation (`/witness`), and meta-learning (`/calibrate`) [r016]. The SSE architecture was externally corroborated via DigitalOcean tutorials [w001]. SSE auto-reconnect confirmed by MDN and WHATWG HTML Standard as native browser behavior with ~3s default retry [w002].
 
 ### UX Pattern (9 claims, tested)
 
 The timeline-first design replaced the original split-pane card grid after stakeholder feedback [f005]. Claims appear as expandable nodes grouped by phase, with progressive disclosure via click-to-expand [p006]. Phase-colored visual system (define=amber, research=blue, prototype=green, evaluate=purple, feedback=cyan) provides instant grouping without labels [p007]. Reverse chronological order puts newest content at top [f006]. The compiler stepper animates across the top on each update [r005, p003]. A known risk: the clean phase→phase timeline may misrepresent the nonlinear reality of sprints, potentially giving new users a false impression of Wheat's linearity [x002].
 
-### Accessibility (8 claims, tested)
+### Accessibility (9 claims, tested)
 
 The dashboard initially had zero accessibility infrastructure [r018, r019, r020]. Five targeted fixes brought it to WCAG 2.2 AA compliance in ~25 lines of changes [r021, p009]:
 
@@ -55,11 +55,11 @@ The dashboard initially had zero accessibility infrastructure [r018, r019, r020]
 4. Live regions: `aria-live="polite"` on scoreboard and timeline for SSE updates [r020]
 5. Focus styles: `:focus-visible` outlines on all interactive elements [r021]
 
-All 13 WCAG 2.2 AA checks pass [e004]. The explainer template has a residual external Google Fonts import that should be removed [r022].
+All 13 WCAG 2.2 AA checks pass [e004]. The explainer template's external Google Fonts import has been removed — both templates now use a system font stack with zero external requests [p010, r022].
 
-### Output Format (6 claims, tested)
+### Output Format (7 claims, tested)
 
-All 7 HTML artifacts verified fully self-contained: zero external `<script src>`, `<link href>`, `@import url()`, or `<img src>` pointing to external resources [e003, p008]. Sizes range from 7.3KB to 26.3KB. Every file opens correctly via `file://` with no network requests. The live server and static artifacts serve complementary roles: server for dev-time, static for sharing [r007, f002, f003].
+All 7 HTML artifacts verified fully self-contained: zero external `<script src>`, `<link href>`, `@import url()`, or `<img src>` pointing to external resources [e003, p008]. Sizes range from 7.3KB to 26.3KB. Every file opens correctly via `file://` with no network requests. The live server and static artifacts serve complementary roles: server for dev-time, static for sharing [r007, f002, f003]. A challenged risk: self-containment verification is a point-in-time snapshot with no automated guard against regression [x003].
 
 ### Dogfooding (4 claims, tested)
 
@@ -75,11 +75,12 @@ Evidence distribution: stated 27.5%, web 42.5%, documented 10%, tested 22.5% [e0
 |------|:--------:|------------|
 | Live server conflicts with self-contained HTML constraint | tested [r007] | Two artifacts: server for dev, static for sharing [f002, f003] |
 | Compiler crashes on empty/malformed JSON | tested [e002] | Fixed: try/catch added, clean error messages |
-| Explainer template imports external Google Fonts | web [r022] | Use system font stack; remove `@import` |
+| Explainer template imports external Google Fonts | tested [p010] | Fixed: removed @import, using system font stack |
 | No scalability testing beyond 1000 claims | tested [e001] | Linear scaling confirmed; 1000 in 59ms is sufficient headroom |
 | Quality topic resistant to evidence upgrade | tested [e006] | Subjective criteria by design; constraint-dominated |
 | Dogfooding cold-start: empty sprint = empty dashboard | web [x001] | Seed with example sprint; dashboard shows value at 5+ claims |
 | Timeline implies linear phases; sprints are nonlinear | web [x002] | Add phase-mixing indicators; document nonlinear nature |
+| Self-containment has no automated regression guard | web [x003] | Add compiler pass or pre-commit hook to scan for external URLs |
 
 ## Resolved Conflicts
 
@@ -141,9 +142,12 @@ Evidence distribution: stated 27.5%, web 42.5%, documented 10%, tested 22.5% [e0
 | x001 | risk | dogfooding | web | Cold-start: empty sprint = empty dashboard, teaching collapses |
 | x002 | risk | ux-pattern | web | Timeline implies linear phases; sprints are nonlinear |
 | w001 | factual | architecture | web | External corroboration: SSE+Node.js is standard pattern (DigitalOcean) |
+| w002 | factual | architecture | web | External corroboration: SSE auto-reconnect confirmed by MDN/WHATWG |
+| p010 | factual | accessibility | tested | Google Fonts removed from both templates; system font stack |
+| x003 | risk | output-format | web | Self-containment has no automated regression guard |
 
 ---
 
 <div class="certificate">
-Compilation certificate: sha256:1a1e1c8... | Compiler: wheat v0.2.0 | Claims: 51 (50 active, 1 superseded) | Compiled: 2026-03-11T08:50:14.726Z
+Compilation certificate: sha256:8804e253dbabc... | Compiler: wheat v0.2.0 | Claims: 55 (53 active, 2 superseded) | Compiled: 2026-03-11T16:15:00Z
 </div>
