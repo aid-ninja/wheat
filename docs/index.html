@@ -601,7 +601,7 @@
     <div class="pipeline-wrap reveal reveal-delay-1">
       <canvas id="pipeline-canvas"></canvas>
     </div>
-    <p class="pipeline-caption reveal reveal-delay-2">Claims flow through 7 compiler passes — from question to auditable artifact</p>
+    <p class="pipeline-caption reveal reveal-delay-2">Every command writes claims, every claim is git-committed, the compiler certifies, artifacts ship</p>
   </section>
 
   <div class="spacer"></div>
@@ -867,12 +867,15 @@
     { id: 'compiler',  label: 'Compiler',          sub: '7 passes',             color: [240,160,48],  icon: '7x',  isHub: true },
     { id: 'compiled',  label: 'compilation.json',  sub: 'Certified output',     color: [167,139,250], icon: '.json' },
     { id: 'artifacts', label: 'Artifacts',         sub: 'HTML / PDF / slides',  color: [34,211,238],  icon: 'out' },
+    { id: 'git',       label: 'Git Tree',          sub: 'Event log + history',  color: [248,113,113], icon: 'git' },
   ];
 
   var passes = ['Schema','Types','Sort','Conflicts','Resolve','Coverage','Readiness'];
 
   // Edges: [fromIdx, toIdx]
-  var edges = [[0,1],[1,2],[2,3],[3,4]];
+  // Main flow: commands→claims→compiler→compiled→artifacts
+  // Side branch: claims↔git (every command auto-commits)
+  var edges = [[0,1],[1,2],[2,3],[3,4],[1,5]];
 
   var flowParticles = [];
   var pTime = 0;
@@ -886,13 +889,14 @@
     var cx = PW / 2;
     var cy = PH / 2;
     var spreadX = Math.min(PW * 0.32, 200);
-    var spreadY = Math.min(PH * 0.36, 160);
+    var spreadY = Math.min(PH * 0.36, 155);
     return [
-      { x: cx,            y: cy - spreadY * 1.15 },  // commands — top
-      { x: cx - spreadX,  y: cy - spreadY * 0.3 },   // claims — upper left
-      { x: cx,            y: cy + 4 },                // compiler — center
-      { x: cx + spreadX,  y: cy + spreadY * 0.3 },   // compiled — lower right
-      { x: cx,            y: cy + spreadY * 1.15 },   // artifacts — bottom
+      { x: cx,            y: cy - spreadY * 1.15 },   // 0: commands — top
+      { x: cx - spreadX,  y: cy - spreadY * 0.25 },   // 1: claims — upper left
+      { x: cx,            y: cy + 6 },                 // 2: compiler — center
+      { x: cx + spreadX,  y: cy + spreadY * 0.25 },   // 3: compiled — lower right
+      { x: cx,            y: cy + spreadY * 1.15 },    // 4: artifacts — bottom
+      { x: cx + spreadX,  y: cy - spreadY * 0.55 },   // 5: git — upper right
     ];
   }
 
