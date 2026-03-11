@@ -2745,11 +2745,11 @@
         "connector": null
       },
       "evidence": "tested",
-      "status": "active",
+      "status": "superseded",
       "phase_added": "evaluate",
       "timestamp": "2026-03-11T21:30:00Z",
       "conflicts_with": [],
-      "resolved_by": null,
+      "resolved_by": "x020",
       "tags": [
         "replay",
         "file-size",
@@ -2848,6 +2848,365 @@
         "file-size",
         "optimization"
       ]
+    },
+    {
+      "id": "x020",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "x018 claims replay.html is ~763KB, but actual measured size is 1,877,746 bytes (~1.8MB). The estimate was likely made before hybrid sub-framing (p016-p018) expanded the frame count from ~35 to ~50-60 frames. The claim's size figure is stale and understates the actual payload by ~2.5x.",
+      "source": {
+        "origin": "challenge",
+        "artifact": "output/replay.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T23:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "file-size",
+        "measurement"
+      ]
+    },
+    {
+      "id": "x021",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Despite being 1.8MB uncompressed, replay.html's repetitive JSON structure (same claim objects duplicated across ~50-60 frames) is ideal for gzip/brotli compression. Repetitive JSON typically achieves 85-95% compression ratios. At 90% compression, 1.8MB becomes ~180KB over the wire \u2014 well under the median web page transfer size of 2.3MB (HTTP Archive 2025). Any standard web server or CDN serves gzip by default, so the transport cost is already solved without any code changes.",
+      "source": {
+        "origin": "challenge",
+        "artifact": "output/replay.html",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T23:00:00Z",
+      "conflicts_with": [
+        "x018"
+      ],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "file-size",
+        "gzip",
+        "transport"
+      ]
+    },
+    {
+      "id": "x022",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "Delta encoding the FRAMES array would convert the replay renderer from stateless to stateful. Currently render(FRAMES[i]) is a pure function \u2014 each frame is self-contained. With deltas: (1) forward playback must accumulate claims from frame 0 to N, (2) backward scrubbing requires either reverse-applying deltas (error-prone) or keyframe caching at intervals (video-codec pattern), (3) random-access scrub to an arbitrary frame requires replaying all deltas from the nearest keyframe. This adds ~100-150 lines of state management code to a renderer that currently 'just works' with zero bugs. The complexity cost is real; the file-size benefit is marginal given gzip already solves transport size. Delta encoding is a premature optimization \u2014 the 70% raw savings x018 projects would save ~1.2MB of disk but near-zero over the wire.",
+      "source": {
+        "origin": "challenge",
+        "artifact": "build-replay.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T23:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "replay",
+        "delta-encoding",
+        "complexity",
+        "premature-optimization"
+      ]
+    },
+    {
+      "id": "r048",
+      "type": "risk",
+      "topic": "pedagogy",
+      "content": "The sprint question asks how to build a visualization that TEACHES the framework, but only ~5 of 126 claims address teaching, learning, or onboarding. The overwhelming majority address technical architecture, UX patterns, and build tooling. There is no claim about learning design principles, cognitive load theory, worked examples, scaffolded complexity, or how a first-time user actually builds understanding from watching the replay. The sprint answered 'how to build the visualization' but barely touched 'how the visualization teaches.'",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T22:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "blind-spot",
+        "pedagogy",
+        "teaching-gap",
+        "learning-design"
+      ]
+    },
+    {
+      "id": "r049",
+      "type": "risk",
+      "topic": "pedagogy",
+      "content": "No claim addresses what a first-time user should UNDERSTAND after viewing the replay or dashboard. There is no learning objective: should they understand the claim lifecycle? The evidence tier system? The compiler pipeline? The conflict resolution process? Without explicit learning goals, the visualization is a demo, not a teaching tool. Educational design starts with outcomes, not interfaces.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T22:01:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "blind-spot",
+        "learning-objectives",
+        "instructional-design"
+      ]
+    },
+    {
+      "id": "r050",
+      "type": "risk",
+      "topic": "pedagogy",
+      "content": "The replay viewer shows WHAT happened (claims added, evidence upgraded, conflicts resolved) but never explains WHY. There are no annotations, tooltips, or contextual explanations linking viewer actions to Wheat concepts. A new developer watching claim r008 get superseded by p001 would see a status change but not understand that this demonstrates the estimate-to-tested evidence upgrade pattern. The visualization assumes prior knowledge it was designed to impart.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T22:02:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "blind-spot",
+        "annotations",
+        "contextual-help",
+        "prior-knowledge"
+      ]
+    },
+    {
+      "id": "r051",
+      "type": "risk",
+      "topic": "audience",
+      "content": "The 'audience' topic has only 2 active claims (d003, r040) \u2014 the thinnest topic in the sprint. Both are at stated/web evidence tier. No prototype tested whether the dashboard is actually self-explanatory to a new user (d003 claims it should be). No user testing, no hallway test, no think-aloud protocol. The audience constraint is asserted but never validated \u2014 a critical gap for a tool whose stated purpose is teaching.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T22:03:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "blind-spot",
+        "user-testing",
+        "audience-validation",
+        "thin-topic"
+      ]
+    },
+    {
+      "id": "r052",
+      "type": "risk",
+      "topic": "ux-pattern",
+      "content": "No claim addresses mobile or responsive design. The dashboard and replay viewer are built for desktop-width viewports. The split-pane layout (r004, p003), four-panel replay viewer (p014), and timeline scrubber all assume wide screens. On a phone or tablet, these layouts would either overflow, stack awkwardly, or lose the spatial relationships that make the visualization comprehensible. Given that developers increasingly browse on mobile, this is a distribution gap.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T22:04:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "blind-spot",
+        "mobile",
+        "responsive",
+        "viewport"
+      ]
+    },
+    {
+      "id": "r053",
+      "type": "risk",
+      "topic": "quality",
+      "content": "There are zero automated tests for any Wheat component: the compiler (wheat-compiler.js), the build tool (build-replay.js), the server (wheat-server.js), or the init script (wheat-init.js). All validation has been manual or one-off evaluation claims. Without a test suite, every future change risks silent regressions. The compiler has 5 CLI modes, 7 pipeline passes, and handles edge cases (empty JSON, burn-residue) \u2014 all untested by repeatable assertions.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T22:05:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "blind-spot",
+        "testing",
+        "regression",
+        "test-suite"
+      ]
+    },
+    {
+      "id": "r054",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "Error handling in build-replay.js is unaddressed. If 'git show <hash>:claims.json' fails for a specific commit (corrupt object, missing file in early commits), if the compiler crashes on a historical claims.json version, or if the output directory doesn't exist, the behavior is undefined. No claim documents graceful degradation for the replay build pipeline \u2014 only e002 addresses compiler crashes, and only for the simple empty/malformed JSON case.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T22:06:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "blind-spot",
+        "error-handling",
+        "build-replay",
+        "graceful-degradation"
+      ]
+    },
+    {
+      "id": "r055",
+      "type": "risk",
+      "topic": "dogfooding",
+      "content": "Source origin diversity is narrow: all 15 /witness claims corroborate existing claims with 'full_support' or 'partial_support' \u2014 none discovered contradictory evidence or introduced independent external findings. This creates a confirmation bias loop: the sprint's external validation only sought agreement, never genuinely tested whether its assumptions were wrong. A disconfirming witness (e.g., an article arguing SSE is a poor choice for dashboards, or that self-contained HTML has significant drawbacks) would have been more epistemically valuable.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T22:07:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "blind-spot",
+        "confirmation-bias",
+        "witness-pattern",
+        "source-diversity"
+      ]
+    },
+    {
+      "id": "r056",
+      "type": "recommendation",
+      "topic": "pedagogy",
+      "content": "The visualization should include guided annotations at key replay moments: when the first conflict appears, when evidence gets upgraded, when a challenge disproves a claim, when the compiler blocks. These 'aha moments' are where Wheat's value becomes visible. The replay could pause at milestones and display a tooltip like 'This is a /challenge \u2014 it found that the original estimate was wrong. The compiler now shows a conflict.' This would transform the replay from a data viewer into an interactive tutorial.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T22:08:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "blind-spot",
+        "guided-annotations",
+        "tutorial-mode",
+        "aha-moments"
+      ]
+    },
+    {
+      "id": "r057",
+      "type": "recommendation",
+      "topic": "quality",
+      "content": "Add a minimal test suite for wheat-compiler.js covering: (1) happy path \u2014 valid claims.json produces 'ready' status, (2) empty file \u2014 produces error not crash, (3) malformed JSON \u2014 produces error not crash, (4) unresolved conflict \u2014 produces 'blocked' status, (5) burn-residue \u2014 produces 'blocked' status, (6) determinism \u2014 same input always produces same output (excluding compiled_at). Six tests would cover the critical paths and prevent regressions. Can be done with Node.js assert module \u2014 zero dependencies.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T22:09:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "blind-spot",
+        "test-suite",
+        "compiler-tests",
+        "zero-deps"
+      ]
+    },
+    {
+      "id": "r058",
+      "type": "risk",
+      "topic": "ux-pattern",
+      "content": "The 'ux-pattern' topic has 16 claims but zero estimates \u2014 no claim projects how long it would take to implement proposed features (filtering, sprint health indicator, hybrid framing improvements). The 'scope' topic has only 3 claims total. Together this means the sprint generated many recommendations but has no sizing or prioritization framework. A stakeholder reading the brief cannot distinguish a 2-hour fix from a 2-week feature.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T22:10:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "blind-spot",
+        "type-gap",
+        "estimates-missing",
+        "prioritization"
+      ]
+    },
+    {
+      "id": "r059",
+      "type": "risk",
+      "topic": "accessibility",
+      "content": "Accessibility claims cover the live dashboard (p009, e004) but the replay viewer (output/replay.html) has had no accessibility audit. The replay viewer has a range slider, play/pause button, keyboard shortcuts, and dynamic DOM updates \u2014 all of which need ARIA roles, labels, and live regions. The 13/13 WCAG pass rate applies only to the dashboard, not to the replay viewer. Given that the replay is the primary teaching artifact, this is a significant gap.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T22:11:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "blind-spot",
+        "a11y",
+        "replay-viewer",
+        "wcag-gap"
+      ]
+    },
+    {
+      "id": "p019",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "Fixed three edge-case bugs in build-replay.js HTML template: (1) x016 — animation stagger delay now uses idx*20ms capped at 40% of frame interval, preventing animation cutoff at 2x/4x speed; (2) x017 — empty deltas now show 'Metadata update' instead of bare frame label; (3) x019 — milestone/scrubber positioning uses Math.max(FRAMES.length-1, 1) denominator, preventing NaN at single-frame edge case.",
+      "source": { "origin": "prototype", "artifact": "build-replay.js", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T22:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["replay", "bug-fix", "x016", "x017", "x019"]
     }
   ]
 }

@@ -1126,9 +1126,10 @@ if (FRAMES.length > 0) {
   scrubber.max = FRAMES.length - 1;
 
   // Place milestone markers
+  const frameDenom = Math.max(FRAMES.length - 1, 1);
   FRAMES.forEach((f, i) => {
     if (f.milestone) {
-      const pct = (i / (FRAMES.length - 1)) * 100;
+      const pct = (i / frameDenom) * 100;
       const marker = document.createElement('div');
       marker.className = 'milestone-marker';
       marker.style.left = pct + '%';
@@ -1145,8 +1146,8 @@ if (FRAMES.length > 0) {
     }
     if (batchStart !== null && (!f.subframe || i === FRAMES.length - 1)) {
       const end = f.subframe ? i : i - 1;
-      const startPct = (batchStart / (FRAMES.length - 1)) * 100;
-      const endPct = (end / (FRAMES.length - 1)) * 100;
+      const startPct = (batchStart / frameDenom) * 100;
+      const endPct = (end / frameDenom) * 100;
       const marker = document.createElement('div');
       marker.className = 'batch-marker';
       marker.style.left = startPct + '%';
@@ -1368,7 +1369,9 @@ function renderClaims(frame) {
         classes.push('badge-new', 'claim-enter');
       }
 
-      const delay = isNew ? ' style="animation-delay:' + (idx * 50) + 'ms"' : '';
+      const maxStagger = Math.max((1000 / speed) * 0.4, 100);
+      const staggerMs = Math.min(idx * 20, maxStagger);
+      const delay = isNew ? ' style="animation-delay:' + staggerMs + 'ms"' : '';
 
       html += '<div class="' + classes.join(' ') + '"' + delay + '>';
       html += '<span class="claim-id">' + c.id + '</span>';
@@ -1488,6 +1491,8 @@ function renderDelta(frame) {
 
   if (!delta) {
     parts.push('<span>Initial state</span>');
+  } else if (delta.added.length === 0 && delta.removed.length === 0 && delta.upgraded.length === 0 && delta.newTopics.length === 0 && delta.statusChanges.length === 0) {
+    parts.push('<span style="color:var(--text-dim)">Metadata update</span>');
   } else {
     if (delta.added.length > 0) {
       parts.push('<span class="delta-item"><span class="delta-dot" style="background:var(--green)"></span>+' + delta.added.length + ' claims</span>');
