@@ -426,6 +426,20 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["compiler-improvement", "constraint-aware", "coverage-analysis"]
+    },
+    {
+      "id": "p008",
+      "type": "factual",
+      "topic": "output-format",
+      "content": "All 4 static HTML artifacts (output/dashboard.html, output/problem-statement.html, research/live-ui-architecture.html, research/evidence-gap-analysis.html) verified fully self-contained: zero external URLs, zero <script src=>, zero <link href=>, zero <img src=> pointing to external resources. All CSS and JS are inline. Every file opens correctly via file:// protocol with no network requests. The self-contained HTML constraint (d002) is confirmed satisfied.",
+      "source": { "origin": "prototype", "artifact": "prototypes/output-format-test/", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T09:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["self-contained", "file-protocol", "offline", "zero-external-deps"]
     }
   ]
 }
