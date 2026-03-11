@@ -580,6 +580,20 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["wcag", "fonts", "external-dependency", "self-contained"]
+    },
+    {
+      "id": "p009",
+      "type": "factual",
+      "topic": "accessibility",
+      "content": "All 5 WCAG 2.2 AA fixes implemented on the live dashboard in ~25 lines of changes: (1) --text-dim raised from #505a6e to #7a839a — now 5.08:1 on --bg, 4.68:1 on --surface (both pass AA). (2) Semantic landmarks added: <header> for topbar, <main> for layout, role='status' on scoreboard, role='region' on timeline. (3) Keyboard support: claim rows have tabindex='0', role='button', aria-expanded, Enter/Space keydown handler. (4) aria-live='polite' on scoreboard and timeline — screen readers announce SSE updates. (5) :focus-visible outlines on all interactive elements. Zero visual regression — design unchanged for sighted users.",
+      "source": { "origin": "prototype", "artifact": "prototypes/live-dashboard/", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T12:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["wcag", "a11y", "keyboard", "aria", "contrast", "tested"]
     }
   ]
 }

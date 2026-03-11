@@ -14,7 +14,7 @@
     --border-b: rgba(255,255,255,0.08);
     --text: #e8ecf4;
     --text-mid: #8b95a8;
-    --text-dim: #505a6e;
+    --text-dim: #7a839a;
     --accent: #f0a030;
     --accent-dim: rgba(240,160,48,0.10);
     --blue: #4d8ef7;
@@ -433,6 +433,18 @@
   }
 
   /* ── Responsive ────────────────────────────────────────── */
+  /* ── Focus styles (a11y) ──────────────────────────────── */
+  .tl-claim-row:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: -2px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.03);
+  }
+  .cov-chip:focus-visible, .slide-nav a:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+  }
+
   @media (max-width: 768px) {
     .topbar, .compiler { padding-left: 16px; padding-right: 16px; }
     .layout { padding: 16px; }
@@ -445,7 +457,7 @@
 <body>
 
 <!-- Top Bar -->
-<div class="topbar" id="topbar">
+<header class="topbar" id="topbar">
   <div class="topbar-logo">wheat</div>
   <div class="topbar-sep"></div>
   <div class="topbar-question" id="hd-question">Loading...</div>
@@ -453,9 +465,9 @@
     <span class="pill pill-phase" id="hd-phase">-</span>
     <span class="pill pill-count" id="hd-claims">-</span>
     <span class="pill" id="hd-status">-</span>
-    <div class="live-dot" id="hd-live"></div>
+    <div class="live-dot" id="hd-live" role="status" aria-label="Connection status"></div>
   </div>
-</div>
+</header>
 
 <!-- Compiler Strip -->
 <div class="compiler" id="compiler">
@@ -470,9 +482,9 @@
 </div>
 
 <!-- Main Layout -->
-<div class="layout">
+<main class="layout">
   <!-- Scoreboard -->
-  <div class="scoreboard" id="scoreboard">
+  <div class="scoreboard" id="scoreboard" role="status" aria-live="polite" aria-label="Sprint scoreboard">
     <div class="sb-cell"><div class="sb-n" id="sb-total">-</div><div class="sb-l">Total Claims</div></div>
     <div class="sb-cell"><div class="sb-n" id="sb-active" style="color:var(--green)">-</div><div class="sb-l">Active</div></div>
     <div class="sb-cell"><div class="sb-n" id="sb-topics">-</div><div class="sb-l">Topics</div></div>
@@ -484,11 +496,11 @@
   <div class="cov-strip" id="cov-strip"></div>
 
   <!-- Timeline -->
-  <div class="timeline" id="timeline">
+  <div class="timeline" id="timeline" role="region" aria-label="Sprint timeline" aria-live="polite">
     <div class="tl-line"></div>
     <div id="tl-body"></div>
   </div>
-</div>
+</main>
 
 <script>
 let comp = null, claimsData = null, prevHash = null;
@@ -704,7 +716,7 @@ function renderTimeline(git) {
 
       h += `<div class="tl-claim ph-${phase} ${isSup ? 'superseded' : ''}" data-id="${c.id}">
         <div class="tl-claim-dot"></div>
-        <div class="tl-claim-row" onclick="toggleDetail('${c.id}')">
+        <div class="tl-claim-row" tabindex="0" role="button" aria-expanded="false" onclick="toggleDetail('${c.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDetail('${c.id}')}">
           <span class="tl-claim-id id-${prefix}">${c.id}</span>
           <span class="tl-claim-type t-${c.type}">${c.type}</span>
           <span class="tl-claim-text">${esc(truncated)}</span>
@@ -732,7 +744,10 @@ function renderTimeline(git) {
 function toggleDetail(id) {
   const el = document.getElementById('detail-' + id);
   if (!el) return;
-  el.classList.toggle('open');
+  const isOpen = el.classList.toggle('open');
+  // Update aria-expanded on the trigger row
+  const row = el.previousElementSibling;
+  if (row) row.setAttribute('aria-expanded', isOpen);
 }
 
 // ── Init ────────────────────────────────────────────────
