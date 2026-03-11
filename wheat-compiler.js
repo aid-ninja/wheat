@@ -19,6 +19,7 @@ const crypto = require('crypto');
 const path = require('path');
 
 // ─── Configuration ──────────────────────────────────────────────────────────
+/** @returns {{ dirs: Object<string, string>, compiler: Object<string, string> }} Merged config from wheat.config.json with defaults */
 function loadConfig() {
   const configPath = path.join(__dirname, 'wheat.config.json');
   const defaults = {
@@ -40,6 +41,7 @@ function loadConfig() {
 const config = loadConfig();
 
 // ─── Evidence tier hierarchy (higher = stronger) ─────────────────────────────
+/** @type {Object<string, number>} Maps evidence tier names to numeric strength (1–5) */
 const EVIDENCE_TIERS = {
   stated:     1,
   web:        2,
@@ -48,6 +50,7 @@ const EVIDENCE_TIERS = {
   production: 5,
 };
 
+/** @type {string[]} Allowed claim type values */
 const VALID_TYPES = ['constraint', 'factual', 'estimate', 'risk', 'recommendation', 'feedback'];
 const VALID_STATUSES = ['active', 'superseded', 'conflicted', 'resolved'];
 const VALID_PHASES = ['define', 'research', 'prototype', 'evaluate', 'feedback'];
@@ -391,6 +394,12 @@ function generateCertificate(claimsData, compilerVersion) {
 }
 
 // ─── diffCompilations — compare two compilation objects ─────────────────────
+/**
+ * Compare two compilation objects and return a structured delta.
+ * @param {object} before - Earlier compilation.json contents
+ * @param {object} after - Later compilation.json contents
+ * @returns {object} Delta with new/removed claims, coverage changes, conflict changes
+ */
 function diffCompilations(before, after) {
   const delta = {
     new_claims: [],
@@ -479,6 +488,12 @@ function diffCompilations(before, after) {
 }
 
 // ─── Main Compilation Pipeline ───────────────────────────────────────────────
+/**
+ * Run the full compilation pipeline: validate, sort, detect conflicts, resolve, compute coverage.
+ * @param {string|null} inputPath - Path to claims.json (null = default from config)
+ * @param {string|null} outputPath - Path to write compilation.json (null = default from config)
+ * @returns {object} The compiled output object
+ */
 function compile(inputPath, outputPath) {
   const compilerVersion = '0.2.0';
   const claimsPath = inputPath || path.join(__dirname, config.compiler.claims);
@@ -581,7 +596,14 @@ function scanSelfContainment(dirs) {
     if (!fs.existsSync(dir)) continue;
     const files = fs.readdirSync(dir).filter(f => f.endsWith('.html'));
     for (const file of files) {
-      const content = fs.readFileSync(path.join(dir, file), 'utf8');
+      const raw = fs.readFileSync(path.join(dir, file), 'utf8');
+      // Strip inline script/style bodies so URLs inside JS/CSS data aren't flagged.
+      // Preserve <script src="..."> tags (external scripts we DO want to detect).
+      const content = raw.replace(/(<script(?:\s[^>]*)?)>([\s\S]*?)<\/script>/gi, (_, open) => {
+        return open + '></script>';
+      }).replace(/(<style(?:\s[^>]*)?)>([\s\S]*?)<\/style>/gi, (_, open) => {
+        return open + '></style>';
+      });
       const matches = [];
       let m;
       while ((m = extPattern.exec(content)) !== null) {
@@ -796,6 +818,11 @@ if (args.includes('--next')) {
   process.exit(0);
 }
 
+/**
+ * Suggest next actions based on compilation state (gaps, conflicts, weak evidence).
+ * @param {object} comp - A compilation.json object
+ * @returns {Array<{action: string, priority: string, target: string}>} Ordered action suggestions
+ */
 function computeNextActions(comp) {
   const actions = [];
   const coverage = comp.coverage || {};

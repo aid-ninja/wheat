@@ -6,7 +6,7 @@
   "author": "Aid Idrizovic",
   "repository": {
     "type": "git",
-    "url": "https://github.com/aidanidrizovic/wheat"
+    "url": "https://github.com/aid-ninja/wheat"
   },
   "keywords": [
     "research",
@@ -22,7 +22,8 @@
     "compile": "node wheat-compiler.js",
     "build-pdf": "node build-pdf.js",
     "test": "node --test test/",
-    "replay": "node build-replay.js"
+    "replay": "node build-replay.js",
+    "sync-docs": "cp output/replay.html output/brief.html output/presentation.html docs/"
   },
   "dependencies": {},
   "optionalDependencies": {
