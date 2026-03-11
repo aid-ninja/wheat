@@ -188,6 +188,7 @@ function analyzeCoverage(claims) {
         max_evidence_rank: 0,
         types: new Set(),
         claim_ids: [],
+        constraint_count: 0,
       };
     }
 
@@ -195,6 +196,9 @@ function analyzeCoverage(claims) {
     entry.claims++;
     entry.types.add(claim.type);
     entry.claim_ids.push(claim.id);
+    if (claim.type === 'constraint' || claim.type === 'feedback') {
+      entry.constraint_count++;
+    }
 
     const tier = EVIDENCE_TIERS[claim.evidence] || 0;
     if (tier > entry.max_evidence_rank) {
@@ -216,6 +220,7 @@ function analyzeCoverage(claims) {
       status,
       types: [...entry.types],
       claim_ids: entry.claim_ids,
+      constraint_count: entry.constraint_count,
     };
   });
 
@@ -239,11 +244,21 @@ function checkReadiness(errors, unresolvedConflicts, coverage) {
   const warnings = [];
   Object.entries(coverage).forEach(([topic, entry]) => {
     if (entry.status === 'weak') {
-      warnings.push({
-        code: 'W_WEAK_EVIDENCE',
-        message: `Topic "${topic}" has only ${entry.max_evidence}-level evidence (${entry.claims} claims)`,
-        claims: entry.claim_ids,
-      });
+      // Constraint-dominated topics (>50% constraint/feedback) get a softer warning
+      const constraintRatio = (entry.constraint_count || 0) / entry.claims;
+      if (constraintRatio > 0.5) {
+        warnings.push({
+          code: 'W_CONSTRAINT_ONLY',
+          message: `Topic "${topic}" is constraint-dominated (${entry.constraint_count}/${entry.claims} claims are constraints/feedback) — stated-level evidence is expected`,
+          claims: entry.claim_ids,
+        });
+      } else {
+        warnings.push({
+          code: 'W_WEAK_EVIDENCE',
+          message: `Topic "${topic}" has only ${entry.max_evidence}-level evidence (${entry.claims} claims)`,
+          claims: entry.claim_ids,
+        });
+      }
     }
   });
 
@@ -383,7 +398,8 @@ if (args.includes('--summary')) {
     console.log('Coverage:');
     Object.entries(c.coverage).forEach(([topic, entry]) => {
       const bar = '\u2588'.repeat(Math.min(entry.claims, 10)) + '\u2591'.repeat(Math.max(0, 10 - entry.claims));
-      const icon = entry.status === 'strong' ? '\u2713' : entry.status === 'moderate' ? '~' : '\u26A0';
+      const constraintDominated = (entry.constraint_count || 0) / entry.claims > 0.5;
+      const icon = entry.status === 'strong' ? '\u2713' : entry.status === 'moderate' ? '~' : constraintDominated ? '\u2139' : '\u26A0';
       console.log(`  ${icon} ${topic.padEnd(20)} ${bar} ${entry.max_evidence} (${entry.claims} claims)`);
     });
     console.log();

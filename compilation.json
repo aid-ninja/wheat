@@ -1,20 +1,20 @@
 {
-  "compiled_at": "2026-03-11T07:04:12.274Z",
+  "compiled_at": "2026-03-11T07:07:10.880Z",
   "claims_hash": "80d9fdb",
   "compiler_version": "0.1.0",
   "status": "ready",
   "errors": [],
   "warnings": [
     {
-      "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"audience\" has only stated-level evidence (1 claims)",
+      "code": "W_CONSTRAINT_ONLY",
+      "message": "Topic \"audience\" is constraint-dominated (1/1 claims are constraints/feedback) — stated-level evidence is expected",
       "claims": [
         "d003"
       ]
     },
     {
-      "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"scope\" has only stated-level evidence (1 claims)",
+      "code": "W_CONSTRAINT_ONLY",
+      "message": "Topic \"scope\" is constraint-dominated (1/1 claims are constraints/feedback) — stated-level evidence is expected",
       "claims": [
         "d004"
       ]
@@ -682,7 +682,8 @@
       "claim_ids": [
         "d001",
         "p005"
-      ]
+      ],
+      "constraint_count": 1
     },
     "output-format": {
       "claims": 5,
@@ -700,7 +701,8 @@
         "f002",
         "r010",
         "p008"
-      ]
+      ],
+      "constraint_count": 2
     },
     "audience": {
       "claims": 1,
@@ -711,7 +713,8 @@
       ],
       "claim_ids": [
         "d003"
-      ]
+      ],
+      "constraint_count": 1
     },
     "scope": {
       "claims": 1,
@@ -722,7 +725,8 @@
       ],
       "claim_ids": [
         "d004"
-      ]
+      ],
+      "constraint_count": 1
     },
     "quality": {
       "claims": 4,
@@ -739,7 +743,8 @@
         "f004",
         "r009",
         "r011"
-      ]
+      ],
+      "constraint_count": 2
     },
     "architecture": {
       "claims": 8,
@@ -759,7 +764,8 @@
         "f001",
         "f003",
         "r012"
-      ]
+      ],
+      "constraint_count": 2
     },
     "ux-pattern": {
       "claims": 8,
@@ -780,7 +786,8 @@
         "p006",
         "p007",
         "f006"
-      ]
+      ],
+      "constraint_count": 2
     }
   },
   "phase_summary": {
