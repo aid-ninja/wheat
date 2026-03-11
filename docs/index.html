@@ -238,7 +238,8 @@
 
   .pipeline-wrap {
     position: relative;
-    height: 440px;
+    height: 460px;
+    padding: 0 10px;
   }
 
   #pipeline-canvas {
@@ -255,27 +256,86 @@
     letter-spacing: 0.02em;
   }
 
-  /* --- Stats bar --- */
-  .stats-bar {
-    display: flex;
-    justify-content: center;
-    gap: 48px;
-    padding: 32px 0;
+  /* --- Stat tiles (clickable) --- */
+  .stat-tiles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 16px 0;
   }
-  .stat { text-align: center; }
-  .stat-num {
-    font-size: 28pt;
+
+  .stat-tile {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.22,1,0.36,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-tile:hover {
+    background: var(--surface-hover);
+    border-color: var(--border-light);
+    transform: translateY(-2px);
+  }
+  .stat-tile.open {
+    border-color: var(--border-light);
+    background: var(--surface-hover);
+  }
+
+  .stat-tile .st-num {
+    font-size: 26pt;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
     line-height: 1;
   }
-  .stat-label {
+  .stat-tile .st-label {
     font-size: 8pt;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--text-dim);
     margin-top: 6px;
+  }
+  .stat-tile .st-expand {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, margin 0.35s ease;
+    margin-top: 0;
+    text-align: left;
+  }
+  .stat-tile.open .st-expand {
+    max-height: 300px;
+    margin-top: 14px;
+  }
+  .stat-tile .st-expand-inner {
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    font-size: 8.5pt;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .stat-tile .st-expand-inner .tier-row,
+  .stat-tile .st-expand-inner .pass-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 0;
+  }
+  .stat-tile .st-expand-inner .tier-num {
+    font-family: var(--mono);
+    font-size: 8pt;
+    opacity: 0.5;
+    margin-right: 6px;
+  }
+  .stat-tile .st-expand-inner .tier-bar {
+    height: 3px;
+    border-radius: 2px;
+    flex: 1;
+    margin-left: 8px;
+    opacity: 0.3;
   }
 
   /* --- Steps --- */
@@ -534,12 +594,11 @@
     section { padding: 0 20px; }
     .steps-grid, .cmd-columns, .artifacts-grid { grid-template-columns: 1fr; }
     .explore-grid { grid-template-columns: 1fr; }
-    .stats-bar { gap: 24px; flex-wrap: wrap; }
-    .stat-num { font-size: 22pt; }
+    .stat-tiles { grid-template-columns: repeat(2, 1fr); }
     .spacer { height: 80px; }
     .hero-section { min-height: auto; padding-top: 60px; padding-bottom: 60px; }
     .cta-row { flex-direction: column; align-items: center; }
-    .pipeline-wrap { height: 480px; }
+    .pipeline-wrap { height: 520px; }
   }
 </style>
 </head>
@@ -573,22 +632,52 @@
 
   <!-- ═══ STATS ═══ -->
   <section>
-    <div class="stats-bar reveal">
-      <div class="stat">
-        <div class="stat-num" data-target="17" style="color:var(--blue)">0</div>
-        <div class="stat-label">Commands</div>
+    <div class="stat-tiles reveal">
+      <div class="stat-tile" data-tile="commands">
+        <div class="st-num" data-target="17" style="color:var(--blue)">0</div>
+        <div class="st-label">Commands</div>
+        <div class="st-expand"><div class="st-expand-inner">
+          <strong style="color:var(--green);font-size:7.5pt;letter-spacing:0.08em;">LIFECYCLE</strong><br>
+          /init, /research, /prototype, /evaluate, /brief, /present, /handoff<br><br>
+          <strong style="color:var(--orange);font-size:7.5pt;letter-spacing:0.08em;">QUALITY</strong><br>
+          /challenge, /witness, /blind-spot, /resolve<br><br>
+          <strong style="color:var(--cyan);font-size:7.5pt;letter-spacing:0.08em;">OPERATIONS</strong><br>
+          /status, /replay, /merge, /calibrate, /feedback, /connect
+        </div></div>
       </div>
-      <div class="stat">
-        <div class="stat-num" data-target="5" style="color:var(--green)">0</div>
-        <div class="stat-label">Evidence Tiers</div>
+      <div class="stat-tile" data-tile="tiers">
+        <div class="st-num" data-target="5" style="color:var(--green)">0</div>
+        <div class="st-label">Evidence Tiers</div>
+        <div class="st-expand"><div class="st-expand-inner">
+          <div class="tier-row"><span><span class="tier-num">1</span> Stated</span><div class="tier-bar" style="background:var(--green);max-width:20%;"></div></div>
+          <div class="tier-row"><span><span class="tier-num">2</span> Web</span><div class="tier-bar" style="background:var(--green);max-width:40%;"></div></div>
+          <div class="tier-row"><span><span class="tier-num">3</span> Documented</span><div class="tier-bar" style="background:var(--green);max-width:60%;"></div></div>
+          <div class="tier-row"><span><span class="tier-num">4</span> Tested</span><div class="tier-bar" style="background:var(--green);max-width:80%;"></div></div>
+          <div class="tier-row"><span><span class="tier-num">5</span> Production</span><div class="tier-bar" style="background:var(--green);max-width:100%;"></div></div>
+          <div style="margin-top:6px;font-size:7.5pt;color:var(--text-dim);">Higher tier = stronger evidence. The compiler sorts claims by tier for conflict resolution.</div>
+        </div></div>
       </div>
-      <div class="stat">
-        <div class="stat-num" data-target="7" style="color:var(--orange)">0</div>
-        <div class="stat-label">Compiler Passes</div>
+      <div class="stat-tile" data-tile="passes">
+        <div class="st-num" data-target="7" style="color:var(--orange)">0</div>
+        <div class="st-label">Compiler Passes</div>
+        <div class="st-expand"><div class="st-expand-inner">
+          <div class="pass-row"><span><span class="tier-num">1</span> Schema Validation</span></div>
+          <div class="pass-row"><span><span class="tier-num">2</span> Type Checking</span></div>
+          <div class="pass-row"><span><span class="tier-num">3</span> Evidence Sorting</span></div>
+          <div class="pass-row"><span><span class="tier-num">4</span> Conflict Detection</span></div>
+          <div class="pass-row"><span><span class="tier-num">5</span> Auto-Resolution</span></div>
+          <div class="pass-row"><span><span class="tier-num">6</span> Coverage Analysis</span></div>
+          <div class="pass-row"><span><span class="tier-num">7</span> Readiness Check</span></div>
+          <div style="margin-top:6px;font-size:7.5pt;color:var(--text-dim);">Deterministic: same claims in = same compilation out. Certificate hash proves it.</div>
+        </div></div>
       </div>
-      <div class="stat">
-        <div class="stat-num" data-target="0" style="color:var(--text-dim)">0</div>
-        <div class="stat-label">Dependencies</div>
+      <div class="stat-tile" data-tile="deps">
+        <div class="st-num" data-target="0" style="color:var(--text-dim)">0</div>
+        <div class="st-label">Dependencies</div>
+        <div class="st-expand"><div class="st-expand-inner">
+          Zero runtime dependencies. The compiler, all output generators, and the test suite run on Node.js built-ins only.<br><br>
+          <span style="color:var(--text-dim);font-size:7.5pt;">Optional: md-to-pdf for PDF generation.</span>
+        </div></div>
       </div>
     </div>
   </section>
@@ -741,7 +830,7 @@
   var statsObs = new IntersectionObserver(function(entries) {
     entries.forEach(function(e) {
       if (e.isIntersecting) {
-        document.querySelectorAll('.stat-num[data-target]').forEach(function(el) {
+        document.querySelectorAll('.st-num[data-target]').forEach(function(el) {
           var target = parseInt(el.getAttribute('data-target'));
           if (target === 0) { el.textContent = '0'; return; }
           var start = performance.now();
@@ -754,11 +843,20 @@
         statsObs.disconnect();
       }
     });
-  }, { threshold: 0.5 });
-  var statsBar = document.querySelector('.stats-bar');
-  if (statsBar) statsObs.observe(statsBar);
+  }, { threshold: 0.3 });
+  var tilesEl = document.querySelector('.stat-tiles');
+  if (tilesEl) statsObs.observe(tilesEl);
 
-  // ── Accordion ──
+  // ── Stat tile toggle ──
+  document.querySelectorAll('.stat-tile').forEach(function(tile) {
+    tile.addEventListener('click', function() {
+      var wasOpen = this.classList.contains('open');
+      document.querySelectorAll('.stat-tile.open').forEach(function(t) { t.classList.remove('open'); });
+      if (!wasOpen) this.classList.add('open');
+    });
+  });
+
+  // ── Command accordion ──
   document.querySelectorAll('.cmd-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var item = this.parentElement;
@@ -834,198 +932,286 @@
   addEventListener('resize', pResize);
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { pInit(); pDraw(); }
 
-  // ── Pipeline visualization — diamond hub layout ──
+  // ── Pipeline — circuit board style ──
   var plc = document.getElementById('pipeline-canvas');
   if (!plc) return;
   var ctx = plc.getContext('2d');
   var dpr = devicePixelRatio || 1;
   var PW, PH;
+  var monoFont, sansFont;
 
   function plResize() {
     var r = plc.getBoundingClientRect();
     PW = r.width; PH = r.height;
     plc.width = PW * dpr; plc.height = PH * dpr;
     ctx.setTransform(dpr,0,0,dpr,0,0);
+    var cs = getComputedStyle(document.body);
+    monoFont = cs.getPropertyValue('--mono');
+    sansFont = cs.getPropertyValue('--sans');
   }
   plResize();
   addEventListener('resize', plResize);
 
-  // Nodes: diamond layout
-  //         Commands (top)
-  //        /                \
-  //   claims.json        (feedback loop)
-  //        \                /
-  //        Compiler (center, large)
-  //        /                \
-  //   compilation.json   (quality gate)
-  //        \                /
-  //         Artifacts (bottom)
-
   var nodes = [
-    { id: 'commands',  label: 'Slash Commands',    sub: '17 commands',          color: [96,165,250],  icon: '/cmd' },
-    { id: 'claims',    label: 'claims.json',       sub: 'Persistence layer',    color: [34,197,94],   icon: '{ }' },
-    { id: 'compiler',  label: 'Compiler',          sub: '7 passes',             color: [240,160,48],  icon: '7x',  isHub: true },
-    { id: 'compiled',  label: 'compilation.json',  sub: 'Certified output',     color: [167,139,250], icon: '.json' },
-    { id: 'artifacts', label: 'Artifacts',         sub: 'HTML / PDF / slides',  color: [34,211,238],  icon: 'out' },
-    { id: 'git',       label: 'Git Tree',          sub: 'Event log + history',  color: [248,113,113], icon: 'git' },
+    { id:'commands', label:'Slash Commands',   sub:'17 commands',        color:[96,165,250],  icon:'/cmd' },
+    { id:'claims',   label:'claims.json',      sub:'Persistence',        color:[34,197,94],   icon:'{ }' },
+    { id:'git',      label:'Git Tree',         sub:'Event log',          color:[248,113,113], icon:'git' },
+    { id:'compiler', label:'Compiler',         sub:'7 passes',           color:[240,160,48],  icon:'7x', isHub:true },
+    { id:'compiled', label:'compilation.json', sub:'Certified output',   color:[167,139,250], icon:'.json' },
+    { id:'artifacts',label:'Artifacts',        sub:'HTML / PDF / slides',color:[34,211,238],  icon:'out' },
   ];
 
   var passes = ['Schema','Types','Sort','Conflicts','Resolve','Coverage','Readiness'];
 
-  // Edges: [fromIdx, toIdx]
-  // Main flow: commands→claims→compiler→compiled→artifacts
-  // Side branch: claims↔git (every command auto-commits)
-  var edges = [[0,1],[1,2],[2,3],[3,4],[1,5]];
+  // Circuit-board routing: each edge is an array of waypoints
+  // Edges connect nodes via right-angle traces
+  // [fromNodeIdx, toNodeIdx]
+  var edgeDefs = [[0,1],[1,2],[1,3],[3,4],[4,5]];
 
   var flowParticles = [];
   var pTime = 0;
   var activeEdge = 0;
   var edgeTimer = 0;
-  var EDGE_DUR = 80;
+  var EDGE_DUR = 90;
   var passIdx = 0;
   var passTimer = 0;
 
+  // Layout: circuit board style
+  //
+  //  Commands ──────┐
+  //                 │
+  //  Git ◄──── claims.json
+  //                 │
+  //            ┌────┘
+  //            │
+  //        [Compiler]  (large, center)
+  //            │
+  //            └────┐
+  //                 │
+  //          compilation.json
+  //                 │
+  //            Artifacts
+
   function getPositions() {
+    var pad = 60;
     var cx = PW / 2;
     var cy = PH / 2;
-    var spreadX = Math.min(PW * 0.32, 200);
-    var spreadY = Math.min(PH * 0.36, 155);
+    var colL = pad + 40;                    // left column
+    var colC = cx;                          // center
+    var colR = PW - pad - 40;              // right column
+    var rowH = (PH - pad * 2) / 5;        // row height
+    var y0 = pad + 20;
+
     return [
-      { x: cx,            y: cy - spreadY * 1.15 },   // 0: commands — top
-      { x: cx - spreadX,  y: cy - spreadY * 0.25 },   // 1: claims — upper left
-      { x: cx,            y: cy + 6 },                 // 2: compiler — center
-      { x: cx + spreadX,  y: cy + spreadY * 0.25 },   // 3: compiled — lower right
-      { x: cx,            y: cy + spreadY * 1.15 },    // 4: artifacts — bottom
-      { x: cx + spreadX,  y: cy - spreadY * 0.55 },   // 5: git — upper right
+      { x: colL,  y: y0 },                         // 0: commands (top-left)
+      { x: colC,  y: y0 + rowH * 0.9 },            // 1: claims (center-ish, row 1)
+      { x: colR,  y: y0 + rowH * 0.9 },            // 2: git (right, same row as claims)
+      { x: colC,  y: cy + 8 },                      // 3: compiler (center)
+      { x: colC,  y: cy + rowH * 1.2 },             // 4: compiled (below compiler)
+      { x: colC,  y: PH - pad - 10 },               // 5: artifacts (bottom center)
     ];
   }
 
-  function spawnFlow(ei) {
-    var pos = getPositions();
-    var e = edges[ei];
-    var from = pos[e[0]], to = pos[e[1]];
-    var col = nodes[e[0]].color;
-    flowParticles.push({
-      fromIdx: e[0], toIdx: e[1],
-      fx: from.x, fy: from.y, tx: to.x, ty: to.y,
-      progress: 0,
-      speed: 0.01 + Math.random() * 0.006,
-      r: 2 + Math.random() * 1.5,
-      col: col,
-      alpha: 0.6 + Math.random() * 0.4,
-      seed: Math.random() * 100,
-    });
+  // Build right-angle trace waypoints between two node positions
+  function getTrace(fromPos, toPos, edgeIdx) {
+    var ax = fromPos.x, ay = fromPos.y;
+    var bx = toPos.x, by = toPos.y;
+
+    // Edge 0: commands → claims (go right then down)
+    if (edgeIdx === 0) {
+      return [{x:ax,y:ay}, {x:bx,y:ay}, {x:bx,y:by}];
+    }
+    // Edge 1: claims → git (horizontal right)
+    if (edgeIdx === 1) {
+      return [{x:ax,y:ay}, {x:bx,y:by}];
+    }
+    // Edge 2: claims → compiler (go down)
+    if (edgeIdx === 2) {
+      return [{x:ax,y:ay}, {x:ax,y:by}];
+    }
+    // Edge 3: compiler → compiled (go down)
+    if (edgeIdx === 3) {
+      return [{x:ax,y:ay}, {x:bx,y:by}];
+    }
+    // Edge 4: compiled → artifacts (go down)
+    if (edgeIdx === 4) {
+      return [{x:ax,y:ay}, {x:bx,y:by}];
+    }
+    return [{x:ax,y:ay}, {x:bx,y:by}];
   }
 
-  function drawCurve(ax, ay, bx, by, col, active) {
-    // Bezier curve between nodes
-    var mx = (ax + bx) / 2;
-    var my = (ay + by) / 2;
-    // Perpendicular offset for curvature
-    var dx = bx - ax, dy = by - ay;
-    var len = Math.sqrt(dx*dx+dy*dy) || 1;
-    var nx = -dy / len, ny = dx / len;
-    var curve = len * 0.15;
-    var cpx = mx + nx * curve;
-    var cpy = my + ny * curve;
+  function drawGrid() {
+    var spacing = 24;
+    ctx.strokeStyle = 'rgba(255,255,255,0.012)';
+    ctx.lineWidth = 0.5;
+    for (var x = spacing; x < PW; x += spacing) {
+      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,PH); ctx.stroke();
+    }
+    for (var y = spacing; y < PH; y += spacing) {
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(PW,y); ctx.stroke();
+    }
+  }
 
+  function drawTrace(waypoints, col, active) {
+    if (waypoints.length < 2) return;
     ctx.beginPath();
-    ctx.moveTo(ax, ay);
-    ctx.quadraticCurveTo(cpx, cpy, bx, by);
+    ctx.moveTo(waypoints[0].x, waypoints[0].y);
+    for (var i = 1; i < waypoints.length; i++) {
+      ctx.lineTo(waypoints[i].x, waypoints[i].y);
+    }
     ctx.strokeStyle = active
-      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.18)'
-      : 'rgba(255,255,255,0.035)';
-    ctx.lineWidth = active ? 1.5 : 1;
-    ctx.setLineDash(active ? [] : [3,5]);
+      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.25)'
+      : 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = active ? 2 : 1;
     ctx.stroke();
-    ctx.setLineDash([]);
 
-    // Arrowhead
-    // Point on curve at t=0.92
-    var t = 0.92;
-    var t1 = 1 - t;
-    var px = t1*t1*ax + 2*t1*t*cpx + t*t*bx;
-    var py = t1*t1*ay + 2*t1*t*cpy + t*t*by;
-    var ang = Math.atan2(by - py, bx - px);
+    // Junction dots at corners
+    for (var i = 1; i < waypoints.length - 1; i++) {
+      ctx.beginPath();
+      ctx.arc(waypoints[i].x, waypoints[i].y, active ? 3 : 2, 0, Math.PI*2);
+      ctx.fillStyle = active
+        ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.5)'
+        : 'rgba(255,255,255,0.08)';
+      ctx.fill();
+    }
+
+    // Arrow at end
+    var last = waypoints[waypoints.length-1];
+    var prev = waypoints[waypoints.length-2];
+    var ang = Math.atan2(last.y-prev.y, last.x-prev.x);
     ctx.beginPath();
-    ctx.moveTo(bx, by);
-    ctx.lineTo(bx - 7*Math.cos(ang-0.35), by - 7*Math.sin(ang-0.35));
-    ctx.lineTo(bx - 7*Math.cos(ang+0.35), by - 7*Math.sin(ang+0.35));
+    ctx.moveTo(last.x, last.y);
+    ctx.lineTo(last.x - 7*Math.cos(ang-0.4), last.y - 7*Math.sin(ang-0.4));
+    ctx.lineTo(last.x - 7*Math.cos(ang+0.4), last.y - 7*Math.sin(ang+0.4));
     ctx.closePath();
     ctx.fillStyle = active
-      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.3)'
-      : 'rgba(255,255,255,0.05)';
+      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.4)'
+      : 'rgba(255,255,255,0.06)';
     ctx.fill();
   }
 
-  function bezierPoint(ax, ay, bx, by, curve, t) {
-    var mx = (ax+bx)/2, my = (ay+by)/2;
-    var dx = bx-ax, dy = by-ay, len = Math.sqrt(dx*dx+dy*dy)||1;
-    var nx = -dy/len, ny = dx/len;
-    var cpx = mx + nx * curve;
-    var cpy = my + ny * curve;
-    var t1 = 1-t;
-    return { x: t1*t1*ax + 2*t1*t*cpx + t*t*bx, y: t1*t1*ay + 2*t1*t*cpy + t*t*by };
-  }
-
-  function drawNodeAt(x, y, node, active) {
+  function drawChip(x, y, node, active) {
     var col = node.color;
-    var R = node.isHub ? 36 : 26;
-    var glow = active ? 0.3 : 0.05;
+    var isHub = node.isHub;
+    var w = isHub ? 90 : 66;
+    var h = isHub ? 44 : 32;
+    var r = 6;
+    var glow = active ? 0.2 : 0.04;
 
     // Glow
-    var g = ctx.createRadialGradient(x,y,0,x,y,R*3.5);
-    g.addColorStop(0, 'rgba('+col[0]+','+col[1]+','+col[2]+','+glow+')');
-    g.addColorStop(1, 'rgba('+col[0]+','+col[1]+','+col[2]+',0)');
-    ctx.beginPath(); ctx.arc(x,y,R*3.5,0,Math.PI*2); ctx.fillStyle = g; ctx.fill();
-
-    // Outer ring for hub
-    if (node.isHub) {
-      ctx.beginPath(); ctx.arc(x,y,R+8,0,Math.PI*2);
-      ctx.strokeStyle = 'rgba('+col[0]+','+col[1]+','+col[2]+','+(active?0.12:0.04)+')';
-      ctx.lineWidth = 1; ctx.stroke();
+    if (active) {
+      var g = ctx.createRadialGradient(x,y,0,x,y,w*1.5);
+      g.addColorStop(0, 'rgba('+col[0]+','+col[1]+','+col[2]+','+glow+')');
+      g.addColorStop(1, 'rgba('+col[0]+','+col[1]+','+col[2]+',0)');
+      ctx.beginPath(); ctx.arc(x,y,w*1.5,0,Math.PI*2); ctx.fillStyle = g; ctx.fill();
     }
 
-    // Node
-    ctx.beginPath(); ctx.arc(x,y,R,0,Math.PI*2);
+    // Chip body (rounded rect)
+    var lx = x - w/2, ly = y - h/2;
+    ctx.beginPath();
+    ctx.moveTo(lx+r, ly);
+    ctx.lineTo(lx+w-r, ly); ctx.arcTo(lx+w, ly, lx+w, ly+r, r);
+    ctx.lineTo(lx+w, ly+h-r); ctx.arcTo(lx+w, ly+h, lx+w-r, ly+h, r);
+    ctx.lineTo(lx+r, ly+h); ctx.arcTo(lx, ly+h, lx, ly+h-r, r);
+    ctx.lineTo(lx, ly+r); ctx.arcTo(lx, ly, lx+r, ly, r);
+    ctx.closePath();
+
     ctx.fillStyle = active
-      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.12)'
-      : 'rgba(255,255,255,0.025)';
+      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.08)'
+      : 'rgba(255,255,255,0.02)';
     ctx.fill();
     ctx.strokeStyle = active
-      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.5)'
+      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.45)'
       : 'rgba(255,255,255,0.07)';
-    ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
 
-    // Pulse
-    if (active) {
-      var pulse = 0.5 + 0.5 * Math.sin(pTime * 0.05);
-      ctx.beginPath(); ctx.arc(x,y,R+5+pulse*5,0,Math.PI*2);
-      ctx.strokeStyle = 'rgba('+col[0]+','+col[1]+','+col[2]+','+(0.12*(1-pulse))+')';
-      ctx.lineWidth = 1; ctx.stroke();
+    // Chip pins (small lines extending from sides)
+    var pinCount = isHub ? 4 : 2;
+    var pinLen = 6;
+    ctx.strokeStyle = active
+      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.2)'
+      : 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    for (var p = 0; p < pinCount; p++) {
+      var py2 = ly + h * (p + 1) / (pinCount + 1);
+      // Left pins
+      ctx.beginPath(); ctx.moveTo(lx, py2); ctx.lineTo(lx - pinLen, py2); ctx.stroke();
+      // Right pins
+      ctx.beginPath(); ctx.moveTo(lx+w, py2); ctx.lineTo(lx+w+pinLen, py2); ctx.stroke();
     }
 
-    // Icon
+    // Pulse ring on active
+    if (active) {
+      var pulse = 0.5 + 0.5 * Math.sin(pTime * 0.04);
+      ctx.strokeStyle = 'rgba('+col[0]+','+col[1]+','+col[2]+','+(0.1*(1-pulse))+')';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.rect(lx - 4 - pulse*3, ly - 4 - pulse*3, w + 8 + pulse*6, h + 8 + pulse*6);
+      ctx.stroke();
+    }
+
+    // Icon inside chip
     ctx.fillStyle = active
       ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.9)'
       : 'rgba(148,163,184,0.35)';
-    ctx.font = (node.isHub ? '700 12px' : '700 9.5px') + ' ' + getComputedStyle(document.body).getPropertyValue('--mono');
+    ctx.font = (isHub ? '700 11px ' : '700 9px ') + monoFont;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(node.icon, x, y);
 
-    // Labels below
+    // Label below chip
     ctx.textBaseline = 'top';
-    ctx.fillStyle = active ? 'rgba(241,245,249,0.9)' : 'rgba(148,163,184,0.7)';
-    ctx.font = '600 9px ' + getComputedStyle(document.body).getPropertyValue('--sans');
-    ctx.fillText(node.label, x, y + R + 10);
+    ctx.fillStyle = active ? 'rgba(241,245,249,0.9)' : 'rgba(148,163,184,0.65)';
+    ctx.font = '600 8.5px ' + sansFont;
+    ctx.fillText(node.label, x, y + h/2 + 8);
 
     var subText = node.sub;
     if (node.isHub && active) {
       subText = 'Pass ' + (passIdx+1) + ': ' + passes[passIdx];
     }
-    ctx.fillStyle = 'rgba(100,116,139,0.6)';
-    ctx.font = '500 7.5px ' + getComputedStyle(document.body).getPropertyValue('--sans');
-    ctx.fillText(subText, x, y + R + 22);
+    ctx.fillStyle = 'rgba(100,116,139,0.55)';
+    ctx.font = '500 7px ' + sansFont;
+    ctx.fillText(subText, x, y + h/2 + 20);
+  }
+
+  function spawnFlow(ei) {
+    var pos = getPositions();
+    var e = edgeDefs[ei];
+    var col = nodes[e[0]].color;
+    var wp = getTrace(pos[e[0]], pos[e[1]], ei);
+    flowParticles.push({
+      waypoints: wp,
+      progress: 0,
+      speed: 0.008 + Math.random() * 0.005,
+      r: 2 + Math.random() * 1.2,
+      col: col,
+      alpha: 0.6 + Math.random() * 0.4,
+    });
+  }
+
+  function tracePointAt(wp, t) {
+    // Get total length
+    var segs = [];
+    var total = 0;
+    for (var i = 1; i < wp.length; i++) {
+      var dx = wp[i].x-wp[i-1].x, dy = wp[i].y-wp[i-1].y;
+      var len = Math.sqrt(dx*dx+dy*dy);
+      segs.push(len);
+      total += len;
+    }
+    var dist = t * total;
+    var accum = 0;
+    for (var i = 0; i < segs.length; i++) {
+      if (accum + segs[i] >= dist) {
+        var segT = (dist - accum) / segs[i];
+        return {
+          x: wp[i].x + (wp[i+1].x - wp[i].x) * segT,
+          y: wp[i].y + (wp[i+1].y - wp[i].y) * segT
+        };
+      }
+      accum += segs[i];
+    }
+    return wp[wp.length-1];
   }
 
   function plFrame() {
@@ -1033,17 +1219,20 @@
     pTime++;
     var pos = getPositions();
 
+    // Background grid
+    drawGrid();
+
     // Advance active edge
     edgeTimer++;
     if (edgeTimer >= EDGE_DUR) {
       edgeTimer = 0;
-      activeEdge = (activeEdge + 1) % edges.length;
+      activeEdge = (activeEdge + 1) % edgeDefs.length;
       passIdx = 0;
     }
 
     // Compiler pass cycling
-    var compilerActive = (edges[activeEdge][0] === 2 || edges[activeEdge][1] === 2);
-    if (compilerActive) {
+    var ae = edgeDefs[activeEdge];
+    if (ae[0] === 3 || ae[1] === 3) {
       passTimer++;
       if (passTimer >= Math.floor(EDGE_DUR / passes.length)) {
         passTimer = 0;
@@ -1052,60 +1241,45 @@
     }
 
     // Spawn particles
-    if (pTime % 7 === 0) spawnFlow(activeEdge);
+    if (pTime % 8 === 0) spawnFlow(activeEdge);
 
-    // Draw edges
-    for (var i = 0; i < edges.length; i++) {
-      var e = edges[i];
-      var a = pos[e[0]], b = pos[e[1]];
-      var dx = b.x-a.x, dy = b.y-a.y, len = Math.sqrt(dx*dx+dy*dy)||1;
-      var curve = len * 0.15;
-      var isActive = i === activeEdge;
-      drawCurve(a.x, a.y, b.x, b.y, nodes[e[0]].color, isActive);
+    // Draw traces
+    for (var i = 0; i < edgeDefs.length; i++) {
+      var e = edgeDefs[i];
+      var wp = getTrace(pos[e[0]], pos[e[1]], i);
+      drawTrace(wp, nodes[e[0]].color, i === activeEdge);
     }
 
     // Update + draw flow particles
     for (var i = flowParticles.length-1; i >= 0; i--) {
       var fp = flowParticles[i];
       fp.progress += fp.speed;
-
-      var dx = fp.tx-fp.fx, dy = fp.ty-fp.fy, len = Math.sqrt(dx*dx+dy*dy)||1;
-      var curve = len * 0.15;
-
       var t = fp.progress < 0.5 ? 2*fp.progress*fp.progress : -1+(4-2*fp.progress)*fp.progress;
-      var pt = bezierPoint(fp.fx, fp.fy, fp.tx, fp.ty, curve, t);
-
-      // Add wobble
-      var nx = -(fp.ty-fp.fy)/len, ny = (fp.tx-fp.fx)/len;
-      var wobble = Math.sin(fp.progress * Math.PI * 2.5 + fp.seed) * 5;
-      fp.x = pt.x + nx * wobble;
-      fp.y = pt.y + ny * wobble;
+      var pt = tracePointAt(fp.waypoints, t);
 
       if (fp.progress >= 1) {
         flowParticles.splice(i, 1);
       } else {
         var al = fp.alpha * (1 - Math.pow(Math.abs(fp.progress - 0.5) * 2, 2));
-        ctx.beginPath(); ctx.arc(fp.x, fp.y, fp.r*3, 0, Math.PI*2);
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, fp.r*3, 0, Math.PI*2);
         ctx.fillStyle = 'rgba('+fp.col[0]+','+fp.col[1]+','+fp.col[2]+','+(al*0.15)+')';
         ctx.fill();
-        ctx.beginPath(); ctx.arc(fp.x, fp.y, fp.r, 0, Math.PI*2);
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, fp.r, 0, Math.PI*2);
         ctx.fillStyle = 'rgba('+fp.col[0]+','+fp.col[1]+','+fp.col[2]+','+al+')';
         ctx.fill();
       }
     }
 
-    // Draw nodes on top
-    // Determine which nodes are active (involved in active edge)
-    var ae = edges[activeEdge];
+    // Draw chips on top
+    var activeFrom = edgeDefs[activeEdge][0];
+    var activeTo = edgeDefs[activeEdge][1];
     for (var i = 0; i < nodes.length; i++) {
-      var active = i === ae[0] || i === ae[1];
-      drawNodeAt(pos[i].x, pos[i].y, nodes[i], active);
+      drawChip(pos[i].x, pos[i].y, nodes[i], i === activeFrom || i === activeTo);
     }
 
     requestAnimationFrame(plFrame);
   }
 
-  // Start pipeline when visible
   var plStarted = false;
   var plObs = new IntersectionObserver(function(entries) {
     entries.forEach(function(e) {
