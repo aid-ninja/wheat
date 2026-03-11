@@ -794,6 +794,52 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["witness", "corroboration", "sse", "mdn", "auto-reconnect"]
+    },
+    {
+      "id": "x004",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "The scalability benchmark (e001: 59ms at 1000 claims) measures compilation time only — it ignores the full loop cost: file I/O to read claims.json (grows linearly with file size), JSON.parse (superlinear for large strings), writing compilation.json, and the browser re-rendering the dashboard DOM. At 1000 claims the JSON file would be ~500KB and the dashboard would have 1000+ DOM nodes. The bottleneck shifts from compiler to I/O and rendering well before 1000 claims.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["challenge", "scalability", "full-loop-cost", "io-bottleneck"]
+    },
+    {
+      "id": "x005",
+      "type": "risk",
+      "topic": "ux-pattern",
+      "content": "The timeline-first UI (p006) assumes a single-user, single-session workflow. If multiple contributors run /research or /prototype concurrently (e.g. pair programming or async collaboration), the timeline will interleave claims from different people with no attribution. There's no claim-level author tracking — the timeline shows what happened but not who did it, making collaborative sprints opaque.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:05:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["challenge", "collaboration", "multi-user", "attribution"]
+    },
+    {
+      "id": "p011",
+      "type": "factual",
+      "topic": "output-format",
+      "content": "Automated self-containment guard implemented: `node wheat-compiler.js --scan` checks all HTML files across output/, research/, evidence/, and prototypes/ for external URLs in script src, link href, @import url, and img src. Scans 10 HTML files, reports clean/dirty with specific URLs. Exits 1 on violation. Directly resolves x003 regression risk.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "wheat-compiler.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T17:10:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["self-containment", "automated-guard", "scan", "x003-fix"]
     }
   ]
 }

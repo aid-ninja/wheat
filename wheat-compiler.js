@@ -565,8 +565,62 @@ function inferPhase(phaseSummary) {
   return 'init';
 }
 
+// ─── Self-Containment Scanner ────────────────────────────────────────────────
+function scanSelfContainment(dirs) {
+  const extPattern = /(?:<script[^>]+src=["'](?!data:)|<link[^>]+href=["'](?!#|data:)|@import\s+url\(["']?(?!data:)|<img[^>]+src=["'](?!data:))(https?:\/\/[^"'\s)]+)/gi;
+  const results = [];
+  for (const dir of dirs) {
+    if (!fs.existsSync(dir)) continue;
+    const files = fs.readdirSync(dir).filter(f => f.endsWith('.html'));
+    for (const file of files) {
+      const content = fs.readFileSync(path.join(dir, file), 'utf8');
+      const matches = [];
+      let m;
+      while ((m = extPattern.exec(content)) !== null) {
+        matches.push(m[1]);
+      }
+      results.push({ file: path.join(dir, file), external: matches });
+    }
+  }
+  return results;
+}
+
 // ─── CLI ─────────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
+
+// --scan mode: check HTML artifacts for external dependencies
+if (args.includes('--scan')) {
+  const scanDirs = ['output', 'research', 'evidence', 'prototypes'].map(d => path.join(__dirname, d));
+  // Also scan nested dirs one level deep (e.g. prototypes/live-dashboard/)
+  const allDirs = [...scanDirs];
+  for (const d of scanDirs) {
+    if (fs.existsSync(d)) {
+      fs.readdirSync(d, { withFileTypes: true })
+        .filter(e => e.isDirectory())
+        .forEach(e => allDirs.push(path.join(d, e.name)));
+    }
+  }
+  const results = scanSelfContainment(allDirs);
+  const clean = results.filter(r => r.external.length === 0);
+  const dirty = results.filter(r => r.external.length > 0);
+
+  console.log(`Self-Containment Scan`);
+  console.log('='.repeat(50));
+  console.log(`Scanned: ${results.length} HTML files`);
+  console.log(`Clean:   ${clean.length}`);
+  console.log(`Dirty:   ${dirty.length}`);
+  if (dirty.length > 0) {
+    console.log('\nExternal dependencies found:');
+    dirty.forEach(r => {
+      console.log(`  ${r.file}:`);
+      r.external.forEach(url => console.log(`    → ${url}`));
+    });
+    process.exit(1);
+  } else {
+    console.log('\n✓ All HTML artifacts are self-contained.');
+  }
+  process.exit(0);
+}
 
 // --diff mode: compare two compilation files
 if (args.includes('--diff')) {
