@@ -741,6 +741,24 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["witness", "corroboration", "sse", "zero-deps"]
+    },
+    {
+      "id": "p010",
+      "type": "factual",
+      "topic": "accessibility",
+      "content": "Google Fonts @import removed from both templates (explainer.html, dashboard.html). Replaced with system font stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif. Zero external requests. Resolves r022 risk and strengthens d002 self-contained constraint. All generated HTML artifacts were already clean — only the source templates had the import.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "templates/",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T16:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["google-fonts", "self-contained", "system-font-stack", "r022-fix"]
     }
   ]
 }
