@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wheat — Research Sprint Framework</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3a;
+    --text: #e4e4ef;
+    --text-dim: #8888a0;
+    --accent: #f59e0b;
+    --accent2: #3b82f6;
+    --green: #22c55e;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --cyan: #06b6d4;
+    --pink: #ec4899;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 60% 40%, rgba(245,158,11,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 30% 70%, rgba(59,130,246,0.04) 0%, transparent 50%);
+    animation: drift 20s ease-in-out infinite alternate;
+  }
+
+  @keyframes drift {
+    from { transform: translate(0, 0) rotate(0deg); }
+    to { transform: translate(-3%, 2%) rotate(1deg); }
+  }
+
+  .hero-content { position: relative; text-align: center; max-width: 800px; padding: 2rem; }
+
+  .logo {
+    font-size: 5rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, var(--accent) 0%, #fbbf24 50%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+  }
+
+  .tagline {
+    font-size: 1.15rem;
+    color: var(--text-dim);
+    margin-bottom: 3rem;
+    font-weight: 400;
+  }
+
+  .tagline span { color: var(--accent); }
+
+  .start-btn {
+    background: linear-gradient(135deg, var(--accent), #d97706);
+    color: #000;
+    border: none;
+    padding: 0.85rem 2.5rem;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(245,158,11,0.3); }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    animation: bob 2s ease-in-out infinite;
+  }
+
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+  }
+
+  /* ── Sections ── */
+  section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 6rem 2rem;
+  }
+
+  .section-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+
+  .section-desc {
+    color: var(--text-dim);
+    max-width: 600px;
+    margin-bottom: 3rem;
+    font-size: 0.9rem;
+  }
+
+  /* ── Pipeline ── */
+  .pipeline {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    scroll-snap-type: x proximity;
+  }
+
+  .phase-card {
+    flex: 0 0 160px;
+    scroll-snap-align: start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .phase-card::after {
+    content: '→';
+    position: absolute;
+    right: -14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-dim);
+    font-size: 1.2rem;
+    z-index: 1;
+  }
+
+  .phase-card:last-child::after { display: none; }
+
+  .phase-card:hover, .phase-card.active {
+    border-color: var(--accent);
+    background: var(--surface2);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(245,158,11,0.1);
+  }
+
+  .phase-card.active { border-color: var(--accent); }
+
+  .phase-icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
+  .phase-name { font-size: 0.8rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .phase-cmd { font-size: 0.65rem; color: var(--accent); }
+
+  .phase-detail {
+    margin-top: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: none;
+  }
+
+  .phase-detail.visible { display: block; animation: fadeSlide 0.3s ease; }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .phase-detail-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .phase-detail-header h3 { font-size: 1rem; }
+
+  .phase-detail-body {
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .detail-block h4 {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 0.75rem;
+  }
+
+  .detail-block p, .detail-block li {
+    font-size: 0.82rem;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  .detail-block ul { list-style: none; }
+  .detail-block li::before { content: '›  '; color: var(--accent); font-weight: 700; }
+
+  /* ── Claims Demo ── */
+  .claims-playground {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .claim-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .claim-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.25s;
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+
+  .claim-card.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .claim-card:hover {
+    border-left-color: #fbbf24;
+    background: var(--surface2);
+  }
+
+  .claim-card.type-constraint { border-left-color: var(--red); }
+  .claim-card.type-factual { border-left-color: var(--accent2); }
+  .claim-card.type-estimate { border-left-color: var(--purple); }
+  .claim-card.type-risk { border-left-color: var(--red); }
+  .claim-card.type-recommendation { border-left-color: var(--green); }
+  .claim-card.type-feedback { border-left-color: var(--pink); }
+
+  .claim-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4rem;
+  }
+
+  .claim-id {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .claim-badge {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 99px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-stated { background: #333; color: #999; }
+  .badge-web { background: rgba(59,130,246,0.15); color: var(--accent2); }
+  .badge-documented { background: rgba(168,85,247,0.15); color: var(--purple); }
+  .badge-tested { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-production { background: rgba(245,158,11,0.15); color: var(--accent); }
+
+  .claim-type {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 0.3rem;
+  }
+
+  .claim-content { font-size: 0.82rem; line-height: 1.5; }
+
+  /* ── Compiler Viz ── */
+  .compiler-viz {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+
+  .compiler-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .compiler-header h3 { font-size: 0.9rem; }
+
+  .compiler-status {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 99px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .status-idle { background: #333; color: #888; }
+  .status-running { background: rgba(59,130,246,0.2); color: var(--accent2); animation: pulse 1s ease-in-out infinite; }
+  .status-ready { background: rgba(34,197,94,0.2); color: var(--green); }
+  .status-blocked { background: rgba(239,68,68,0.2); color: var(--red); }
+
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+  .pass-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .pass-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    background: var(--bg);
+    border-radius: 6px;
+    font-size: 0.78rem;
+    transition: all 0.3s;
+  }
+
+  .pass-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    flex-shrink: 0;
+    background: #222;
+    color: #555;
+    transition: all 0.3s;
+  }
+
+  .pass-item.done .pass-icon { background: rgba(34,197,94,0.2); color: var(--green); }
+  .pass-item.active .pass-icon { background: rgba(59,130,246,0.2); color: var(--accent2); animation: pulse 0.8s infinite; }
+  .pass-item.warn .pass-icon { background: rgba(245,158,11,0.2); color: var(--accent); }
+
+  .pass-name { flex: 1; }
+  .pass-result { font-size: 0.7rem; color: var(--text-dim); }
+
+  .compiler-output {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+    display: none;
+  }
+
+  .compiler-output.visible { display: block; animation: fadeSlide 0.4s ease; }
+
+  .cert-box {
+    background: var(--bg);
+    border-radius: 6px;
+    padding: 1rem;
+    font-size: 0.72rem;
+    line-height: 1.8;
+  }
+
+  .cert-box .label { color: var(--text-dim); }
+  .cert-box .value { color: var(--green); }
+  .cert-box .hash { color: var(--accent); word-break: break-all; }
+
+  /* ── Evidence Ladder ── */
+  .evidence-section {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .evidence-ladder {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .tier {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+  }
+
+  .tier:first-child { border-radius: 12px 12px 0 0; }
+  .tier:last-child { border-radius: 0 0 12px 12px; }
+  .tier:not(:last-child) { border-bottom: none; }
+
+  .tier:hover, .tier.active {
+    background: var(--surface2);
+    z-index: 1;
+  }
+
+  .tier.active { border-color: var(--accent); }
+
+  .tier-rank {
+    font-size: 1.5rem;
+    font-weight: 800;
+    width: 36px;
+    text-align: center;
+  }
+
+  .tier:nth-child(1) .tier-rank { color: var(--accent); }
+  .tier:nth-child(2) .tier-rank { color: var(--green); }
+  .tier:nth-child(3) .tier-rank { color: var(--purple); }
+  .tier:nth-child(4) .tier-rank { color: var(--accent2); }
+  .tier:nth-child(5) .tier-rank { color: #666; }
+
+  .tier-info { flex: 1; }
+  .tier-name { font-size: 0.82rem; font-weight: 700; margin-bottom: 0.15rem; }
+  .tier-desc { font-size: 0.7rem; color: var(--text-dim); }
+
+  .tier-detail-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    min-height: 300px;
+  }
+
+  .tier-detail-panel h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .tier-detail-panel .example {
+    margin-top: 1.25rem;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 1.25rem;
+    font-size: 0.78rem;
+    line-height: 1.7;
+  }
+
+  .tier-detail-panel .example .key { color: var(--accent2); }
+  .tier-detail-panel .example .str { color: var(--green); }
+  .tier-detail-panel .example .num { color: var(--purple); }
+
+  /* ── Conflict Resolution ── */
+  .conflict-demo {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .conflict-claim {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.4s;
+  }
+
+  .conflict-claim.winner {
+    border-color: var(--green);
+    box-shadow: 0 0 20px rgba(34,197,94,0.1);
+  }
+
+  .conflict-claim.loser {
+    opacity: 0.4;
+    border-color: var(--red);
+    transform: scale(0.97);
+  }
+
+  .conflict-vs {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  .resolve-btn {
+    display: block;
+    margin: 2rem auto 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.7rem 2rem;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .resolve-btn:hover { border-color: var(--accent); background: var(--surface); }
+
+  /* ── Git Timeline ── */
+  .timeline {
+    position: relative;
+    padding-left: 2rem;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    position: relative;
+    padding: 0.75rem 0 0.75rem 1.5rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s;
+  }
+
+  .timeline-item.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2rem;
+    top: 1.1rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: var(--bg);
+  }
+
+  .timeline-hash {
+    font-size: 0.7rem;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .timeline-msg {
+    font-size: 0.82rem;
+    margin-top: 0.15rem;
+  }
+
+  .timeline-time {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    margin-top: 0.1rem;
+  }
+
+  /* ── Output Gallery ── */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .gallery-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .gallery-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+  }
+
+  .gallery-preview {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .gallery-preview.brief-bg { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+  .gallery-preview.pres-bg { background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%); }
+  .gallery-preview.dash-bg { background: linear-gradient(135deg, #1a1a2e 0%, #1e3a1e 100%); }
+
+  .gallery-info { padding: 1.25rem; }
+  .gallery-info h3 { font-size: 0.9rem; margin-bottom: 0.3rem; }
+  .gallery-info p { font-size: 0.75rem; color: var(--text-dim); }
+  .gallery-info .cmd { color: var(--accent); font-weight: 600; }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    border-top: 1px solid var(--border);
+  }
+
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* ── Utilities ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    .claims-playground,
+    .evidence-section,
+    .conflict-demo { grid-template-columns: 1fr; }
+    .gallery { grid-template-columns: 1fr; }
+    .phase-detail-body { grid-template-columns: 1fr; }
+    .logo { font-size: 3rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════ HERO ════════ -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="logo">wheat</div>
+    <p class="tagline">Turn questions into <span>defensible decisions</span>.<br>Evidence in. Artifacts out. Every claim tracked.</p>
+    <button class="start-btn" onclick="startDemo()">Run the demo</button>
+  </div>
+  <div class="scroll-hint">↓ scroll to explore</div>
+</div>
+
+<!-- ════════ PIPELINE ════════ -->
+<section id="pipeline-section">
+  <div class="section-label">The Pipeline</div>
+  <div class="section-title">Ten commands. One decision.</div>
+  <div class="section-desc">Every sprint flows through a rigorous pipeline — from question to compiled brief. Click a phase to see what it does.</div>
+
+  <div class="pipeline" id="pipeline">
+    <div class="phase-card active" data-phase="init" onclick="showPhase('init')">
+      <div class="phase-icon">⚡</div>
+      <div class="phase-name">Init</div>
+      <div class="phase-cmd">/init</div>
+    </div>
+    <div class="phase-card" data-phase="research" onclick="showPhase('research')">
+      <div class="phase-icon">🔍</div>
+      <div class="phase-name">Research</div>
+      <div class="phase-cmd">/research</div>
+    </div>
+    <div class="phase-card" data-phase="connect" onclick="showPhase('connect')">
+      <div class="phase-icon">🔗</div>
+      <div class="phase-name">Connect</div>
+      <div class="phase-cmd">/connect</div>
+    </div>
+    <div class="phase-card" data-phase="prototype" onclick="showPhase('prototype')">
+      <div class="phase-icon">🛠</div>
+      <div class="phase-name">Prototype</div>
+      <div class="phase-cmd">/prototype</div>
+    </div>
+    <div class="phase-card" data-phase="evaluate" onclick="showPhase('evaluate')">
+      <div class="phase-icon">📊</div>
+      <div class="phase-name">Evaluate</div>
+      <div class="phase-cmd">/evaluate</div>
+    </div>
+    <div class="phase-card" data-phase="feedback" onclick="showPhase('feedback')">
+      <div class="phase-icon">💬</div>
+      <div class="phase-name">Feedback</div>
+      <div class="phase-cmd">/feedback</div>
+    </div>
+    <div class="phase-card" data-phase="resolve" onclick="showPhase('resolve')">
+      <div class="phase-icon">⚖️</div>
+      <div class="phase-name">Resolve</div>
+      <div class="phase-cmd">/resolve</div>
+    </div>
+    <div class="phase-card" data-phase="status" onclick="showPhase('status')">
+      <div class="phase-icon">📋</div>
+      <div class="phase-name">Status</div>
+      <div class="phase-cmd">/status</div>
+    </div>
+    <div class="phase-card" data-phase="brief" onclick="showPhase('brief')">
+      <div class="phase-icon">📄</div>
+      <div class="phase-name">Brief</div>
+      <div class="phase-cmd">/brief</div>
+    </div>
+    <div class="phase-card" data-phase="present" onclick="showPhase('present')">
+      <div class="phase-icon">🎤</div>
+      <div class="phase-name">Present</div>
+      <div class="phase-cmd">/present</div>
+    </div>
+  </div>
+
+  <div class="phase-detail visible" id="phase-detail">
+    <!-- Populated by JS -->
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════ CLAIMS ════════ -->
+<section id="claims-section">
+  <div class="section-label">The Claims System</div>
+  <div class="section-title">Bran IR — structured knowledge</div>
+  <div class="section-desc">Every finding becomes a typed, evidence-graded claim. The compiler validates them, detects conflicts, and gates output.</div>
+
+  <div class="claims-playground">
+    <div>
+      <div class="claim-list" id="claim-list">
+        <!-- Populated by JS on demo start -->
+      </div>
+    </div>
+
+    <div class="compiler-viz" id="compiler-viz">
+      <div class="compiler-header">
+        <h3>wheat-compiler</h3>
+        <span class="compiler-status status-idle" id="compiler-status">idle</span>
+      </div>
+      <div class="pass-list" id="pass-list">
+        <div class="pass-item" data-pass="0"><div class="pass-icon">1</div><div class="pass-name">Schema Validation</div><div class="pass-result"></div></div>
+        <div class="pass-item" data-pass="1"><div class="pass-icon">2</div><div class="pass-name">Type Checking</div><div class="pass-result"></div></div>
+        <div class="pass-item" data-pass="2"><div class="pass-icon">3</div><div class="pass-name">Evidence Tier Sort</div><div class="pass-result"></div></div>
+        <div class="pass-item" data-pass="3"><div class="pass-icon">4</div><div class="pass-name">Conflict Detection</div><div class="pass-result"></div></div>
+        <div class="pass-item" data-pass="4"><div class="pass-icon">5</div><div class="pass-name">Auto-Resolution</div><div class="pass-result"></div></div>
+        <div class="pass-item" data-pass="5"><div class="pass-icon">6</div><div class="pass-name">Coverage Analysis</div><div class="pass-result"></div></div>
+        <div class="pass-item" data-pass="6"><div class="pass-icon">7</div><div class="pass-name">Readiness Check</div><div class="pass-result"></div></div>
+      </div>
+      <div class="compiler-output" id="compiler-output">
+        <div class="cert-box">
+          <span class="label">status:</span> <span class="value" id="cert-status">ready</span><br>
+          <span class="label">claims:</span> <span class="value" id="cert-claims">8 active, 1 superseded</span><br>
+          <span class="label">conflicts:</span> <span class="value" id="cert-conflicts">1 resolved, 0 unresolved</span><br>
+          <span class="label">coverage:</span> <span class="value" id="cert-coverage">3 topics, min evidence: documented</span><br>
+          <span class="label">certificate:</span> <span class="hash" id="cert-hash">sha256:a3f8c2...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════ EVIDENCE TIERS ════════ -->
+<section id="evidence-section">
+  <div class="section-label">Evidence Hierarchy</div>
+  <div class="section-title">Five tiers. Higher wins.</div>
+  <div class="section-desc">When claims conflict, evidence tier determines the winner. This is the engine behind automatic resolution.</div>
+
+  <div class="evidence-section">
+    <div class="evidence-ladder" id="evidence-ladder">
+      <div class="tier active" data-tier="production" onclick="showTier('production')">
+        <div class="tier-rank">5</div>
+        <div class="tier-info">
+          <div class="tier-name">production</div>
+          <div class="tier-desc">Measured live</div>
+        </div>
+      </div>
+      <div class="tier" data-tier="tested" onclick="showTier('tested')">
+        <div class="tier-rank">4</div>
+        <div class="tier-info">
+          <div class="tier-name">tested</div>
+          <div class="tier-desc">Verified in prototype</div>
+        </div>
+      </div>
+      <div class="tier" data-tier="documented" onclick="showTier('documented')">
+        <div class="tier-rank">3</div>
+        <div class="tier-info">
+          <div class="tier-name">documented</div>
+          <div class="tier-desc">In official sources</div>
+        </div>
+      </div>
+      <div class="tier" data-tier="web" onclick="showTier('web')">
+        <div class="tier-rank">2</div>
+        <div class="tier-info">
+          <div class="tier-name">web</div>
+          <div class="tier-desc">Found online</div>
+        </div>
+      </div>
+      <div class="tier" data-tier="stated" onclick="showTier('stated')">
+        <div class="tier-rank">1</div>
+        <div class="tier-info">
+          <div class="tier-name">stated</div>
+          <div class="tier-desc">Someone said it</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tier-detail-panel" id="tier-detail">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════ CONFLICT RESOLUTION ════════ -->
+<section id="conflict-section">
+  <div class="section-label">Conflict Resolution</div>
+  <div class="section-title">When claims disagree</div>
+  <div class="section-desc">The compiler auto-resolves conflicts by evidence tier. Same-tier conflicts require manual adjudication via /resolve.</div>
+
+  <div class="conflict-demo" id="conflict-demo">
+    <div class="conflict-claim" id="conflict-a">
+      <div class="claim-header">
+        <span class="claim-id">r003</span>
+        <span class="claim-badge badge-web">web</span>
+      </div>
+      <div class="claim-type">estimate</div>
+      <div class="claim-content">"PostgreSQL can handle 10k concurrent connections with PgBouncer"</div>
+    </div>
+    <div class="conflict-vs" id="conflict-vs">vs</div>
+    <div class="conflict-claim" id="conflict-b">
+      <div class="claim-header">
+        <span class="claim-id">p002</span>
+        <span class="claim-badge badge-tested">tested</span>
+      </div>
+      <div class="claim-type">factual</div>
+      <div class="claim-content">"Our PgBouncer prototype topped out at 4.2k connections before latency spiked"</div>
+    </div>
+  </div>
+  <button class="resolve-btn" id="resolve-btn" onclick="resolveConflict()">⚡ Run auto-resolution</button>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════ GIT TIMELINE ════════ -->
+<section id="git-section">
+  <div class="section-label">Audit Trail</div>
+  <div class="section-title">Every claim is a commit</div>
+  <div class="section-desc">Git log on claims.json = the sprint event log. Full reproducibility from question to decision.</div>
+
+  <div class="timeline" id="timeline">
+    <!-- Populated by demo -->
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════ OUTPUT GALLERY ════════ -->
+<section id="output-section">
+  <div class="section-label">Output Artifacts</div>
+  <div class="section-title">What you ship</div>
+  <div class="section-desc">All artifacts are self-contained HTML, gated behind a clean compilation. No uncited assertions allowed.</div>
+
+  <div class="gallery">
+    <div class="gallery-card">
+      <div class="gallery-preview brief-bg">📄</div>
+      <div class="gallery-info">
+        <h3>Decision Brief</h3>
+        <p>Structured document with executive summary, methodology, findings, and recommendation. Every assertion cites a claim.</p>
+        <p class="cmd">/brief → MD + HTML + PDF</p>
+      </div>
+    </div>
+    <div class="gallery-card">
+      <div class="gallery-preview pres-bg">🎤</div>
+      <div class="gallery-info">
+        <h3>Presentation</h3>
+        <p>Full-screen scroll-snap slides. Dark theme. Claim-backed talking points. Ready for stakeholder review.</p>
+        <p class="cmd">/present → HTML</p>
+      </div>
+    </div>
+    <div class="gallery-card">
+      <div class="gallery-preview dash-bg">📊</div>
+      <div class="gallery-info">
+        <h3>Sprint Dashboard</h3>
+        <p>Live status view: phase progress, evidence strength by topic, conflicts, connected sources, and claim inventory.</p>
+        <p class="cmd">/status → HTML</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Wheat Research Sprint Framework — built on the Bran IR compilation model</p>
+  <p style="margin-top: 0.5rem;">Run <a href="#">/init</a> to start your first sprint</p>
+</footer>
+
+<script>
+// ── Phase data ──
+const phases = {
+  init: {
+    title: '/init — Bootstrap the sprint',
+    badge: 'define',
+    left: { title: 'What it does', items: ['Sets the research question', 'Defines target audience', 'Captures hard constraints as d### claims', 'Seeds claims.json with initial structure', 'Generates problem-statement.html'] },
+    right: { title: 'Example', text: '<strong>/init</strong>\n\n"Should we migrate from REST to GraphQL for our public API?"\n\nAudience: Engineering leads, VP Product\nConstraints: Must support existing mobile clients, 6-week timeline' }
+  },
+  research: {
+    title: '/research — Deep dive on a topic',
+    badge: 'research',
+    left: { title: 'What it does', items: ['Web searches for evidence', 'Creates r### claims with source URLs', 'Builds topic explainers (HTML + MD)', 'Auto-grades evidence tiers', 'Commits to git with claim IDs'] },
+    right: { title: 'Example', text: '<strong>/research "GraphQL performance"</strong>\n\nFinds benchmarks, case studies, official docs.\nCreates r001-r005 claims.\nOutputs research/graphql-performance.html' }
+  },
+  connect: {
+    title: '/connect — Link external sources',
+    badge: 'research',
+    left: { title: 'Supported sources', items: ['GitHub repos (issues, PRs, code)', 'Jira projects (tickets, epics)', 'Confluence spaces (docs, ADRs)', 'Slack channels (discussions)', 'Custom URLs (any documented source)'] },
+    right: { title: 'Example', text: '<strong>/connect github myorg/api-gateway</strong>\n\nExtracts relevant issues, PR discussions.\nCreates claims at "documented" evidence tier.\nLinks source artifacts for traceability.' }
+  },
+  prototype: {
+    title: '/prototype — Build something testable',
+    badge: 'prototype',
+    left: { title: 'What it does', items: ['Creates working proof-of-concept', 'Runs benchmarks and measurements', 'Produces p### claims at "tested" tier', 'Generates demo.html with results', 'Captures quantitative evidence'] },
+    right: { title: 'Example', text: '<strong>/prototype "graphql-gateway"</strong>\n\nBuilds a minimal GraphQL gateway.\nBenchmarks: latency, throughput, bundle size.\nCreates p001-p004 with hard numbers.' }
+  },
+  evaluate: {
+    title: '/evaluate — Test claims against reality',
+    badge: 'evaluate',
+    left: { title: 'What it does', items: ['Systematic comparison across options', 'Runs conflict detection on all claims', 'Creates e### claims from measurements', 'Builds evidence comparison dashboard', 'Triggers auto-resolution where possible'] },
+    right: { title: 'Example', text: '<strong>/evaluate</strong>\n\nCompares REST vs GraphQL across all topics.\nFinds 3 conflicts, auto-resolves 2.\nOutputs evidence/rest-vs-graphql.html' }
+  },
+  feedback: {
+    title: '/feedback — Incorporate stakeholder input',
+    badge: 'feedback',
+    left: { title: 'What it does', items: ['Records stakeholder opinions as f### claims', 'Tags by stakeholder for attribution', 'May trigger re-evaluation of existing claims', 'Captures constraints discovered mid-sprint', 'Evidence tier: "stated" (upgradeable)'] },
+    right: { title: 'Example', text: '<strong>/feedback "VP Eng says we must maintain backward compat for 12 months minimum"</strong>\n\nCreates f001 as a constraint claim.\nMay conflict with existing timeline estimates.\nFlags for next /evaluate cycle.' }
+  },
+  resolve: {
+    title: '/resolve — Manual adjudication',
+    badge: 'evaluate',
+    left: { title: 'When to use', items: ['Same-evidence-tier conflicts', 'Compiler marks them as "conflicted"', 'Blocks /brief and /present until resolved', 'You pick the winner with reasoning', 'Loser is marked "superseded"'] },
+    right: { title: 'Example', text: '<strong>/resolve r003 p002</strong>\n\n"r003 claimed 10k connections; p002 measured 4.2k. Prototype data wins — marking r003 superseded."' }
+  },
+  status: {
+    title: '/status — Sprint dashboard',
+    badge: 'any',
+    left: { title: 'What it shows', items: ['Phase progress (define → compile)', 'Claims by type and evidence tier', 'Unresolved conflicts (blockers)', 'Connected sources', 'Coverage gaps and warnings'] },
+    right: { title: 'Output', text: 'Runs the compiler in --summary mode.\nRenders output/dashboard.html.\nPrints terminal summary with phase, claims count, and blocker status.' }
+  },
+  brief: {
+    title: '/brief — Compile the decision document',
+    badge: 'compile',
+    left: { title: 'What it produces', items: ['Executive summary', 'Methodology and evidence map', 'Findings by topic with claim citations', 'Risk analysis', 'Recommendation with confidence level', 'MD + HTML + PDF outputs'] },
+    right: { title: 'Gate', text: '<strong>Compilation gate:</strong> runs wheat-compiler --check first.\n\nIf blocked (unresolved conflicts, missing coverage), the brief is NOT generated.\n\nEvery assertion in the brief must cite a claim ID.' }
+  },
+  present: {
+    title: '/present — Generate the presentation',
+    badge: 'compile',
+    left: { title: 'What it produces', items: ['Full-screen scroll-snap slides', 'Title + agenda + topic slides', 'Claim-backed talking points', 'Evidence strength indicators', 'Recommendation slide with confidence', 'Self-contained HTML, no external deps'] },
+    right: { title: 'Gate', text: '<strong>Same compilation gate as /brief.</strong>\n\nSlides are generated from compilation.json, not claims.json directly.\n\nUses the dark explainer template with nav dots.' }
+  }
+};
+
+function showPhase(phase) {
+  document.querySelectorAll('.phase-card').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.phase-card[data-phase="${phase}"]`).classList.add('active');
+
+  const p = phases[phase];
+  const detail = document.getElementById('phase-detail');
+  detail.classList.remove('visible');
+
+  setTimeout(() => {
+    const itemsHtml = p.left.items.map(i => `<li>${i}</li>`).join('');
+    detail.innerHTML = `
+      <div class="phase-detail-header">
+        <h3>${p.title}</h3>
+      </div>
+      <div class="phase-detail-body">
+        <div class="detail-block">
+          <h4>${p.left.title}</h4>
+          <ul>${itemsHtml}</ul>
+        </div>
+        <div class="detail-block">
+          <h4>${p.right.title}</h4>
+          <p style="white-space: pre-line;">${p.right.text}</p>
+        </div>
+      </div>
+    `;
+    detail.classList.add('visible');
+  }, 50);
+}
+
+// ── Evidence tier data ──
+const tiers = {
+  production: {
+    title: 'Production — Tier 5',
+    desc: 'Measured from live production systems. The gold standard. When production data says something, everything else yields.',
+    example: `{
+  <span class="key">"id"</span>: <span class="str">"e004"</span>,
+  <span class="key">"type"</span>: <span class="str">"factual"</span>,
+  <span class="key">"evidence"</span>: <span class="str">"production"</span>,
+  <span class="key">"content"</span>: <span class="str">"p99 API latency is 142ms at 2.3k RPS (measured via Datadog, 7-day avg)"</span>,
+  <span class="key">"source"</span>: { <span class="key">"type"</span>: <span class="str">"connector"</span>, <span class="key">"connector"</span>: <span class="str">"datadog"</span> }
+}`
+  },
+  tested: {
+    title: 'Tested — Tier 4',
+    desc: 'Verified via prototype or benchmark. You built it, ran it, and measured it yourself. Trumps anything found online.',
+    example: `{
+  <span class="key">"id"</span>: <span class="str">"p002"</span>,
+  <span class="key">"type"</span>: <span class="str">"factual"</span>,
+  <span class="key">"evidence"</span>: <span class="str">"tested"</span>,
+  <span class="key">"content"</span>: <span class="str">"GraphQL gateway adds 8ms avg latency vs direct REST (measured in prototype)"</span>,
+  <span class="key">"source"</span>: { <span class="key">"type"</span>: <span class="str">"prototype"</span>, <span class="key">"artifact"</span>: <span class="str">"prototypes/gql-gateway/"</span> }
+}`
+  },
+  documented: {
+    title: 'Documented — Tier 3',
+    desc: 'Found in source code, official docs, ADRs, or connected tools (GitHub, Jira, Confluence). Authoritative but not independently verified.',
+    example: `{
+  <span class="key">"id"</span>: <span class="str">"r007"</span>,
+  <span class="key">"type"</span>: <span class="str">"factual"</span>,
+  <span class="key">"evidence"</span>: <span class="str">"documented"</span>,
+  <span class="key">"content"</span>: <span class="str">"Apollo Server supports automatic persisted queries out of the box"</span>,
+  <span class="key">"source"</span>: { <span class="key">"type"</span>: <span class="str">"connector"</span>, <span class="key">"connector"</span>: <span class="str">"github"</span> }
+}`
+  },
+  web: {
+    title: 'Web — Tier 2',
+    desc: 'Found online via search — blog posts, articles, community discussions. Useful for initial research but needs verification for high-stakes decisions.',
+    example: `{
+  <span class="key">"id"</span>: <span class="str">"r003"</span>,
+  <span class="key">"type"</span>: <span class="str">"estimate"</span>,
+  <span class="key">"evidence"</span>: <span class="str">"web"</span>,
+  <span class="key">"content"</span>: <span class="str">"Companies report 30-50% reduction in API calls after GraphQL migration"</span>,
+  <span class="key">"source"</span>: { <span class="key">"type"</span>: <span class="str">"research"</span>, <span class="key">"url"</span>: <span class="str">"https://..."</span> }
+}`
+  },
+  stated: {
+    title: 'Stated — Tier 1',
+    desc: 'A stakeholder said it, no independent verification. The starting point — captures opinions, constraints, and direction. Often upgraded to higher tiers through research or testing.',
+    example: `{
+  <span class="key">"id"</span>: <span class="str">"d001"</span>,
+  <span class="key">"type"</span>: <span class="str">"constraint"</span>,
+  <span class="key">"evidence"</span>: <span class="str">"stated"</span>,
+  <span class="key">"content"</span>: <span class="str">"Must support existing iOS and Android clients without breaking changes"</span>,
+  <span class="key">"source"</span>: { <span class="key">"type"</span>: <span class="str">"stakeholder"</span>, <span class="key">"who"</span>: <span class="str">"VP Engineering"</span> }
+}`
+  }
+};
+
+function showTier(tier) {
+  document.querySelectorAll('.tier').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tier[data-tier="${tier}"]`).classList.add('active');
+
+  const t = tiers[tier];
+  const panel = document.getElementById('tier-detail');
+  panel.innerHTML = `
+    <h3>${t.title}</h3>
+    <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.5rem;">${t.desc}</p>
+    <div class="example"><pre style="margin:0; white-space: pre-wrap; font-family: inherit;">${t.example}</pre></div>
+  `;
+}
+
+// ── Demo claims ──
+const demoClaims = [
+  { id: 'd001', type: 'constraint', evidence: 'stated', content: 'Must support existing mobile clients without breaking changes', phase: 'define' },
+  { id: 'd002', type: 'constraint', evidence: 'stated', content: '6-week timeline, 2 engineers available', phase: 'define' },
+  { id: 'r001', type: 'factual', evidence: 'web', content: 'GraphQL reduces over-fetching by letting clients specify exact fields needed', phase: 'research' },
+  { id: 'r002', type: 'estimate', evidence: 'web', content: 'Companies report 30-50% reduction in API calls post-migration', phase: 'research' },
+  { id: 'r003', type: 'estimate', evidence: 'web', content: 'PostgreSQL handles 10k concurrent connections with PgBouncer', phase: 'research' },
+  { id: 'p001', type: 'factual', evidence: 'tested', content: 'GraphQL gateway adds 8ms avg latency vs direct REST (prototype measurement)', phase: 'prototype' },
+  { id: 'p002', type: 'factual', evidence: 'tested', content: 'PgBouncer prototype topped out at 4.2k connections before latency spike', phase: 'prototype' },
+  { id: 'e001', type: 'recommendation', evidence: 'tested', content: 'Adopt GraphQL for new endpoints; maintain REST for existing mobile clients during transition', phase: 'evaluate' },
+  { id: 'f001', type: 'feedback', evidence: 'stated', content: 'VP Eng: backward compat must last 12 months minimum, not just migration window', phase: 'feedback' },
+];
+
+const timelineData = [
+  { hash: 'a3f8c2d', msg: 'wheat: /init "REST vs GraphQL for public API" — added d001, d002', time: '2 hours ago' },
+  { hash: 'b7e1f9a', msg: 'wheat: /research "GraphQL performance" — added r001, r002, r003', time: '1 hour ago' },
+  { hash: 'c4d2a8b', msg: 'wheat: /prototype "graphql-gateway" — added p001, p002', time: '45 min ago' },
+  { hash: 'd9f3b1c', msg: 'wheat: /evaluate REST vs GraphQL — added e001, resolved r003↔p002', time: '30 min ago' },
+  { hash: 'e2a7c4d', msg: 'wheat: /feedback VP Eng compat requirement — added f001', time: '15 min ago' },
+];
+
+// ── Demo runner ──
+let demoRunning = false;
+
+function startDemo() {
+  if (demoRunning) return;
+  demoRunning = true;
+
+  document.getElementById('pipeline-section').scrollIntoView({ behavior: 'smooth' });
+
+  // Start claim animation after scroll
+  setTimeout(() => animateClaims(), 800);
+}
+
+function animateClaims() {
+  const list = document.getElementById('claim-list');
+  list.innerHTML = '';
+
+  demoClaims.forEach((claim, i) => {
+    const card = document.createElement('div');
+    card.className = `claim-card type-${claim.type}`;
+    card.innerHTML = `
+      <div class="claim-header">
+        <span class="claim-id">${claim.id}</span>
+        <span class="claim-badge badge-${claim.evidence}">${claim.evidence}</span>
+      </div>
+      <div class="claim-type">${claim.type}</div>
+      <div class="claim-content">${claim.content}</div>
+    `;
+    list.appendChild(card);
+
+    setTimeout(() => card.classList.add('visible'), 200 + i * 250);
+  });
+
+  // Start compiler after claims finish
+  setTimeout(() => runCompiler(), 200 + demoClaims.length * 250 + 500);
+}
+
+function runCompiler() {
+  const status = document.getElementById('compiler-status');
+  status.textContent = 'compiling';
+  status.className = 'compiler-status status-running';
+
+  const passes = document.querySelectorAll('.pass-item');
+  const results = ['9 valid', '9 typed', '5 tiers', '1 conflict', '1 resolved', '3 topics', '0 blockers'];
+
+  passes.forEach((pass, i) => {
+    setTimeout(() => {
+      pass.classList.add('active');
+      setTimeout(() => {
+        pass.classList.remove('active');
+        pass.classList.add(i === 3 ? 'warn' : 'done');
+        pass.querySelector('.pass-result').textContent = results[i];
+
+        if (i === passes.length - 1) {
+          status.textContent = 'ready';
+          status.className = 'compiler-status status-ready';
+          document.getElementById('compiler-output').classList.add('visible');
+
+          // Animate timeline
+          setTimeout(() => animateTimeline(), 600);
+        }
+      }, 300);
+    }, i * 450);
+  });
+}
+
+function animateTimeline() {
+  const timeline = document.getElementById('timeline');
+  timeline.innerHTML = '';
+
+  timelineData.forEach((item, i) => {
+    const el = document.createElement('div');
+    el.className = 'timeline-item';
+    el.innerHTML = `
+      <div class="timeline-hash">${item.hash}</div>
+      <div class="timeline-msg">${item.msg}</div>
+      <div class="timeline-time">${item.time}</div>
+    `;
+    timeline.appendChild(el);
+    setTimeout(() => el.classList.add('visible'), 150 + i * 200);
+  });
+}
+
+// ── Conflict resolution ──
+let conflictResolved = false;
+
+function resolveConflict() {
+  if (conflictResolved) return;
+  conflictResolved = true;
+
+  const btn = document.getElementById('resolve-btn');
+  btn.textContent = 'Resolving...';
+  btn.style.borderColor = 'var(--accent2)';
+
+  setTimeout(() => {
+    document.getElementById('conflict-a').classList.add('loser');
+    document.getElementById('conflict-b').classList.add('winner');
+    document.getElementById('conflict-vs').innerHTML = '→';
+    btn.textContent = 'p002 wins — tested > web';
+    btn.style.borderColor = 'var(--green)';
+    btn.style.color = 'var(--green)';
+  }, 800);
+}
+
+// ── Init ──
+showPhase('init');
+showTier('production');
+
+// Intersection observer for scroll-triggered animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && !demoRunning) {
+      if (entry.target.id === 'claims-section') {
+        startDemo();
+      }
+    }
+  });
+}, { threshold: 0.3 });
+
+document.querySelectorAll('section').forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
