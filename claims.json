@@ -1,81 +1,10 @@
 {
   "meta": {
-    "question": "How should we build an interactive showcase that demonstrates Wheat's research sprint workflow?",
-    "initiated": "2026-03-11",
-    "audience": ["developers evaluating Wheat", "potential adopters"],
-    "phase": "define",
+    "question": "",
+    "initiated": "",
+    "audience": [],
+    "phase": "init",
     "connectors": []
   },
-  "claims": [
-    {
-      "id": "d001",
-      "type": "constraint",
-      "topic": "output-format",
-      "content": "Showcase must be a single self-contained HTML file with no external dependencies (inline CSS/JS only)",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
-      "evidence": "stated",
-      "status": "active",
-      "phase_added": "define",
-      "timestamp": "2026-03-11T00:00:00Z",
-      "conflicts_with": [],
-      "resolved_by": null,
-      "tags": ["html", "self-contained"]
-    },
-    {
-      "id": "d002",
-      "type": "constraint",
-      "topic": "pipeline-integrity",
-      "content": "Showcase must be built through the actual Bran IR pipeline — dogfooding claims.json and the compiler, not hardcoded data",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
-      "evidence": "stated",
-      "status": "active",
-      "phase_added": "define",
-      "timestamp": "2026-03-11T00:00:00Z",
-      "conflicts_with": [],
-      "resolved_by": null,
-      "tags": ["dogfood", "bran-ir"]
-    },
-    {
-      "id": "d003",
-      "type": "constraint",
-      "topic": "visual-design",
-      "content": "Must use the dark theme consistent with existing Wheat templates (dashboard.html, explainer.html)",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
-      "evidence": "stated",
-      "status": "active",
-      "phase_added": "define",
-      "timestamp": "2026-03-11T00:00:00Z",
-      "conflicts_with": [],
-      "resolved_by": null,
-      "tags": ["theme", "design"]
-    },
-    {
-      "id": "d004",
-      "type": "constraint",
-      "topic": "content",
-      "content": "Showcase must demonstrate the full pipeline: claims system, evidence tiers, conflict resolution, compiler passes, and output artifacts",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
-      "evidence": "stated",
-      "status": "active",
-      "phase_added": "define",
-      "timestamp": "2026-03-11T00:00:00Z",
-      "conflicts_with": [],
-      "resolved_by": null,
-      "tags": ["scope", "completeness"]
-    },
-    {
-      "id": "d005",
-      "type": "constraint",
-      "topic": "pipeline-integrity",
-      "content": "Output artifacts must consume compilation.json, never claims.json directly — the compiler is the enforcement layer",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
-      "evidence": "stated",
-      "status": "active",
-      "phase_added": "define",
-      "timestamp": "2026-03-11T00:00:00Z",
-      "conflicts_with": [],
-      "resolved_by": null,
-      "tags": ["compiler", "enforcement"]
-    }
-  ]
+  "claims": []
 }

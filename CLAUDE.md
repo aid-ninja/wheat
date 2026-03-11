@@ -4,10 +4,10 @@
 
 ## Sprint
 
-- **Question**: How should we build an interactive showcase that demonstrates Wheat's research sprint workflow?
-- **Audience**: Developers evaluating Wheat, potential adopters
-- **Constraints**: Self-contained HTML (no external deps), must dogfood the Bran IR pipeline, dark theme matching existing templates
-- **Phase**: define
+- **Question**: _(run /init to set up)_
+- **Audience**: _(run /init to set up)_
+- **Constraints**: _(run /init to set up)_
+- **Phase**: init
 
 ## Connectors
 
