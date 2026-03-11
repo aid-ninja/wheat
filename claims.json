@@ -861,6 +861,27 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["witness", "corroboration", "split-pane", "ast-explorer"]
+    },
+    {
+      "id": "w004",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "External corroboration for p004: Node.js GitHub issue #47058 documents benchmarks showing fs.watch is reliable for single-file watching on macOS. Community consensus is that chokidar is only needed for recursive directory watching or cross-platform edge cases — for a single file like claims.json, native fs.watch with debounce is the recommended zero-dependency approach.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "p004",
+        "relationship": "full_support",
+        "urls": ["https://github.com/nodejs/node/issues/47058"]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:25:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["witness", "corroboration", "fs-watch", "macos"]
     }
   ]
 }
