@@ -840,6 +840,27 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["self-containment", "automated-guard", "scan", "x003-fix"]
+    },
+    {
+      "id": "w003",
+      "type": "factual",
+      "topic": "ux-pattern",
+      "content": "External corroboration for p003: AST Explorer (astexplorer.net) is the canonical example of the split-pane input→output pattern for code visualization. Left pane for source input, right pane for parsed output, real-time updates as you type. The pattern is widely adopted: TypeScript AST Viewer, SQL Parser, Scalameta all use the same layout. Wheat's claims→compilation split-pane follows this established convention.",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "p003",
+        "relationship": "full_support",
+        "urls": ["https://astexplorer.net/"]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T17:20:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["witness", "corroboration", "split-pane", "ast-explorer"]
     }
   ]
 }
