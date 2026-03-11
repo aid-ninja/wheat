@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wheat — The Journey Back to Clarity</title>
+<style>
+  /* ═══════════════════════════════════════════════════════════════
+     SAMURAI JACK THEME
+     Inspired by Genndy Tartakovsky's visual language:
+     - Bold geometric shapes
+     - High contrast with limited palette
+     - Dramatic negative space
+     - Thick brush-stroke aesthetic
+     - Japanese woodblock print influence
+     ═══════════════════════════════════════════════════════════════ */
+
+  :root {
+    /* Samurai Jack palette */
+    --ink: #0d0d0d;
+    --parchment: #f5ead6;
+    --parchment-dim: #d9cbb5;
+    --blood: #c0392b;
+    --blood-dim: rgba(192,57,43,0.15);
+    --bamboo: #2d6a4f;
+    --bamboo-dim: rgba(45,106,79,0.15);
+    --sky: #4a90d9;
+    --sky-dim: rgba(74,144,217,0.15);
+    --gold: #d4a017;
+    --gold-dim: rgba(212,160,23,0.15);
+    --shadow: rgba(13,13,13,0.7);
+    --stroke: #1a1a1a;
+  }
+
+  @keyframes brushIn {
+    from { clip-path: inset(0 100% 0 0); }
+    to { clip-path: inset(0 0 0 0); }
+  }
+
+  @keyframes fadeUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes sliceIn {
+    0% { transform: scaleX(0); transform-origin: left; }
+    100% { transform: scaleX(1); transform-origin: left; }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212,160,23,0.4); }
+    50% { box-shadow: 0 0 20px 4px rgba(212,160,23,0.15); }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    scroll-behavior: smooth;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+  }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: var(--ink);
+    color: var(--parchment);
+    font-size: 12pt;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Slides ──────────────────────────────────────────────── */
+  .slide {
+    width: 100%;
+    height: 100vh;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    scroll-snap-align: start;
+  }
+
+  /* Brush stroke dividers */
+  .brush {
+    width: 120px;
+    height: 6px;
+    background: var(--blood);
+    border-radius: 0 3px 3px 0;
+    margin: 20px 0 28px 0;
+    animation: sliceIn 0.6s ease-out forwards;
+  }
+
+  .brush.gold { background: var(--gold); }
+  .brush.bamboo { background: var(--bamboo); }
+  .brush.sky { background: var(--sky); }
+
+  /* ── Typography — bold, geometric, Tartakovsky-style ──── */
+  h1 {
+    font-size: 64pt;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+    text-transform: uppercase;
+    color: var(--parchment);
+  }
+
+  h1 .accent {
+    color: var(--blood);
+    display: block;
+  }
+
+  h2 {
+    font-size: 36pt;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--parchment);
+    margin-bottom: 8px;
+  }
+
+  h3 {
+    font-size: 14pt;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--parchment-dim);
+    letter-spacing: 0.02em;
+  }
+
+  p {
+    font-size: 15pt;
+    color: var(--parchment-dim);
+    line-height: 1.65;
+    max-width: 75%;
+  }
+
+  .kanji {
+    font-size: 180pt;
+    position: absolute;
+    right: 80px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.04;
+    font-family: serif;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--parchment);
+    user-select: none;
+  }
+
+  /* ── Label — ink stamp style ─────────────────────────── */
+  .stamp {
+    display: inline-block;
+    font-family: -apple-system, sans-serif;
+    font-size: 9pt;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border: 2px solid currentColor;
+    margin-bottom: 20px;
+  }
+
+  .stamp-blood { color: var(--blood); border-color: var(--blood); }
+  .stamp-bamboo { color: var(--bamboo); border-color: var(--bamboo); }
+  .stamp-gold { color: var(--gold); border-color: var(--gold); }
+  .stamp-sky { color: var(--sky); border-color: var(--sky); }
+
+  /* ── Cards — woodblock print panels ──────────────────── */
+  .panel {
+    background: rgba(245,234,214,0.04);
+    border-left: 4px solid var(--blood);
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .panel.bamboo { border-color: var(--bamboo); }
+  .panel.gold { border-color: var(--gold); }
+  .panel.sky { border-color: var(--sky); }
+
+  .panel-title {
+    font-family: -apple-system, sans-serif;
+    font-size: 10pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .panel.bamboo .panel-title { color: var(--bamboo); }
+  .panel.gold .panel-title { color: var(--gold); }
+  .panel.sky .panel-title { color: var(--sky); }
+  .panel .panel-title { color: var(--blood); }
+
+  .panel-text {
+    font-size: 13pt;
+    color: var(--parchment);
+    line-height: 1.55;
+  }
+
+  .panel-detail {
+    font-size: 11pt;
+    color: var(--parchment-dim);
+    margin-top: 8px;
+  }
+
+  /* ── Layout ──────────────────────────────────────────── */
+  .two-col {
+    display: flex;
+    gap: 48px;
+    align-items: flex-start;
+  }
+  .two-col > div { flex: 1; }
+
+  .three-col {
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+  }
+  .three-col > div { flex: 1; }
+
+  /* ── Data viz — bold geometric bars ──────────────────── */
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    height: 160px;
+    margin: 16px 0;
+  }
+
+  .bar-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    height: 100%;
+    justify-content: flex-end;
+  }
+
+  .bar {
+    width: 100%;
+    max-width: 56px;
+    border-radius: 2px 2px 0 0;
+    transition: height 0.5s ease;
+  }
+
+  .bar-val {
+    font-family: -apple-system, sans-serif;
+    font-size: 11pt;
+    font-weight: 700;
+    color: var(--parchment);
+  }
+
+  .bar-label {
+    font-family: -apple-system, sans-serif;
+    font-size: 9pt;
+    color: var(--parchment-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Stat blocks ─────────────────────────────────────── */
+  .stat-row {
+    display: flex;
+    gap: 24px;
+    margin: 16px 0;
+  }
+
+  .stat {
+    flex: 1;
+    text-align: center;
+    padding: 20px;
+    border: 1px solid rgba(245,234,214,0.08);
+  }
+
+  .stat-n {
+    font-family: -apple-system, sans-serif;
+    font-size: 36pt;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .stat-l {
+    font-family: -apple-system, sans-serif;
+    font-size: 9pt;
+    color: var(--parchment-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 6px;
+  }
+
+  /* ── Table ───────────────────────────────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11pt;
+    margin: 12px 0;
+  }
+
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    font-family: -apple-system, sans-serif;
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    border-bottom: 2px solid rgba(212,160,23,0.3);
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(245,234,214,0.06);
+    color: var(--parchment-dim);
+  }
+
+  /* ── Evidence tier pills ─────────────────────────────── */
+  .tier {
+    font-family: -apple-system, sans-serif;
+    font-size: 9pt;
+    font-weight: 700;
+    padding: 2px 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: inline-block;
+  }
+
+  .tier-tested { background: var(--bamboo-dim); color: var(--bamboo); }
+  .tier-documented { background: var(--sky-dim); color: var(--sky); }
+  .tier-web { background: var(--gold-dim); color: var(--gold); }
+  .tier-stated { background: rgba(245,234,214,0.06); color: var(--parchment-dim); }
+
+  /* ── Claim refs ──────────────────────────────────────── */
+  .ref {
+    font-family: -apple-system, monospace;
+    font-size: 8pt;
+    color: rgba(245,234,214,0.25);
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+  }
+
+  .slide-ref {
+    position: absolute;
+    bottom: 28px;
+    right: 40px;
+    font-family: -apple-system, monospace;
+    font-size: 8pt;
+    color: rgba(245,234,214,0.2);
+  }
+
+  /* ── Slide nav ───────────────────────────────────────── */
+  .slide-nav {
+    position: fixed;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+  }
+
+  .slide-nav a {
+    width: 6px;
+    height: 6px;
+    border-radius: 0;
+    background: rgba(245,234,214,0.15);
+    display: block;
+    transition: all 0.2s;
+    transform: rotate(45deg);
+  }
+
+  .slide-nav a:hover,
+  .slide-nav a.active {
+    background: var(--blood);
+    transform: rotate(45deg) scale(1.6);
+  }
+
+  /* ── Check marks ─────────────────────────────────────── */
+  .check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12pt;
+    margin-bottom: 10px;
+    color: var(--parchment-dim);
+  }
+  .check::before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    background: var(--bamboo);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .check.done::before {
+    content: '';
+    background: var(--bamboo);
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  }
+
+  /* ── Responsive ──────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .slide { padding: 32px; }
+    h1 { font-size: 36pt; }
+    h2 { font-size: 24pt; }
+    .two-col, .three-col { flex-direction: column; }
+    .kanji { font-size: 100pt; right: 20px; }
+    p { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Slide nav — diamond shapes like Jack's sword guard -->
+<nav class="slide-nav" aria-label="Slide navigation">
+  <a href="#s1" aria-label="Title"></a>
+  <a href="#s2" aria-label="The Quest"></a>
+  <a href="#s3" aria-label="The Path"></a>
+  <a href="#s4" aria-label="The Forge"></a>
+  <a href="#s5" aria-label="The Trial"></a>
+  <a href="#s6" aria-label="The Risks"></a>
+  <a href="#s7" aria-label="The Verdict"></a>
+  <a href="#s8" aria-label="Next Steps"></a>
+  <a href="#s9" aria-label="Certificate"></a>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 1 — TITLE
+     ═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="s1">
+  <div class="kanji">麦</div>
+  <span class="stamp stamp-blood">Wheat Research Sprint</span>
+  <h1>Long ago in<br>a distant land,<br><span class="accent">the data was chaos.</span></h1>
+  <div class="brush"></div>
+  <h3>How can we build a live visualization that teaches Wheat by showing itself in action?</h3>
+  <p style="margin-top:16px;font-size:12pt;color:rgba(245,234,214,0.35)">2026-03-11 &mdash; For the wandering developer</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 2 — THE QUEST (Constraints)
+     ═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="kanji">道</div>
+  <span class="stamp stamp-gold">The Quest</span>
+  <h2>Five Sacred Constraints</h2>
+  <div class="brush gold"></div>
+
+  <div class="three-col" style="margin-top:16px">
+    <div class="panel gold">
+      <div class="panel-title">Dogfooding</div>
+      <div class="panel-text">The visualization must be built through Wheat itself &mdash; claims, compiler, then artifact.</div>
+      <span class="ref">d001</span>
+    </div>
+    <div class="panel gold">
+      <div class="panel-title">Self-Contained</div>
+      <div class="panel-text">Output must be standalone HTML. Inline CSS/JS. No external dependencies. Opens from <code>file://</code>.</div>
+      <span class="ref">d002</span>
+    </div>
+    <div class="panel gold">
+      <div class="panel-title">Self-Explanatory</div>
+      <div class="panel-text">A developer seeing Wheat for the first time must understand it without external docs.</div>
+      <span class="ref">d003</span>
+    </div>
+  </div>
+
+  <div class="two-col" style="margin-top:16px">
+    <div class="panel gold">
+      <div class="panel-title">Full Freedom</div>
+      <div class="panel-text">No budget, timeline, or tech constraints. Go as ambitious as needed.</div>
+      <span class="ref">d004</span>
+    </div>
+    <div class="panel gold">
+      <div class="panel-title">The Test</div>
+      <div class="panel-text">"I'll know it when I see it." Visually compelling enough to sell itself on first impression.</div>
+      <span class="ref">d005</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 3 — THE PATH (Architecture research)
+     ═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="kanji">道</div>
+  <span class="stamp stamp-sky">The Path</span>
+  <h2>Choosing the Way</h2>
+  <div class="brush sky"></div>
+
+  <div class="two-col">
+    <div>
+      <div class="panel sky">
+        <div class="panel-title">The Weapon</div>
+        <div class="panel-text">Zero-dependency Node.js SSE server. <code>fs.watch</code> on claims.json, auto-compile, push to browser.</div>
+        <div class="panel-detail">133 lines. No npm install. Pure Node.js core.</div>
+        <span class="ref">p001</span>
+      </div>
+      <div class="panel sky">
+        <div class="panel-title">Browser-Only: Defeated</div>
+        <div class="panel-text">File System Access API is Chrome-only, requires manual picker each session. A server is unavoidable.</div>
+        <span class="ref">r003</span>
+      </div>
+    </div>
+    <div>
+      <div class="panel sky">
+        <div class="panel-title">The Pattern</div>
+        <div class="panel-text">HMR-style: server sends hash notification, browser fetches full data. Lightweight, efficient.</div>
+        <span class="ref">r006</span>
+      </div>
+      <div class="panel sky">
+        <div class="panel-title">The Resolve</div>
+        <div class="panel-text">Two artifacts serve two masters: live server for working, static HTML for sharing. The tension between them is the design.</div>
+        <span class="ref">r007, f003</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 4 — THE FORGE (What we built)
+     ═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="kanji">鍛</div>
+  <span class="stamp stamp-bamboo">The Forge</span>
+  <h2>What Was Built</h2>
+  <div class="brush bamboo"></div>
+
+  <div class="two-col">
+    <div>
+      <div class="panel bamboo">
+        <div class="panel-title">Timeline-First Dashboard</div>
+        <div class="panel-text">Vertical timeline as the UI spine. Claims as expandable nodes. Phase-colored system: define=amber, research=blue, prototype=green, evaluate=purple, feedback=cyan.</div>
+        <div class="panel-detail">Progressive disclosure. Reverse chronological. Newest at top.</div>
+        <span class="ref">p006, p007, f006</span>
+      </div>
+
+      <div class="panel bamboo">
+        <div class="panel-title">17-Command Suite</div>
+        <div class="panel-text">3 tiers: Lifecycle (10), Quality Assurance (4), Operations (3). Three feedback loops: self-correction, external validation, meta-learning.</div>
+        <span class="ref">r013, r016</span>
+      </div>
+    </div>
+    <div>
+      <div class="panel bamboo">
+        <div class="panel-title">Compiler v0.2.0</div>
+        <div class="panel-text">685 lines. 7-pass pipeline. Constraint-aware coverage. 9 new capabilities: --diff, corroboration, burn-residue safety, module exports.</div>
+        <span class="ref">r014</span>
+      </div>
+
+      <div class="panel bamboo">
+        <div class="panel-title">WCAG 2.2 AA</div>
+        <div class="panel-text">13/13 accessibility checks pass. Keyboard navigation, ARIA landmarks, aria-live regions, contrast 5.08:1. Built in ~25 lines of changes.</div>
+        <span class="ref">p009, e004</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 5 — THE TRIAL (Benchmarks & evaluation)
+     ═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="kanji">試</div>
+  <span class="stamp stamp-bamboo">The Trial</span>
+  <h2>Tested Against Reality</h2>
+  <div class="brush bamboo"></div>
+
+  <div class="two-col">
+    <div>
+      <p style="margin-bottom:20px">The compiler was forged to endure. We tested it at scales far beyond the current sprint.</p>
+
+      <div class="bar-chart" role="img" aria-label="Compiler performance: 42 claims 45ms, 100 claims 44ms, 250 claims 65ms, 500 claims 50ms, 1000 claims 59ms">
+        <div class="bar-group">
+          <div class="bar-val">45ms</div>
+          <div class="bar" style="height:69%;background:var(--sky)"></div>
+          <div class="bar-label">42</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar-val">44ms</div>
+          <div class="bar" style="height:68%;background:var(--sky)"></div>
+          <div class="bar-label">100</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar-val">65ms</div>
+          <div class="bar" style="height:100%;background:var(--sky)"></div>
+          <div class="bar-label">250</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar-val">50ms</div>
+          <div class="bar" style="height:77%;background:var(--sky)"></div>
+          <div class="bar-label">500</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar-val">59ms</div>
+          <div class="bar" style="height:91%;background:var(--sky)"></div>
+          <div class="bar-label">1000</div>
+        </div>
+      </div>
+      <p style="font-size:10pt;color:rgba(245,234,214,0.3);text-align:center">Claims &rarr;</p>
+    </div>
+    <div>
+      <div class="stat-row" style="flex-direction:column;gap:12px">
+        <div class="stat">
+          <div class="stat-n" style="color:var(--bamboo)">7 / 7</div>
+          <div class="stat-l">Artifacts Self-Contained</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n" style="color:var(--bamboo)">13 / 13</div>
+          <div class="stat-l">WCAG AA Checks Pass</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n" style="color:var(--bamboo)">6 / 6</div>
+          <div class="stat-l">Error Inputs Handled</div>
+        </div>
+      </div>
+      <div class="slide-ref">e001, e002, e003, e004</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 6 — THE RISKS
+     ═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="kanji">危</div>
+  <span class="stamp stamp-blood">The Shadows</span>
+  <h2>Risks Faced &amp; Defeated</h2>
+  <div class="brush"></div>
+
+  <table>
+    <thead>
+      <tr><th>Threat</th><th>Status</th><th>Resolution</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--parchment)">Server vs self-contained HTML tension</td>
+        <td><span class="tier tier-tested">resolved</span></td>
+        <td>Two artifacts: live server for dev, static for sharing</td>
+      </tr>
+      <tr>
+        <td style="color:var(--parchment)">Compiler crashes on malformed input</td>
+        <td><span class="tier tier-tested">fixed</span></td>
+        <td>try/catch added &mdash; clean error messages, no stack traces</td>
+      </tr>
+      <tr>
+        <td style="color:var(--parchment)">Zero accessibility infrastructure</td>
+        <td><span class="tier tier-tested">fixed</span></td>
+        <td>5 WCAG 2.2 AA fixes in ~25 lines, 13/13 checks pass</td>
+      </tr>
+      <tr>
+        <td style="color:var(--parchment)">Constraint false-positive warnings</td>
+        <td><span class="tier tier-tested">fixed</span></td>
+        <td>Constraint-aware coverage: W_CONSTRAINT_ONLY vs W_WEAK_EVIDENCE</td>
+      </tr>
+      <tr>
+        <td style="color:var(--parchment)">Template imports external Google Fonts</td>
+        <td><span class="tier tier-web">open</span></td>
+        <td>Remove @import; use system font stack</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top:20px;font-size:12pt">One resolved conflict: <strong style="color:var(--bamboo)">p001</strong> (tested: 133 lines) superseded <strong style="color:var(--blood);text-decoration:line-through;opacity:0.5">r008</strong> (web: ~80 estimated). Evidence wins.</p>
+  <div class="slide-ref">r007, e002, p009, r012, r022</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 7 — THE VERDICT
+     ═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="s7">
+  <div class="kanji">決</div>
+  <span class="stamp stamp-bamboo">The Verdict</span>
+  <h2>Ship It</h2>
+  <div class="brush bamboo"></div>
+
+  <div class="stat-row">
+    <div class="stat" style="animation:pulseGlow 3s ease-in-out infinite">
+      <div class="stat-n" style="color:var(--gold)">48</div>
+      <div class="stat-l">Total Claims</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" style="color:var(--bamboo)">8</div>
+      <div class="stat-l">Topics Covered</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" style="color:var(--bamboo)">6 / 8</div>
+      <div class="stat-l">Topics at Tested</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" style="color:var(--bamboo)">0</div>
+      <div class="stat-l">Conflicts</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" style="color:var(--gold)">5 / 5</div>
+      <div class="stat-l">Constraints Met</div>
+    </div>
+  </div>
+
+  <div class="panel bamboo" style="margin-top:24px">
+    <div class="panel-title">Recommendation</div>
+    <div class="panel-text" style="font-size:16pt">Ship the live dashboard as the canonical Wheat teaching tool. The self-referential loop &mdash; claims about the dashboard, displayed by the dashboard &mdash; <em>is</em> the teaching mechanism. A developer watching it learns Wheat by seeing Wheat work on itself.</div>
+  </div>
+
+  <div class="slide-ref">e005, e006</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 8 — NEXT STEPS
+     ═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="s8">
+  <div class="kanji">次</div>
+  <span class="stamp stamp-sky">The Journey Continues</span>
+  <h2>Next Steps</h2>
+  <div class="brush sky"></div>
+
+  <div class="two-col">
+    <div>
+      <div class="panel sky" style="margin-bottom:16px">
+        <div class="panel-title">Immediate</div>
+        <div class="panel-text">Remove Google Fonts import from explainer template. Run <code>/witness</code> on key claims for external corroboration. Run <code>/calibrate</code> after production use to validate evidence tiers.</div>
+      </div>
+      <div class="panel sky">
+        <div class="panel-title">Future Sprints</div>
+        <div class="panel-text">Use the 17-command suite. Leverage <code>/challenge</code> for adversarial testing. <code>/replay</code> for sprint archaeology. <code>/handoff</code> for team transitions. <code>/merge</code> for cross-sprint synthesis.</div>
+      </div>
+    </div>
+    <div>
+      <div class="panel sky">
+        <div class="panel-title">The Meta-Lesson</div>
+        <div class="panel-text" style="font-style:italic;font-size:14pt">"The framework teaches itself by being used on itself. Every claim in this sprint is evidence that Wheat works &mdash; and the presentation you're reading right now was gated by the compiler that those claims describe."</div>
+        <div class="panel-detail" style="margin-top:12px">20 of 48 claims are self-referential. The ouroboros is the feature.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 9 — CERTIFICATE
+     ═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="s9" style="justify-content:center;align-items:center;text-align:center">
+  <span class="stamp stamp-gold">Compilation Certificate</span>
+  <h2 style="margin-top:20px;font-size:24pt">Deterministic Output</h2>
+  <div class="brush gold" style="margin-left:auto;margin-right:auto"></div>
+
+  <div style="margin-top:24px;font-family:-apple-system,monospace;font-size:11pt;color:var(--parchment-dim);line-height:2">
+    <div><strong style="color:var(--gold)">Hash</strong> &nbsp; sha256:b311e643ba878...</div>
+    <div><strong style="color:var(--gold)">Compiler</strong> &nbsp; wheat v0.2.0</div>
+    <div><strong style="color:var(--gold)">Claims</strong> &nbsp; 48 total &middot; 46 active &middot; 2 superseded</div>
+    <div><strong style="color:var(--gold)">Compiled</strong> &nbsp; 2026-03-11T08:17:50.289Z</div>
+    <div><strong style="color:var(--gold)">Status</strong> &nbsp; READY &middot; 0 conflicts</div>
+  </div>
+
+  <p style="margin-top:32px;max-width:500px;text-align:center;font-size:12pt;font-style:italic;color:rgba(245,234,214,0.3)">
+    Same claims in &rarr; same brief out. The Bran invariant holds.
+  </p>
+
+  <div style="margin-top:48px;font-size:10pt;color:rgba(245,234,214,0.15)">
+    Compiled by Wheat &mdash; gotta get back, back to the past
+  </div>
+</div>
+
+<!-- ── Slide nav active state ──────────────────────────────── -->
+<script>
+  const navLinks = document.querySelectorAll('.slide-nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('active'));
+        const id = e.target.id;
+        const idx = parseInt(id.replace('s','')) - 1;
+        if (navLinks[idx]) navLinks[idx].classList.add('active');
+      }
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.slide').forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>
