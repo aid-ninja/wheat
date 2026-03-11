@@ -233,7 +233,7 @@
     <span><strong>Date</strong> 2026-03-11</span>
     <span><strong>Audience</strong> Developer learning Wheat</span>
     <span><strong>Phase</strong> Compiled</span>
-    <span><strong>Claims</strong> 48 (46 active)</span>
+    <span><strong>Claims</strong> 51 (50 active)</span>
     <span><strong>Status</strong> READY</span>
   </div>
 </header>
@@ -242,7 +242,7 @@
 
   <h2>Executive Summary</h2>
   <div class="summary-box">
-    <p>The sprint successfully built a live, self-referential visualization of the Wheat framework — a real-time dashboard that teaches Wheat by being a product of it. A zero-dependency Node.js SSE server watches <code>claims.json</code>, auto-compiles, and pushes updates to a timeline-first browser dashboard. All 5 original constraints are satisfied, 48 claims across 8 topics have been validated, and the system scales to 1000+ claims with sub-60ms compile times.</p>
+    <p>The sprint successfully built a live, self-referential visualization of the Wheat framework — a real-time dashboard that teaches Wheat by being a product of it. A zero-dependency Node.js SSE server watches <code>claims.json</code>, auto-compiles, and pushes updates to a timeline-first browser dashboard. All 5 original constraints are satisfied, 51 claims across 8 topics have been validated (including adversarial challenges and external corroboration), and the system scales to 1000+ claims with sub-60ms compile times.</p>
   </div>
 
   <h2>Recommendation</h2>
@@ -262,10 +262,10 @@
     <div class="topic-header">
       <span class="topic-name">Architecture</span>
       <span class="topic-pill pill-tested">tested</span>
-      <span class="topic-claims">14 claims &middot; 4 sources &middot; 4 types</span>
+      <span class="topic-claims">15 claims &middot; 5 sources &middot; 4 types &middot; corroborated</span>
     </div>
     <div class="topic-body">
-      Zero-dependency Node.js stack: <code>wheat-server.js</code> (133 lines) with SSE push, <code>fs.watch</code> with 150ms debounce, auto-compile in ~50ms <span class="claim-ref">p001, p004</span>. SSE auto-reconnect handled natively by browser <span class="claim-ref">p002</span>. Compiler v0.2.0 (685 lines) scales linearly: 59ms at 1000 claims <span class="claim-ref">e001, r014</span>. 17 commands in 3 tiers with 3 QA feedback loops <span class="claim-ref">r013, r016</span>.
+      Zero-dependency Node.js stack: <code>wheat-server.js</code> (133 lines) with SSE push, <code>fs.watch</code> with 150ms debounce, auto-compile in ~50ms <span class="claim-ref">p001, p004</span>. SSE auto-reconnect handled natively by browser <span class="claim-ref">p002</span>. Compiler v0.2.0 (685 lines) scales linearly: 59ms at 1000 claims <span class="claim-ref">e001, r014</span>. 17 commands in 3 tiers with 3 QA feedback loops <span class="claim-ref">r013, r016</span>. SSE architecture externally corroborated as the standard pattern <span class="claim-ref">w001</span>.
     </div>
   </div>
 
@@ -273,10 +273,10 @@
     <div class="topic-header">
       <span class="topic-name">UX Pattern</span>
       <span class="topic-pill pill-tested">tested</span>
-      <span class="topic-claims">8 claims &middot; 3 sources &middot; 4 types</span>
+      <span class="topic-claims">9 claims &middot; 3 sources &middot; 5 types</span>
     </div>
     <div class="topic-body">
-      Timeline-first design with phase-colored nodes (define=amber, research=blue, prototype=green, evaluate=purple, feedback=cyan) <span class="claim-ref">p006, p007</span>. Progressive disclosure via click-to-expand <span class="claim-ref">f005</span>. Reverse chronological — newest first <span class="claim-ref">f006</span>. Compiler stepper animates on each update <span class="claim-ref">r005, p003</span>.
+      Timeline-first design with phase-colored nodes (define=amber, research=blue, prototype=green, evaluate=purple, feedback=cyan) <span class="claim-ref">p006, p007</span>. Progressive disclosure via click-to-expand <span class="claim-ref">f005</span>. Reverse chronological — newest first <span class="claim-ref">f006</span>. Compiler stepper animates on each update <span class="claim-ref">r005, p003</span>. Known risk: timeline may misrepresent nonlinear sprint workflow <span class="claim-ref">x002</span>.
     </div>
   </div>
 
@@ -306,10 +306,10 @@
     <div class="topic-header">
       <span class="topic-name">Dogfooding</span>
       <span class="topic-pill pill-tested">tested</span>
-      <span class="topic-claims">3 claims &middot; 3 sources &middot; 2 types</span>
+      <span class="topic-claims">4 claims &middot; 3 sources &middot; 3 types</span>
     </div>
     <div class="topic-body">
-      20/48 claims are self-referential, 5/5 phases exercised, 16 wheat-format commits <span class="claim-ref">e005</span>. The self-referential loop is the teaching mechanism <span class="claim-ref">p005, d001</span>.
+      20/48 claims are self-referential, 5/5 phases exercised, 16 wheat-format commits <span class="claim-ref">e005</span>. The self-referential loop is the teaching mechanism <span class="claim-ref">p005, d001</span>. Challenged risk: dogfooding has a cold-start problem — empty sprints produce empty dashboards <span class="claim-ref">x001</span>.
     </div>
   </div>
 
@@ -358,6 +358,8 @@
       <tr class="risk-row"><td>r022</td><td>Template imports external Google Fonts</td><td>Open</td><td>Remove @import; use system font stack</td></tr>
       <tr class="risk-row"><td>r018</td><td>No ARIA landmarks (initial state)</td><td>Fixed</td><td>Semantic HTML added (p009)</td></tr>
       <tr class="risk-row"><td>r019</td><td>No keyboard navigation (initial state)</td><td>Fixed</td><td>tabindex, role, keydown added (p009)</td></tr>
+      <tr class="risk-row"><td>x001</td><td>Dogfooding cold-start: empty sprint = empty dashboard</td><td>Open</td><td>Seed with example sprint; value at 5+ claims</td></tr>
+      <tr class="risk-row"><td>x002</td><td>Timeline implies linear phases; sprints are nonlinear</td><td>Open</td><td>Add phase-mixing indicators; document nonlinear nature</td></tr>
     </tbody>
   </table>
 
@@ -370,7 +372,7 @@
     <span style="color:var(--text-dim);flex:1">Server is 133 lines (not ~80 estimated). Evidence tier: tested (4) &gt; web (2).</span>
   </div>
 
-  <h2>Appendix: Full Claim Inventory (46 Active)</h2>
+  <h2>Appendix: Full Claim Inventory (50 Active)</h2>
 
   <table>
     <thead>
@@ -423,12 +425,16 @@
       <tr><td>e004</td><td>factual</td><td>accessibility</td><td>tested</td><td>13/13 WCAG 2.2 AA checks pass</td></tr>
       <tr><td>e005</td><td>factual</td><td>dogfooding</td><td>tested</td><td>20/48 self-referential, 5/5 phases</td></tr>
       <tr><td>e006</td><td>factual</td><td>quality</td><td>tested</td><td>Evidence distribution: 22.5% tested</td></tr>
+      <tr><td>f007</td><td>feedback</td><td>quality</td><td>stated</td><td>Samurai Jack presentation resonates; validates quality bar</td></tr>
+      <tr><td>x001</td><td>risk</td><td>dogfooding</td><td>web</td><td>Cold-start: empty sprint = empty dashboard</td></tr>
+      <tr><td>x002</td><td>risk</td><td>ux-pattern</td><td>web</td><td>Timeline implies linear phases; sprints nonlinear</td></tr>
+      <tr><td>w001</td><td>factual</td><td>architecture</td><td>web</td><td>External corroboration: SSE+Node.js is standard pattern</td></tr>
     </tbody>
   </table>
 
   <div class="certificate">
     <strong>Compilation Certificate</strong><br>
-    sha256:b311e643ba878... &middot; wheat v0.2.0 &middot; 48 claims (46 active, 2 superseded) &middot; 2026-03-11T08:17:50.289Z
+    sha256:1a1e1c8... &middot; wheat v0.2.0 &middot; 51 claims (50 active, 1 superseded) &middot; 2026-03-11T08:50:14.726Z
   </div>
 
 </main>

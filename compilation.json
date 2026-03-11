@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-11T07:32:39.577Z",
-  "claims_hash": "ed31168",
+  "compiled_at": "2026-03-11T08:50:14.726Z",
+  "claims_hash": "1a1e1c8",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -31,16 +31,6 @@
       "message": "Topic \"scope\" has only 1 claim type(s): constraint. Missing: factual, estimate, risk, recommendation, feedback",
       "claims": [
         "d004"
-      ]
-    },
-    {
-      "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"quality\" has only web-level evidence (4 claims)",
-      "claims": [
-        "d005",
-        "f004",
-        "r009",
-        "r011"
       ]
     }
   ],
@@ -760,6 +750,395 @@
         "self-correction",
         "meta-learning"
       ]
+    },
+    {
+      "id": "r017",
+      "type": "factual",
+      "topic": "accessibility",
+      "content": "The dashboard's --text-dim color (#505a6e on #0a0e1a) has a contrast ratio of 2.78:1, failing WCAG 2.2 AA minimum of 4.5:1 for normal text and 3:1 for UI components. This color is used for metadata labels, tags, phase subtitles, and the 'Now' timestamp — all informational text that becomes unreadable for users with low vision or contrast sensitivity.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/accessibility.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T11:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "wcag",
+        "contrast",
+        "color"
+      ]
+    },
+    {
+      "id": "r018",
+      "type": "risk",
+      "topic": "accessibility",
+      "content": "The dashboard has zero ARIA landmarks or semantic HTML. All structure uses <div> elements — no <main>, <header>, <nav>, no role attributes. Screen reader users cannot navigate by region, skip to main content, or understand the page structure. This violates WCAG 2.2 SC 1.3.1 (Info and Relationships) and makes the dashboard effectively unusable with assistive technology.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/accessibility.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T11:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "wcag",
+        "aria",
+        "screen-reader",
+        "semantic-html"
+      ]
+    },
+    {
+      "id": "r019",
+      "type": "risk",
+      "topic": "accessibility",
+      "content": "Claim rows use onclick handlers on <div> elements with no keyboard support. No tabindex, no role='button', no Enter/Space key handlers. Keyboard-only users cannot expand claim details. This violates WCAG 2.2 SC 2.1.1 (Keyboard) — all functionality must be operable via keyboard.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/accessibility.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T11:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "wcag",
+        "keyboard",
+        "interactive-elements"
+      ]
+    },
+    {
+      "id": "r020",
+      "type": "risk",
+      "topic": "accessibility",
+      "content": "SSE-driven DOM updates happen silently — no aria-live regions announce changes to screen readers. When new claims arrive or the compiler status changes, sighted users see animations but screen reader users get zero notification. Adding aria-live='polite' to the scoreboard and timeline would fix this without disrupting the visual experience.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/accessibility.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T11:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "wcag",
+        "aria-live",
+        "dynamic-content",
+        "sse"
+      ]
+    },
+    {
+      "id": "r021",
+      "type": "recommendation",
+      "topic": "accessibility",
+      "content": "Five targeted fixes would bring the dashboard to WCAG 2.2 AA: (1) Raise --text-dim from #505a6e to #7a839a (4.5:1 ratio). (2) Add semantic landmarks: <header> for topbar, <main> for layout, role='status' on scoreboard. (3) Add tabindex='0', role='button', aria-expanded, and keydown handler for Enter/Space on claim rows. (4) Add aria-live='polite' to scoreboard and timeline container. (5) Add :focus-visible outline styles to all interactive elements.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/accessibility.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T11:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "wcag",
+        "remediation",
+        "actionable"
+      ]
+    },
+    {
+      "id": "r022",
+      "type": "risk",
+      "topic": "accessibility",
+      "content": "The explainer template (templates/explainer.html) imports Google Fonts via @import url('https://fonts.googleapis.com/...'), which is both an external dependency (tension with d002 self-contained constraint) and an accessibility concern: if the CDN is unreachable, text may render in a fallback font with different metrics, potentially breaking layout. The template should use the system font stack already defined as fallback.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/accessibility.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T11:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "wcag",
+        "fonts",
+        "external-dependency",
+        "self-contained"
+      ]
+    },
+    {
+      "id": "p009",
+      "type": "factual",
+      "topic": "accessibility",
+      "content": "All 5 WCAG 2.2 AA fixes implemented on the live dashboard in ~25 lines of changes: (1) --text-dim raised from #505a6e to #7a839a — now 5.08:1 on --bg, 4.68:1 on --surface (both pass AA). (2) Semantic landmarks added: <header> for topbar, <main> for layout, role='status' on scoreboard, role='region' on timeline. (3) Keyboard support: claim rows have tabindex='0', role='button', aria-expanded, Enter/Space keydown handler. (4) aria-live='polite' on scoreboard and timeline — screen readers announce SSE updates. (5) :focus-visible outlines on all interactive elements. Zero visual regression — design unchanged for sighted users.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/live-dashboard/",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T12:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "wcag",
+        "a11y",
+        "keyboard",
+        "aria",
+        "contrast",
+        "tested"
+      ]
+    },
+    {
+      "id": "e001",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Compiler scales linearly: 42 claims in 45ms, 100 in 44ms, 250 in 65ms, 500 in 50ms, 1000 in 59ms. Sub-60ms at 1000 claims means the feedback loop stays instant even for large sprints. The 7-pass pipeline has no exponential blowup — conflict detection is the only O(n^2) pass but stays fast due to sparse conflict graphs.",
+      "source": {
+        "origin": "evaluation",
+        "artifact": "evidence/sprint-evaluation.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T13:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "scalability",
+        "benchmark",
+        "performance"
+      ]
+    },
+    {
+      "id": "e002",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "Compiler crashes on empty or unparseable claims.json files (throws unhandled JSON parse error). Gracefully handles structural issues: missing claims array defaults to empty, missing meta defaults to empty, invalid claim fields produce BLOCKED status with errors. Two crash cases (empty file, malformed JSON) should be caught with a try/catch at the top level.",
+      "source": {
+        "origin": "evaluation",
+        "artifact": "evidence/sprint-evaluation.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T13:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "error-handling",
+        "robustness",
+        "crash"
+      ]
+    },
+    {
+      "id": "e003",
+      "type": "factual",
+      "topic": "output-format",
+      "content": "All 7 HTML artifacts verified fully self-contained: zero external script src, link href, @import url, or img src pointing to external resources. Sizes range from 7.3KB (problem-statement) to 26.3KB (live dashboard). Every file opens correctly via file:// with no network requests. Constraint d002 is satisfied across the entire artifact set.",
+      "source": {
+        "origin": "evaluation",
+        "artifact": "evidence/sprint-evaluation.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T13:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "self-contained",
+        "html",
+        "verification"
+      ]
+    },
+    {
+      "id": "e004",
+      "type": "factual",
+      "topic": "accessibility",
+      "content": "13/13 WCAG 2.2 AA checks pass on the live dashboard: lang attribute, <header> landmark, <main> landmark, role=status, role=region, aria-live=polite, aria-expanded, tabindex=0, role=button, onkeydown handler, :focus-visible styles, aria-label attributes, and contrast ratio >= 4.5:1. The accessibility research claims (r017-r022) are confirmed implemented and working.",
+      "source": {
+        "origin": "evaluation",
+        "artifact": "evidence/sprint-evaluation.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T13:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "wcag",
+        "a11y",
+        "verification",
+        "13-of-13"
+      ]
+    },
+    {
+      "id": "e005",
+      "type": "factual",
+      "topic": "dogfooding",
+      "content": "The sprint successfully dogfoods itself: 20/42 claims are self-referential (reference the dashboard, Wheat, or the sprint itself). 16 wheat-format git commits trace the full event log. 4 of 5 phases exercised (define, research, prototype, feedback — evaluate now being added). 8 topics covered, 8 artifacts generated, 1 conflict auto-resolved. The visualization demonstrates the framework by being a product of it — constraint d001 is satisfied.",
+      "source": {
+        "origin": "evaluation",
+        "artifact": "evidence/sprint-evaluation.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T13:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "dogfooding",
+        "meta",
+        "self-referential",
+        "constraint-check"
+      ]
+    },
+    {
+      "id": "e006",
+      "type": "factual",
+      "topic": "quality",
+      "content": "Evidence distribution across 40 active claims: stated=11 (27.5%), web=17 (42.5%), documented=4 (10%), tested=9 (22.5%), production=0. The tested tier is the highest reached. 5 of 8 topics have tested-level evidence. The constraint-dominated topics (audience, scope) correctly remain at stated. The quality topic remains at web — the only genuine evidence gap.",
+      "source": {
+        "origin": "evaluation",
+        "artifact": "evidence/sprint-evaluation.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T13:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "evidence-distribution",
+        "coverage-analysis",
+        "meta"
+      ]
+    },
+    {
+      "id": "f007",
+      "type": "feedback",
+      "topic": "quality",
+      "content": "Stakeholder loves the Samurai Jack-themed presentation, specifically the 'Compiled by Wheat — gotta get back, back to the past' tagline. The thematic approach (kanji watermarks, brush-stroke dividers, woodblock panel aesthetic) resonates — personality in output artifacts makes the framework more memorable and shareable. This validates the 'I'll know it when I see it' quality bar (d005).",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-11T14:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "user-feedback",
+        "quality-bar",
+        "presentation",
+        "personality"
+      ]
+    },
+    {
+      "id": "x001",
+      "type": "risk",
+      "topic": "dogfooding",
+      "content": "The self-referential dogfooding creates a circular dependency: the dashboard's value proposition depends on the sprint being interesting, but the sprint's interest depends on the dashboard working. If a future sprint has a boring question or few claims, the dashboard looks empty and the teaching effect collapses. Dogfooding only works when there's enough data to visualize.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T15:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "circular-dependency",
+        "cold-start"
+      ]
+    },
+    {
+      "id": "x002",
+      "type": "risk",
+      "topic": "ux-pattern",
+      "content": "The timeline-first UI assumes claims arrive chronologically with clear phase boundaries. In practice, sprints are messy: researchers revisit define-phase assumptions, prototypes generate new research questions, feedback arrives mid-prototype. The clean phase→phase timeline may misrepresent the actual nonlinear workflow, giving new users a false impression of Wheat's linearity.",
+      "source": {
+        "origin": "research",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T15:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "linearity-bias",
+        "ux-honesty"
+      ]
+    },
+    {
+      "id": "w001",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "External corroboration for p001: SSE with zero-dependency Node.js is the established pattern for real-time dashboards. DigitalOcean, dev.to, and multiple 2024-2025 tutorials confirm native http + EventSource as the standard approach — no Express or socket.io needed. The 133-line server size is consistent with community examples (80-150 lines typical).",
+      "source": {
+        "origin": "witness",
+        "artifact": null,
+        "connector": null,
+        "witnessed_claim": "p001",
+        "relationship": "full_support",
+        "urls": [
+          "https://www.digitalocean.com/community/tutorials/nodejs-server-sent-events-build-realtime-app"
+        ]
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "evaluate",
+      "timestamp": "2026-03-11T15:30:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "witness",
+        "corroboration",
+        "sse",
+        "zero-deps"
+      ]
     }
   ],
   "conflict_graph": {
@@ -774,33 +1153,37 @@
   },
   "coverage": {
     "dogfooding": {
-      "claims": 2,
+      "claims": 4,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
         "constraint",
-        "factual"
+        "factual",
+        "risk"
       ],
       "claim_ids": [
         "d001",
-        "p005"
+        "p005",
+        "e005",
+        "x001"
       ],
       "constraint_count": 1,
       "source_origins": [
         "stakeholder",
-        "prototype"
+        "prototype",
+        "evaluation",
+        "research"
       ],
-      "source_count": 2,
-      "type_diversity": 2,
+      "source_count": 4,
+      "type_diversity": 3,
       "missing_types": [
         "estimate",
-        "risk",
         "recommendation",
         "feedback"
       ]
     },
     "output-format": {
-      "claims": 5,
+      "claims": 6,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -814,15 +1197,17 @@
         "r007",
         "f002",
         "r010",
-        "p008"
+        "p008",
+        "e003"
       ],
       "constraint_count": 2,
       "source_origins": [
         "stakeholder",
         "research",
-        "prototype"
+        "prototype",
+        "evaluation"
       ],
-      "source_count": 3,
+      "source_count": 4,
       "type_diversity": 4,
       "missing_types": [
         "estimate",
@@ -878,9 +1263,9 @@
       ]
     },
     "quality": {
-      "claims": 4,
-      "max_evidence": "web",
-      "status": "weak",
+      "claims": 6,
+      "max_evidence": "tested",
+      "status": "strong",
       "types": [
         "constraint",
         "feedback",
@@ -891,14 +1276,17 @@
         "d005",
         "f004",
         "r009",
-        "r011"
+        "r011",
+        "e006",
+        "f007"
       ],
-      "constraint_count": 2,
+      "constraint_count": 3,
       "source_origins": [
         "stakeholder",
-        "research"
+        "research",
+        "evaluation"
       ],
-      "source_count": 2,
+      "source_count": 3,
       "type_diversity": 4,
       "missing_types": [
         "estimate",
@@ -906,13 +1294,14 @@
       ]
     },
     "architecture": {
-      "claims": 12,
+      "claims": 15,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
         "factual",
         "feedback",
-        "recommendation"
+        "recommendation",
+        "risk"
       ],
       "claim_ids": [
         "r002",
@@ -926,31 +1315,36 @@
         "r013",
         "r014",
         "r015",
-        "r016"
+        "r016",
+        "e001",
+        "e002",
+        "w001"
       ],
       "constraint_count": 2,
       "source_origins": [
         "research",
         "prototype",
-        "stakeholder"
+        "stakeholder",
+        "evaluation",
+        "witness"
       ],
-      "source_count": 3,
-      "type_diversity": 3,
+      "source_count": 5,
+      "type_diversity": 4,
       "missing_types": [
         "constraint",
-        "estimate",
-        "risk"
+        "estimate"
       ]
     },
     "ux-pattern": {
-      "claims": 8,
+      "claims": 9,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
         "recommendation",
         "factual",
         "feedback",
-        "constraint"
+        "constraint",
+        "risk"
       ],
       "claim_ids": [
         "r004",
@@ -960,7 +1354,8 @@
         "f005",
         "p006",
         "p007",
-        "f006"
+        "f006",
+        "x002"
       ],
       "constraint_count": 2,
       "source_origins": [
@@ -969,10 +1364,42 @@
         "stakeholder"
       ],
       "source_count": 3,
-      "type_diversity": 4,
+      "type_diversity": 5,
       "missing_types": [
+        "estimate"
+      ]
+    },
+    "accessibility": {
+      "claims": 8,
+      "max_evidence": "tested",
+      "status": "strong",
+      "types": [
+        "factual",
+        "risk",
+        "recommendation"
+      ],
+      "claim_ids": [
+        "r017",
+        "r018",
+        "r019",
+        "r020",
+        "r021",
+        "r022",
+        "p009",
+        "e004"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "research",
+        "prototype",
+        "evaluation"
+      ],
+      "source_count": 3,
+      "type_diversity": 3,
+      "missing_types": [
+        "constraint",
         "estimate",
-        "risk"
+        "feedback"
       ]
     }
   },
@@ -988,7 +1415,7 @@
     "r005": 0,
     "r006": 0,
     "r007": 0,
-    "p001": 0,
+    "p001": 1,
     "p002": 0,
     "p003": 0,
     "p004": 0,
@@ -1009,7 +1436,24 @@
     "r013": 0,
     "r014": 0,
     "r015": 0,
-    "r016": 0
+    "r016": 0,
+    "r017": 0,
+    "r018": 0,
+    "r019": 0,
+    "r020": 0,
+    "r021": 0,
+    "r022": 0,
+    "p009": 0,
+    "e001": 0,
+    "e002": 0,
+    "e003": 0,
+    "e004": 0,
+    "e005": 0,
+    "e006": 0,
+    "f007": 0,
+    "x001": 0,
+    "x002": 0,
+    "w001": 0
   },
   "phase_summary": {
     "define": {
@@ -1017,19 +1461,19 @@
       "complete": true
     },
     "research": {
-      "claims": 16,
+      "claims": 22,
       "complete": true
     },
     "prototype": {
-      "claims": 8,
+      "claims": 9,
       "complete": true
     },
     "evaluate": {
-      "claims": 0,
-      "complete": false
+      "claims": 9,
+      "complete": true
     },
     "feedback": {
-      "claims": 6,
+      "claims": 7,
       "complete": true
     }
   },
@@ -1039,15 +1483,15 @@
       "developer learning Wheat"
     ],
     "initiated": "2026-03-11",
-    "phase": "prototype",
-    "total_claims": 35,
-    "active_claims": 33,
+    "phase": "evaluate",
+    "total_claims": 52,
+    "active_claims": 50,
     "conflicted_claims": 0,
     "superseded_claims": 2,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:ed3116812229cb803ca2785c5e8a758d92f316509331d07c14fe319cd0e7db33",
+    "input_hash": "sha256:1a1e1c8a394c7b569d1c374d896a309469e7641eb8135a715c61f3180fd90de2",
     "compiler_version": "0.2.0",
     "deterministic": true
   }
