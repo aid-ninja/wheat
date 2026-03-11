@@ -3,761 +3,516 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>wheat — Research-Driven Development</title>
+<title>wheat — Research-Driven Development for Claude Code</title>
 <style>
   :root {
     --bg: #08090f;
-    --bg-subtle: #0d1017;
     --surface: rgba(255,255,255,0.03);
     --surface-hover: rgba(255,255,255,0.06);
     --border: rgba(255,255,255,0.07);
     --border-light: rgba(255,255,255,0.12);
     --gold: #f0a030;
-    --gold-light: #fbbf24;
+    --gold-dim: rgba(240,160,48,0.1);
     --blue: #60a5fa;
+    --blue-dim: rgba(96,165,250,0.1);
     --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.1);
     --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.1);
     --cyan: #22d3ee;
+    --cyan-dim: rgba(34,211,238,0.1);
     --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.1);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.1);
     --text: #e8ecf1;
-    --text-secondary: #9ba5b7;
-    --text-dim: #6b7a8d;
-    --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
-    --sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    --text-2: #9ba5b7;
+    --text-3: #6b7a8d;
+    --mono: 'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+    --sans: -apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--sans);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 
-  body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
-    -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
-  }
+  /* ── Reveal ── */
+  .rv{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
+  .rv.vis{opacity:1;transform:translateY(0)}
+  .rv-d1{transition-delay:.1s}.rv-d2{transition-delay:.2s}.rv-d3{transition-delay:.3s}
 
-  /* --- Scroll reveal --- */
-  .reveal {
-    opacity: 0;
-    transform: translateY(32px);
-    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  .reveal-delay-1 { transition-delay: 0.1s; }
-  .reveal-delay-2 { transition-delay: 0.2s; }
-  .reveal-delay-3 { transition-delay: 0.3s; }
+  /* ── Hero fade (instant on load) ── */
+  .hf{opacity:0;transform:translateY(18px);animation:hIn .7s cubic-bezier(.22,1,.36,1) forwards}
+  .hf1{animation-delay:.05s}.hf2{animation-delay:.15s}.hf3{animation-delay:.25s}.hf4{animation-delay:.4s}
+  @keyframes hIn{to{opacity:1;transform:translateY(0)}}
 
-  /* Hero loads immediately with staggered fade */
-  .hero-fade {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-  .hero-fade-1 { animation-delay: 0.05s; }
-  .hero-fade-2 { animation-delay: 0.15s; }
-  .hero-fade-3 { animation-delay: 0.25s; }
-  .hero-fade-4 { animation-delay: 0.4s; }
-  @keyframes heroIn {
-    to { opacity: 1; transform: translateY(0); }
-  }
+  /* ── Ambient ── */
+  .bg-amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .bg-amb .orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:.05;animation:drift 26s ease-in-out infinite alternate}
+  .bg-amb .orb:nth-child(1){width:700px;height:700px;background:var(--gold);top:-15%;left:15%}
+  .bg-amb .orb:nth-child(2){width:500px;height:500px;background:var(--blue);top:35%;right:-8%;animation-delay:-9s;animation-duration:30s}
+  .bg-amb .orb:nth-child(3){width:400px;height:400px;background:var(--purple);bottom:10%;left:-5%;animation-delay:-17s;animation-duration:28s}
+  @keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(25px,-18px) scale(1.04)}100%{transform:translate(-15px,12px) scale(.97)}}
 
-  /* --- Ambient --- */
-  .bg-ambient {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    overflow: hidden;
-  }
-  .bg-ambient .orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(100px);
-    opacity: 0.06;
-    animation: drift 25s ease-in-out infinite alternate;
-  }
-  .bg-ambient .orb:nth-child(1) { width: 700px; height: 700px; background: var(--gold); top: -15%; left: 15%; }
-  .bg-ambient .orb:nth-child(2) { width: 500px; height: 500px; background: var(--blue); top: 35%; right: -8%; animation-delay: -8s; animation-duration: 30s; }
-  .bg-ambient .orb:nth-child(3) { width: 450px; height: 450px; background: var(--purple); bottom: 10%; left: -5%; animation-delay: -16s; animation-duration: 28s; }
-  @keyframes drift {
-    0% { transform: translate(0,0) scale(1); }
-    50% { transform: translate(25px,-18px) scale(1.04); }
-    100% { transform: translate(-15px,12px) scale(0.97); }
-  }
+  #particle-canvas{position:fixed;inset:0;pointer-events:none;z-index:1}
+  .page{position:relative;z-index:2}
 
-  #particle-canvas {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 1;
-  }
+  /* ── Shared ── */
+  section{max-width:900px;margin:0 auto;padding:0 40px}
+  .spacer{height:140px}
+  .spacer-sm{height:80px}
 
-  /* --- Layout --- */
-  .page { position: relative; z-index: 2; }
+  .section-label{font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:.14em;margin-bottom:44px;display:flex;align-items:center;gap:16px}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+  .section-label.gold{color:var(--gold)}.section-label.blue{color:var(--blue)}.section-label.green{color:var(--green)}.section-label.purple{color:var(--purple)}.section-label.orange{color:var(--orange)}.section-label.cyan{color:var(--cyan)}.section-label.red{color:var(--red)}
 
-  section {
-    max-width: 880px;
-    margin: 0 auto;
-    padding: 0 36px;
-  }
+  /* ── Hero ── */
+  .hero-section{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:80px 40px}
+  .hero-inner{text-align:center;max-width:640px}
+  .hero-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:500px;height:500px;pointer-events:none}
+  .hero-glow::before,.hero-glow::after{content:'';position:absolute;inset:0;border-radius:50%}
+  .hero-glow::before{background:radial-gradient(circle,rgba(240,160,48,.12) 0%,transparent 65%);animation:gPulse 6s ease-in-out infinite}
+  .hero-glow::after{background:radial-gradient(circle,rgba(240,160,48,.06) 0%,transparent 50%);animation:gPulse 6s ease-in-out infinite 1.5s}
+  @keyframes gPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.6}}
 
-  /* --- Hero --- */
-  .hero-section {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-top: 80px;
-    padding-bottom: 80px;
-  }
+  h1{font-size:clamp(52pt,10vw,80pt);font-weight:800;letter-spacing:-.05em;line-height:1;background:linear-gradient(135deg,#f0a030,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+  .hero-sub{font-size:10pt;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--text-3);margin-bottom:32px}
+  .hero-tagline{font-size:clamp(14pt,2.2vw,17pt);line-height:1.6;color:var(--text-2);margin-bottom:40px}
+  .hero-tagline strong{color:var(--text);font-weight:600}
 
-  .hero-inner {
-    text-align: center;
-    max-width: 640px;
-  }
+  .cta-row{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
+  .cta{display:inline-flex;align-items:center;gap:8px;font-size:11pt;font-weight:600;text-decoration:none;border-radius:12px;padding:15px 30px;transition:all .25s cubic-bezier(.22,1,.36,1)}
+  .cta-primary{background:linear-gradient(135deg,#f0a030,#e6920a);color:#0a0e1a;box-shadow:0 0 40px rgba(240,160,48,.2),0 4px 16px rgba(0,0,0,.4)}
+  .cta-primary:hover{transform:translateY(-2px);box-shadow:0 0 50px rgba(240,160,48,.3),0 8px 24px rgba(0,0,0,.4)}
+  .cta-ghost{background:var(--surface);color:var(--text-2);border:1px solid var(--border)}
+  .cta-ghost:hover{background:var(--surface-hover);color:var(--text);transform:translateY(-2px)}
 
-  .hero-glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -60%);
-    width: 500px;
-    height: 500px;
-    pointer-events: none;
-  }
-  .hero-glow::before, .hero-glow::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-  }
-  .hero-glow::before {
-    background: radial-gradient(circle, rgba(240,160,48,0.12) 0%, transparent 65%);
-    animation: heroPulse 6s ease-in-out infinite;
-  }
-  .hero-glow::after {
-    background: radial-gradient(circle, rgba(240,160,48,0.06) 0%, transparent 50%);
-    animation: heroPulse 6s ease-in-out infinite 1.5s;
-  }
-  @keyframes heroPulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.12); opacity: 0.6; }
-  }
+  /* ── Concept sections ── */
+  .concept{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;margin-bottom:24px}
 
-  .hero-title {
-    font-size: clamp(52pt, 10vw, 80pt);
-    font-weight: 800;
-    letter-spacing: -0.05em;
-    line-height: 1;
-    background: linear-gradient(135deg, #f0a030 0%, #fbbf24 50%, #f59e0b 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    position: relative;
-    margin-bottom: 6px;
-  }
+  .analogy-box{border-left:3px solid var(--blue);padding:24px 28px;background:var(--surface);border-radius:0 14px 14px 0;position:relative}
+  .analogy-box.gold-border{border-left-color:var(--gold)}
+  .analogy-box.green-border{border-left-color:var(--green)}
+  .analogy-box.purple-border{border-left-color:var(--purple)}
+  .analogy-box.red-border{border-left-color:var(--red)}
+  .analogy-box.cyan-border{border-left-color:var(--cyan)}
+  .analogy-box.orange-border{border-left-color:var(--orange)}
 
-  .hero-sub {
-    font-size: 10pt;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 32px;
-  }
+  .analogy-icon{font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .analogy-title{font-size:15pt;font-weight:700;margin-bottom:10px;letter-spacing:-.01em;line-height:1.3}
+  .analogy-text{font-size:10.5pt;color:var(--text-2);line-height:1.7}
+  .analogy-text strong{color:var(--text);font-weight:600}
 
-  .hero-tagline {
-    font-size: clamp(14pt, 2.2vw, 17pt);
-    line-height: 1.6;
-    color: var(--text-secondary);
-    margin-bottom: 40px;
-  }
-  .hero-tagline strong {
-    color: var(--text);
-    font-weight: 600;
-  }
+  .insight-box{margin-top:16px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;padding:14px 18px;font-size:9.5pt;color:var(--text-2);line-height:1.6}
+  .insight-box strong{color:var(--gold);font-weight:600}
 
-  .cta-row {
-    display: flex;
-    justify-content: center;
-    gap: 14px;
-    flex-wrap: wrap;
-  }
+  /* ── Visual panels ── */
+  .visual-panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 24px;position:relative;overflow:hidden}
+  .visual-panel::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:50%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent)}
 
-  .cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 11pt;
-    font-weight: 600;
-    text-decoration: none;
-    border-radius: 12px;
-    padding: 15px 30px;
-    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-  }
+  /* Code block in visual */
+  .code-block{font-family:var(--mono);font-size:8.5pt;line-height:1.8;color:var(--text-2);background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.04);border-radius:10px;padding:18px 20px;overflow-x:auto}
+  .code-block .key{color:var(--blue)}.code-block .str{color:var(--green)}.code-block .num{color:var(--orange)}.code-block .dim{color:var(--text-3)}
 
-  .cta-primary {
-    background: linear-gradient(135deg, #f0a030, #e6920a);
-    color: #0a0e1a;
-    box-shadow: 0 0 40px rgba(240,160,48,0.2), 0 4px 16px rgba(0,0,0,0.4);
-  }
-  .cta-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 50px rgba(240,160,48,0.3), 0 8px 24px rgba(0,0,0,0.4);
-  }
+  /* Tier visual */
+  .tier-stack{display:flex;flex-direction:column;gap:6px}
+  .tier-row{display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:8px;transition:background .2s}
+  .tier-row:hover{background:rgba(255,255,255,.03)}
+  .tier-num{font-family:var(--mono);font-size:8pt;color:var(--text-3);min-width:16px;text-align:right}
+  .tier-name{font-size:10pt;font-weight:600;min-width:95px}
+  .tier-desc{font-size:8.5pt;color:var(--text-3);flex:1}
+  .tier-bar{height:4px;border-radius:2px;background:var(--green);opacity:.4}
 
-  .cta-ghost {
-    background: var(--surface);
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-  }
-  .cta-ghost:hover {
-    background: var(--surface-hover);
-    color: var(--text);
-    transform: translateY(-2px);
-  }
+  /* Pass visual */
+  .pass-list{display:flex;flex-direction:column;gap:4px}
+  .pass-item{display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:8px;border:1px solid transparent;transition:all .2s}
+  .pass-item:hover{background:rgba(255,255,255,.03);border-color:var(--border)}
+  .pass-num{font-family:var(--mono);font-size:8pt;color:var(--gold);min-width:16px;text-align:right}
+  .pass-name{font-size:10pt;font-weight:600;min-width:130px}
+  .pass-desc{font-size:8.5pt;color:var(--text-3)}
 
-  /* --- Section dividers --- */
-  .spacer { height: 120px; }
-  .spacer-sm { height: 72px; }
+  /* Conflict visual */
+  .conflict-scene{display:flex;flex-direction:column;gap:12px}
+  .conflict-claim{padding:14px 16px;border-radius:10px;border:1px solid var(--border);font-size:9.5pt;line-height:1.5}
+  .conflict-claim .cc-id{font-family:var(--mono);font-size:8pt;color:var(--text-3);margin-bottom:4px;display:block}
+  .conflict-claim .cc-badge{display:inline-block;font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border-radius:3px;margin-left:8px}
+  .conflict-vs{text-align:center;font-size:9pt;font-weight:700;color:var(--red);letter-spacing:.15em;text-transform:uppercase}
+  .conflict-result{text-align:center;padding:12px;border-radius:10px;background:var(--green-dim);border:1px solid rgba(34,197,94,.15);font-size:9pt;color:var(--green);font-weight:600}
 
-  .section-label {
-    font-size: 8pt;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    margin-bottom: 40px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .section-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-  .section-label.gold { color: var(--gold); }
-  .section-label.blue { color: var(--blue); }
-  .section-label.green { color: var(--green); }
-  .section-label.purple { color: var(--purple); }
+  /* Git visual */
+  .git-log{font-family:var(--mono);font-size:8.5pt;line-height:2.2;color:var(--text-2)}
+  .git-log .hash{color:var(--gold)}.git-log .cmd{color:var(--green)}.git-log .msg{color:var(--text-3)}
 
-  /* --- Pipeline --- */
-  .pipeline-section { padding-top: 20px; padding-bottom: 20px; }
+  /* Artifact cards */
+  .artifact-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .art-card{text-align:center;padding:20px 12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);transition:all .2s}
+  .art-card:hover{background:var(--surface-hover);transform:translateY(-2px)}
+  .art-icon{font-size:20pt;margin-bottom:8px;display:block}
+  .art-label{font-size:9.5pt;font-weight:600;margin-bottom:3px}
+  .art-desc{font-size:8pt;color:var(--text-3)}
 
-  .pipeline-wrap {
-    position: relative;
-    height: 540px;
-    padding: 20px 0;
-  }
+  /* ── Pipeline ── */
+  .pipeline-wrap{position:relative;height:540px;padding:20px 0}
+  #pipeline-canvas{width:100%;height:100%;display:block}
+  .pipeline-caption{text-align:center;font-size:10pt;color:var(--text-2);margin-top:16px}
 
-  #pipeline-canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
+  /* ── Steps ── */
+  .steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .step{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 24px;transition:all .25s}
+  .step:hover{background:var(--surface-hover);border-color:var(--border-light);transform:translateY(-3px)}
+  .step-num{font-size:9pt;font-weight:700;width:26px;height:26px;line-height:26px;text-align:center;border-radius:8px;margin-bottom:14px;display:inline-block}
+  .step:nth-child(1) .step-num{background:var(--blue-dim);color:var(--blue)}
+  .step:nth-child(2) .step-num{background:var(--green-dim);color:var(--green)}
+  .step:nth-child(3) .step-num{background:var(--purple-dim);color:var(--purple)}
+  .step-title{font-weight:600;font-size:12pt;margin-bottom:8px}
+  .step-desc{font-size:9pt;color:var(--text-3);line-height:1.55}
+  .step code{display:block;font-family:var(--mono);font-size:8.5pt;color:var(--text-2);background:rgba(0,0,0,.35);padding:10px 14px;border-radius:8px;margin-top:12px;line-height:1.7;border:1px solid rgba(255,255,255,.03)}
 
-  .pipeline-caption {
-    text-align: center;
-    font-size: 10pt;
-    color: var(--text-secondary);
-    margin-top: 16px;
-    letter-spacing: 0.01em;
-  }
+  /* ── Commands ── */
+  .cmd-columns{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .cmd-col-label{font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+  .cmd-item{border-bottom:1px solid rgba(255,255,255,.03)}.cmd-item:last-child{border-bottom:none}
+  .cmd-btn{display:flex;align-items:center;justify-content:space-between;width:100%;font-family:var(--mono);font-size:9.5pt;color:var(--text-2);padding:9px 10px;background:none;border:none;border-radius:6px;cursor:pointer;transition:all .15s;text-align:left}
+  .cmd-btn:hover{color:var(--text);background:var(--surface-hover)}
+  .cmd-btn .chev{font-size:7pt;opacity:.35;transition:transform .2s,opacity .2s}
+  .cmd-item.open .cmd-btn .chev{transform:rotate(90deg);opacity:.7}
+  .cmd-item.open .cmd-btn{color:var(--text)}
+  .cmd-detail{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease;font-size:8.5pt;color:var(--text-3);line-height:1.55;padding:0 10px}
+  .cmd-item.open .cmd-detail{max-height:50px;padding:0 10px 10px}
 
-  /* --- Stat accordion --- */
-  .stat-accordion {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    padding: 8px 0;
-  }
+  /* ── Closing ── */
+  .closing-section{text-align:center;padding-top:40px;padding-bottom:100px}
+  .closing-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:56px 40px;position:relative;overflow:hidden}
+  .closing-card::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:40%;height:1px;background:linear-gradient(90deg,transparent,rgba(240,160,48,.3),transparent)}
+  .closing-headline{font-size:24pt;font-weight:700;letter-spacing:-.02em;margin-bottom:12px}
+  .closing-sub{font-size:11pt;color:var(--text-3);margin-bottom:28px}
 
-  .stat-acc-item {
-    border-bottom: 1px solid var(--border);
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .stat-acc-item:last-child { border-bottom: none; }
-  .stat-acc-item:hover { background: var(--surface); }
+  .footer{text-align:center;padding:32px 40px;font-size:9pt;color:var(--text-3);border-top:1px solid var(--border)}
+  .footer a{color:var(--blue);text-decoration:none}.footer a:hover{text-decoration:underline}
 
-  .stat-acc-header {
-    display: flex;
-    align-items: center;
-    padding: 16px 4px;
-    gap: 16px;
+  /* ── Mobile ── */
+  @media(max-width:700px){
+    section{padding:0 20px}
+    .concept{grid-template-columns:1fr;gap:20px}
+    .steps-grid,.cmd-columns{grid-template-columns:1fr}
+    .artifact-row{grid-template-columns:1fr 1fr 1fr}
+    .spacer{height:90px}.spacer-sm{height:50px}
+    .hero-section{min-height:auto;padding:60px 20px}
+    .cta-row{flex-direction:column;align-items:center}
+    .pipeline-wrap{height:580px}
+    .bg-amb{display:none}#particle-canvas{display:none}
+    .hf{opacity:1;transform:none;animation:none}
+    .analogy-title{font-size:13pt}
+    .analogy-text{font-size:10pt}
+    .closing-card{padding:40px 24px}
   }
-
-  .stat-acc-header .sa-num {
-    font-size: 22pt;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-    min-width: 48px;
-    text-align: right;
-  }
-
-  .stat-acc-header .sa-label {
-    font-size: 10pt;
-    font-weight: 600;
-    color: var(--text-secondary);
-    flex: 1;
-  }
-
-  .stat-acc-header .sa-chev {
-    font-size: 8pt;
-    color: var(--text-dim);
-    opacity: 0.4;
-    transition: transform 0.2s, opacity 0.2s;
-  }
-
-  .stat-acc-item.open .sa-chev {
-    transform: rotate(90deg);
-    opacity: 0.8;
-  }
-
-  .stat-acc-body {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.35s ease, padding 0.35s ease;
-    padding: 0 4px 0 68px;
-  }
-  .stat-acc-item.open .stat-acc-body {
-    max-height: 300px;
-    padding: 0 4px 16px 68px;
-  }
-
-  .stat-acc-body-inner {
-    font-size: 9pt;
-    color: var(--text-secondary);
-    line-height: 1.7;
-  }
-
-  .stat-acc-body-inner .tier-row,
-  .stat-acc-body-inner .pass-row {
-    display: flex;
-    align-items: center;
-    padding: 2px 0;
-    gap: 8px;
-  }
-  .stat-acc-body-inner .tier-num {
-    font-family: var(--mono);
-    font-size: 8pt;
-    opacity: 0.5;
-    min-width: 14px;
-  }
-  .stat-acc-body-inner .tier-name {
-    display: inline-block;
-    min-width: 85px;
-  }
-  .stat-acc-body-inner .tier-bar {
-    height: 3px;
-    border-radius: 2px;
-    opacity: 0.4;
-    flex-shrink: 0;
-  }
-
-  /* --- Steps --- */
-  .steps-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-  }
-
-  .step {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px 24px;
-    transition: all 0.25s;
-  }
-  .step:hover {
-    background: var(--surface-hover);
-    border-color: var(--border-light);
-    transform: translateY(-3px);
-  }
-
-  .step-num {
-    font-size: 9pt;
-    font-weight: 700;
-    width: 26px; height: 26px;
-    line-height: 26px;
-    text-align: center;
-    border-radius: 8px;
-    margin-bottom: 14px;
-    display: inline-block;
-  }
-  .step:nth-child(1) .step-num { background: rgba(96,165,250,0.12); color: var(--blue); }
-  .step:nth-child(2) .step-num { background: rgba(34,197,94,0.1); color: var(--green); }
-  .step:nth-child(3) .step-num { background: rgba(167,139,250,0.1); color: var(--purple); }
-
-  .step-title {
-    font-weight: 600;
-    font-size: 12pt;
-    margin-bottom: 8px;
-  }
-
-  .step-desc {
-    font-size: 9pt;
-    color: var(--text-dim);
-    line-height: 1.55;
-  }
-
-  .step code {
-    display: block;
-    font-family: var(--mono);
-    font-size: 8.5pt;
-    color: var(--text-secondary);
-    background: rgba(0,0,0,0.35);
-    padding: 10px 14px;
-    border-radius: 8px;
-    margin-top: 12px;
-    line-height: 1.7;
-    border: 1px solid rgba(255,255,255,0.03);
-  }
-
-  /* --- Commands accordion --- */
-  .cmd-columns {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-  }
-
-  .cmd-col-label {
-    font-size: 8pt;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 8px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .cmd-item { border-bottom: 1px solid rgba(255,255,255,0.03); }
-  .cmd-item:last-child { border-bottom: none; }
-
-  .cmd-btn {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    font-family: var(--mono);
-    font-size: 9.5pt;
-    color: var(--text-secondary);
-    padding: 9px 10px;
-    background: none;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.15s;
-    text-align: left;
-  }
-  .cmd-btn:hover { color: var(--text); background: var(--surface-hover); }
-  .cmd-btn .chev {
-    font-size: 7pt;
-    opacity: 0.35;
-    transition: transform 0.2s, opacity 0.2s;
-  }
-  .cmd-item.open .cmd-btn .chev { transform: rotate(90deg); opacity: 0.7; }
-  .cmd-item.open .cmd-btn { color: var(--text); }
-
-  .cmd-detail {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease, padding 0.3s ease;
-    font-size: 8.5pt;
-    color: var(--text-dim);
-    line-height: 1.55;
-    padding: 0 10px;
-  }
-  .cmd-item.open .cmd-detail {
-    max-height: 50px;
-    padding: 0 10px 10px;
-  }
-
-  /* --- Explore cards --- */
-  .explore-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-
-  .explore-card {
-    display: block;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    text-decoration: none;
-    padding: 22px 24px;
-    border-radius: 14px;
-    transition: all 0.25s;
-    position: relative;
-    overflow: hidden;
-  }
-  .explore-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 3px; height: 100%;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  .explore-card:hover {
-    background: var(--surface-hover);
-    border-color: var(--border-light);
-    transform: translateY(-2px);
-  }
-  .explore-card:hover::before { opacity: 1; }
-
-  .explore-card.blue-accent::before { background: var(--blue); }
-  .explore-card.green-accent::before { background: var(--green); }
-  .explore-card.purple-accent::before { background: var(--purple); }
-
-  .explore-card.featured {
-    grid-column: 1 / -1;
-    background: linear-gradient(135deg, var(--surface) 0%, rgba(96,165,250,0.04) 100%);
-    border-color: rgba(96,165,250,0.1);
-    padding: 28px 28px;
-  }
-
-  .ec-label { font-weight: 600; font-size: 12pt; display: block; margin-bottom: 5px; }
-  .ec-desc { font-size: 9pt; color: var(--text-dim); line-height: 1.5; }
-  .ec-tag {
-    display: inline-block;
-    font-size: 7pt;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 2px 7px;
-    border-radius: 4px;
-    margin-top: 10px;
-  }
-  .explore-card.blue-accent .ec-tag { color: var(--blue); background: rgba(96,165,250,0.1); }
-  .explore-card.green-accent .ec-tag { color: var(--green); background: rgba(34,197,94,0.1); }
-  .explore-card.purple-accent .ec-tag { color: var(--purple); background: rgba(167,139,250,0.1); }
-
-  .artifacts-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
-
-  .artifact-card {
-    display: block;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    text-decoration: none;
-    padding: 16px 18px;
-    border-radius: 12px;
-    transition: all 0.2s;
-  }
-  .artifact-card:hover {
-    background: var(--surface-hover);
-    border-color: var(--border-light);
-    transform: translateY(-2px);
-  }
-  .artifact-card .ac-label { font-weight: 600; font-size: 10pt; display: block; margin-bottom: 3px; }
-  .artifact-card .ac-desc { font-size: 8pt; color: var(--text-dim); }
-
-  /* --- Closing --- */
-  .closing-section {
-    text-align: center;
-    padding-top: 40px;
-    padding-bottom: 100px;
-  }
-
-  .closing-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: 56px 40px;
-    position: relative;
-    overflow: hidden;
-  }
-  .closing-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 50%;
-    transform: translateX(-50%);
-    width: 40%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(240,160,48,0.3), transparent);
-  }
-
-  .closing-headline {
-    font-size: 24pt;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 12px;
-  }
-
-  .closing-sub {
-    font-size: 11pt;
-    color: var(--text-dim);
-    margin-bottom: 28px;
-  }
-
-  .footer {
-    text-align: center;
-    padding: 32px 36px;
-    font-size: 9pt;
-    color: var(--text-dim);
-    border-top: 1px solid var(--border);
-  }
-  .footer a { color: var(--blue); text-decoration: none; }
-  .footer a:hover { text-decoration: underline; }
-
-  /* --- Responsive --- */
-  @media (max-width: 640px) {
-    section { padding: 0 20px; }
-    .steps-grid, .cmd-columns, .artifacts-grid { grid-template-columns: 1fr; }
-    .explore-grid { grid-template-columns: 1fr; }
-    .stat-acc-body { padding-left: 48px !important; }
-    .spacer { height: 80px; }
-    .hero-section { min-height: auto; padding-top: 60px; padding-bottom: 60px; }
-    .cta-row { flex-direction: column; align-items: center; }
-    .pipeline-wrap { height: 580px; }
-
-    /* Kill heavy GPU effects on mobile */
-    .bg-ambient { display: none; }
-    #particle-canvas { display: none; }
-
-    /* Hero shows instantly on mobile — no animation delay */
-    .hero-fade {
-      opacity: 1;
-      transform: none;
-      animation: none;
-    }
+  @media(max-width:440px){
+    .artifact-row{grid-template-columns:1fr}
+    h1{font-size:42pt}
   }
 </style>
 </head>
 <body>
 
-<div class="bg-ambient">
-  <div class="orb"></div>
-  <div class="orb"></div>
-  <div class="orb"></div>
-</div>
+<div class="bg-amb"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
 <canvas id="particle-canvas"></canvas>
 
 <div class="page">
 
-  <!-- ═══ HERO ═══ -->
+  <!-- ═══════════ HERO ═══════════ -->
   <section class="hero-section">
     <div class="hero-inner">
       <div class="hero-glow"></div>
-      <h1 class="hero-title hero-fade hero-fade-1">wheat</h1>
-      <div class="hero-sub hero-fade hero-fade-2">for Claude Code</div>
-      <p class="hero-tagline hero-fade hero-fade-3">
+      <h1 class="hf hf1">wheat</h1>
+      <div class="hero-sub hf hf2">for Claude Code</div>
+      <p class="hero-tagline hf hf3">
         Turn <strong>messy research</strong> into <strong>decisions you can defend</strong>.<br>
         A claims compiler that tracks evidence, catches conflicts, and ships auditable artifacts.
       </p>
-      <div class="cta-row hero-fade hero-fade-4">
+      <div class="cta-row hf hf4">
         <a href="https://github.com/aid-ninja/wheat" class="cta cta-primary">Start a Sprint</a>
         <a href="replay.html" class="cta cta-ghost">See It In Action</a>
       </div>
     </div>
   </section>
 
-  <!-- ═══ STATS ═══ -->
+  <div class="spacer"></div>
+
+  <!-- ═══════════ CONCEPT 1: CLAIMS ═══════════ -->
   <section>
-    <div class="stat-accordion reveal">
-      <div class="stat-acc-item">
-        <div class="stat-acc-header">
-          <div class="sa-num" data-target="17" style="color:var(--blue)">0</div>
-          <div class="sa-label">Commands</div>
-          <span class="sa-chev">&#9654;</span>
+    <div class="section-label blue rv">The Core Primitive</div>
+    <div class="concept">
+      <div class="analogy-box rv">
+        <div class="analogy-icon" style="color:var(--blue)">Think of it like a lab notebook</div>
+        <div class="analogy-title">Everything is a Claim</div>
+        <div class="analogy-text">
+          Every finding, every constraint, every risk — wheat captures it as a <strong>typed, evidence-graded claim</strong>. Not a paragraph in a doc. Not a message in a thread. A structured record with an ID, a type, a source, and an evidence tier.<br><br>
+          Claims are the atoms of your research. They can be <strong>challenged</strong>, <strong>corroborated</strong>, <strong>superseded</strong>, or <strong>resolved</strong> — but they never disappear. The trail is always there.
         </div>
-        <div class="stat-acc-body"><div class="stat-acc-body-inner">
-          <strong style="color:var(--green);font-size:7.5pt;letter-spacing:0.08em;">LIFECYCLE</strong><br>
-          /init, /research, /prototype, /evaluate, /brief, /present, /handoff<br><br>
-          <strong style="color:var(--orange);font-size:7.5pt;letter-spacing:0.08em;">QUALITY</strong><br>
-          /challenge, /witness, /blind-spot, /resolve<br><br>
-          <strong style="color:var(--cyan);font-size:7.5pt;letter-spacing:0.08em;">OPERATIONS</strong><br>
-          /status, /replay, /merge, /calibrate, /feedback, /connect
-        </div></div>
+        <div class="insight-box">
+          <strong>Key insight:</strong> Structured claims make research auditable. Anyone can trace a decision back to the evidence that produced it.
+        </div>
       </div>
-      <div class="stat-acc-item">
-        <div class="stat-acc-header">
-          <div class="sa-num" data-target="5" style="color:var(--green)">0</div>
-          <div class="sa-label">Evidence Tiers</div>
-          <span class="sa-chev">&#9654;</span>
+      <div class="visual-panel rv rv-d1">
+        <div class="code-block">
+          <span class="dim">// A single claim in claims.json</span><br>
+          {<br>
+          &nbsp;&nbsp;<span class="key">"id"</span>: <span class="str">"r012"</span>,<br>
+          &nbsp;&nbsp;<span class="key">"type"</span>: <span class="str">"factual"</span>,<br>
+          &nbsp;&nbsp;<span class="key">"topic"</span>: <span class="str">"SSE scalability"</span>,<br>
+          &nbsp;&nbsp;<span class="key">"content"</span>: <span class="str">"EventSource reconnects<br>&nbsp;&nbsp;&nbsp;&nbsp;automatically on disconnect"</span>,<br>
+          &nbsp;&nbsp;<span class="key">"source"</span>: <span class="str">"MDN Web Docs"</span>,<br>
+          &nbsp;&nbsp;<span class="key">"evidence"</span>: <span class="str">"documented"</span>,<br>
+          &nbsp;&nbsp;<span class="key">"status"</span>: <span class="str">"active"</span><br>
+          }
         </div>
-        <div class="stat-acc-body"><div class="stat-acc-body-inner">
-          <div class="tier-row"><span class="tier-num">1</span><span class="tier-name">Stated</span><div class="tier-bar" style="background:var(--green);width:24px;"></div></div>
-          <div class="tier-row"><span class="tier-num">2</span><span class="tier-name">Web</span><div class="tier-bar" style="background:var(--green);width:48px;"></div></div>
-          <div class="tier-row"><span class="tier-num">3</span><span class="tier-name">Documented</span><div class="tier-bar" style="background:var(--green);width:72px;"></div></div>
-          <div class="tier-row"><span class="tier-num">4</span><span class="tier-name">Tested</span><div class="tier-bar" style="background:var(--green);width:96px;"></div></div>
-          <div class="tier-row"><span class="tier-num">5</span><span class="tier-name">Production</span><div class="tier-bar" style="background:var(--green);width:120px;"></div></div>
-          <div style="margin-top:8px;font-size:8pt;color:var(--text-dim);">Higher tier = stronger evidence. The compiler sorts by tier for conflict resolution.</div>
-        </div></div>
-      </div>
-      <div class="stat-acc-item">
-        <div class="stat-acc-header">
-          <div class="sa-num" data-target="7" style="color:var(--orange)">0</div>
-          <div class="sa-label">Compiler Passes</div>
-          <span class="sa-chev">&#9654;</span>
+        <div style="margin-top:16px;display:flex;gap:6px;flex-wrap:wrap">
+          <span style="font-size:7.5pt;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:4px;background:var(--blue-dim);color:var(--blue)">factual</span>
+          <span style="font-size:7.5pt;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:4px;background:var(--orange-dim);color:var(--orange)">estimate</span>
+          <span style="font-size:7.5pt;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:4px;background:var(--red-dim);color:var(--red)">risk</span>
+          <span style="font-size:7.5pt;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:4px;background:var(--purple-dim);color:var(--purple)">constraint</span>
+          <span style="font-size:7.5pt;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:4px;background:var(--green-dim);color:var(--green)">recommendation</span>
+          <span style="font-size:7.5pt;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:4px;background:var(--cyan-dim);color:var(--cyan)">feedback</span>
         </div>
-        <div class="stat-acc-body"><div class="stat-acc-body-inner">
-          <div class="pass-row"><span class="tier-num">1</span> Schema Validation</div>
-          <div class="pass-row"><span class="tier-num">2</span> Type Checking</div>
-          <div class="pass-row"><span class="tier-num">3</span> Evidence Sorting</div>
-          <div class="pass-row"><span class="tier-num">4</span> Conflict Detection</div>
-          <div class="pass-row"><span class="tier-num">5</span> Auto-Resolution</div>
-          <div class="pass-row"><span class="tier-num">6</span> Coverage Analysis</div>
-          <div class="pass-row"><span class="tier-num">7</span> Readiness Check</div>
-          <div style="margin-top:8px;font-size:8pt;color:var(--text-dim);">Deterministic: same claims in = same compilation out. Certificate hash proves it.</div>
-        </div></div>
-      </div>
-      <div class="stat-acc-item">
-        <div class="stat-acc-header">
-          <div class="sa-num" data-target="0" style="color:var(--text-dim)">0</div>
-          <div class="sa-label">Dependencies</div>
-          <span class="sa-chev">&#9654;</span>
-        </div>
-        <div class="stat-acc-body"><div class="stat-acc-body-inner">
-          Zero runtime dependencies. The compiler, all output generators, and the test suite run on Node.js built-ins only.<br><br>
-          <span style="color:var(--text-dim);">Optional: md-to-pdf for PDF generation.</span>
-        </div></div>
       </div>
     </div>
   </section>
 
   <div class="spacer"></div>
 
-  <!-- ═══ PIPELINE ═══ -->
-  <section class="pipeline-section">
-    <div class="section-label gold reveal">How It Works</div>
-    <div class="pipeline-wrap reveal reveal-delay-1">
+  <!-- ═══════════ CONCEPT 2: EVIDENCE TIERS ═══════════ -->
+  <section>
+    <div class="section-label green rv">Why Quality Matters</div>
+    <div class="concept">
+      <div class="analogy-box green-border rv">
+        <div class="analogy-icon" style="color:var(--green)">Think of it like a courtroom</div>
+        <div class="analogy-title">Not All Evidence is Equal</div>
+        <div class="analogy-text">
+          A claim backed by <strong>"someone said so"</strong> is not the same as one backed by <strong>a passing test suite</strong>. Wheat enforces this with five evidence tiers, from hearsay to production metrics.<br><br>
+          When two claims conflict, the compiler doesn't flip a coin. <strong>Higher-tier evidence wins.</strong> A documented finding outranks a web search. A tested prototype outranks documentation.
+        </div>
+        <div class="insight-box">
+          <strong>Key insight:</strong> The evidence gap is structural, not subjective. Claims with citations and test results naturally outrank claims backed only by reasoning.
+        </div>
+      </div>
+      <div class="visual-panel rv rv-d1">
+        <div class="tier-stack">
+          <div class="tier-row">
+            <span class="tier-num">5</span>
+            <span class="tier-name" style="color:var(--blue)">Production</span>
+            <span class="tier-desc">Measured from live systems</span>
+            <div class="tier-bar" style="width:120px;background:var(--blue)"></div>
+          </div>
+          <div class="tier-row">
+            <span class="tier-num">4</span>
+            <span class="tier-name" style="color:var(--green)">Tested</span>
+            <span class="tier-desc">Verified via prototype or benchmark</span>
+            <div class="tier-bar" style="width:96px;background:var(--green)"></div>
+          </div>
+          <div class="tier-row">
+            <span class="tier-num">3</span>
+            <span class="tier-name" style="color:var(--purple)">Documented</span>
+            <span class="tier-desc">In source code, official docs, or ADRs</span>
+            <div class="tier-bar" style="width:72px;background:var(--purple)"></div>
+          </div>
+          <div class="tier-row">
+            <span class="tier-num">2</span>
+            <span class="tier-name" style="color:var(--orange)">Web</span>
+            <span class="tier-desc">Found online, not independently verified</span>
+            <div class="tier-bar" style="width:48px;background:var(--orange)"></div>
+          </div>
+          <div class="tier-row">
+            <span class="tier-num">1</span>
+            <span class="tier-name" style="color:var(--text-3)">Stated</span>
+            <span class="tier-desc">Someone said it, no verification</span>
+            <div class="tier-bar" style="width:24px;background:var(--text-3)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="spacer"></div>
+
+  <!-- ═══════════ CONCEPT 3: COMPILER ═══════════ -->
+  <section>
+    <div class="section-label gold rv">The Engine</div>
+    <div class="concept">
+      <div class="analogy-box gold-border rv">
+        <div class="analogy-icon" style="color:var(--gold)">Think of it like a quality inspector</div>
+        <div class="analogy-title">7 Compiler Passes</div>
+        <div class="analogy-text">
+          Every time you run a command, wheat compiles your claims through <strong>seven deterministic passes</strong>. Schema validation. Type checking. Evidence sorting. Conflict detection. Auto-resolution. Coverage analysis. Readiness check.<br><br>
+          The compiler is the enforcement layer. If your research has unresolved conflicts, missing fields, or coverage gaps — <strong>it blocks artifact generation</strong> until you fix them.
+        </div>
+        <div class="insight-box">
+          <strong>Key insight:</strong> Same claims in = same compilation out. The certificate hash proves it. Your research is reproducible by design.
+        </div>
+      </div>
+      <div class="visual-panel rv rv-d1">
+        <div class="pass-list">
+          <div class="pass-item"><span class="pass-num">1</span><span class="pass-name">Schema Validation</span><span class="pass-desc">Required fields, valid IDs</span></div>
+          <div class="pass-item"><span class="pass-num">2</span><span class="pass-name">Type Checking</span><span class="pass-desc">Valid claim types, statuses, tiers</span></div>
+          <div class="pass-item"><span class="pass-num">3</span><span class="pass-name">Evidence Sorting</span><span class="pass-desc">Deterministic ordering by tier</span></div>
+          <div class="pass-item"><span class="pass-num">4</span><span class="pass-name">Conflict Detection</span><span class="pass-desc">Same topic, contradicting claims</span></div>
+          <div class="pass-item"><span class="pass-num">5</span><span class="pass-name">Auto-Resolution</span><span class="pass-desc">Higher evidence wins, ties flagged</span></div>
+          <div class="pass-item"><span class="pass-num">6</span><span class="pass-name">Coverage Analysis</span><span class="pass-desc">Diversity, corroboration, gaps</span></div>
+          <div class="pass-item"><span class="pass-num">7</span><span class="pass-name">Readiness Check</span><span class="pass-desc">Block or pass for artifact gen</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="spacer"></div>
+
+  <!-- ═══════════ CONCEPT 4: CONFLICTS ═══════════ -->
+  <section>
+    <div class="section-label red rv">When Evidence Disagrees</div>
+    <div class="concept">
+      <div class="analogy-box red-border rv">
+        <div class="analogy-icon" style="color:var(--red)">Think of it like two witnesses in court</div>
+        <div class="analogy-title">Conflict Resolution</div>
+        <div class="analogy-text">
+          Two claims about the same topic. One says "SSE scales to 10k connections." The other says "SSE caps at 1k." <strong>The compiler catches this automatically.</strong><br><br>
+          If one claim has stronger evidence — tested vs. stated — the compiler resolves it. If they're tied, it flags the conflict and blocks until you manually adjudicate with <strong>/resolve</strong>. No silent contradictions ship.
+        </div>
+        <div class="insight-box">
+          <strong>Key insight:</strong> Most research tools let contradictions live in different docs forever. Wheat surfaces them as compiler errors you must resolve.
+        </div>
+      </div>
+      <div class="visual-panel rv rv-d1">
+        <div class="conflict-scene">
+          <div class="conflict-claim" style="border-color:rgba(248,113,113,.2)">
+            <span class="cc-id">r008 <span class="cc-badge" style="background:var(--orange-dim);color:var(--orange)">web</span></span>
+            SSE connections cap at ~1,000 per browser due to HTTP/1.1 connection limits.
+          </div>
+          <div class="conflict-vs">conflict detected</div>
+          <div class="conflict-claim" style="border-color:rgba(34,197,94,.2)">
+            <span class="cc-id">p003 <span class="cc-badge" style="background:var(--green-dim);color:var(--green)">tested</span></span>
+            Prototype sustained 8,200 concurrent SSE connections on a single Node.js process.
+          </div>
+          <div style="text-align:center;font-size:20pt;color:var(--text-3);margin:4px 0">&#8595;</div>
+          <div class="conflict-result">
+            p003 wins — tested evidence (tier 4) outranks web evidence (tier 2)
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="spacer"></div>
+
+  <!-- ═══════════ CONCEPT 5: GIT ═══════════ -->
+  <section>
+    <div class="section-label orange rv">The Audit Trail</div>
+    <div class="concept">
+      <div class="analogy-box orange-border rv">
+        <div class="analogy-icon" style="color:var(--orange)">Think of it like a time capsule at every step</div>
+        <div class="analogy-title">Git is the Event Log</div>
+        <div class="analogy-text">
+          Every slash command that modifies claims <strong>auto-commits to git</strong>. The commit message is the event: what command ran, what claims were added or changed.<br><br>
+          <strong>git log --oneline claims.json</strong> = your sprint history. You can replay the entire research journey, see exactly when a finding entered, when it was challenged, when it was resolved.
+        </div>
+        <div class="insight-box">
+          <strong>Key insight:</strong> No separate audit system needed. Git is the ledger. The /replay command turns it into an interactive time-travel viewer.
+        </div>
+      </div>
+      <div class="visual-panel rv rv-d1">
+        <div class="git-log">
+          <span class="hash">a3f21c8</span> <span class="cmd">wheat:</span> <span class="msg">/research SSE — r008-r015</span><br>
+          <span class="hash">b7e4d01</span> <span class="cmd">wheat:</span> <span class="msg">/prototype live-dashboard — p001-p005</span><br>
+          <span class="hash">c92ab3f</span> <span class="cmd">wheat:</span> <span class="msg">/challenge r008 — x001-x003</span><br>
+          <span class="hash">d15ff82</span> <span class="cmd">wheat:</span> <span class="msg">/resolve x001 — p003 wins, r008 superseded</span><br>
+          <span class="hash">e8c0a47</span> <span class="cmd">wheat:</span> <span class="msg">/witness p003 nodejs.org — w001</span><br>
+          <span class="hash">f4d9b13</span> <span class="cmd">wheat:</span> <span class="msg">/blind-spot — r016-r018</span><br>
+          <span class="hash">0a72e56</span> <span class="cmd">wheat:</span> <span class="msg">/brief compiled — 42 claims, certificate 7f3a...</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="spacer"></div>
+
+  <!-- ═══════════ CONCEPT 6: ARTIFACTS ═══════════ -->
+  <section>
+    <div class="section-label cyan rv">What Comes Out</div>
+    <div class="concept">
+      <div class="analogy-box cyan-border rv">
+        <div class="analogy-icon" style="color:var(--cyan)">Think of it like a compiler output</div>
+        <div class="analogy-title">Claims Compile to Artifacts</div>
+        <div class="analogy-text">
+          Claims go in. <strong>Decision briefs, presentations, dashboards, and handoff packages</strong> come out. Every statement in every artifact traces back to a claim ID. Nothing is uncited.<br><br>
+          Artifacts are self-contained HTML files — no external dependencies, no build step. Open them in any browser. Share them with stakeholders. The compilation certificate at the bottom proves integrity.
+        </div>
+      </div>
+      <div class="visual-panel rv rv-d1">
+        <div class="artifact-row">
+          <div class="art-card">
+            <span class="art-icon" style="color:var(--blue)">&#9783;</span>
+            <div class="art-label">/brief</div>
+            <div class="art-desc">Decision document with cited evidence</div>
+          </div>
+          <div class="art-card">
+            <span class="art-icon" style="color:var(--purple)">&#9655;</span>
+            <div class="art-label">/present</div>
+            <div class="art-desc">Stakeholder slide deck</div>
+          </div>
+          <div class="art-card">
+            <span class="art-icon" style="color:var(--green)">&#9638;</span>
+            <div class="art-label">/status</div>
+            <div class="art-desc">Live sprint dashboard</div>
+          </div>
+        </div>
+        <div class="artifact-row" style="margin-top:10px">
+          <div class="art-card">
+            <span class="art-icon" style="color:var(--orange)">&#8634;</span>
+            <div class="art-label">/replay</div>
+            <div class="art-desc">Interactive sprint history</div>
+          </div>
+          <div class="art-card">
+            <span class="art-icon" style="color:var(--cyan)">&#9993;</span>
+            <div class="art-label">/handoff</div>
+            <div class="art-desc">Knowledge transfer package</div>
+          </div>
+          <div class="art-card">
+            <span class="art-icon" style="color:var(--red)">&#9878;</span>
+            <div class="art-label">/calibrate</div>
+            <div class="art-desc">Prediction scorecards</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="spacer"></div>
+
+  <!-- ═══════════ PIPELINE ═══════════ -->
+  <section>
+    <div class="section-label gold rv">Under the Hood</div>
+    <div class="pipeline-wrap rv rv-d1">
       <canvas id="pipeline-canvas"></canvas>
     </div>
-    <p class="pipeline-caption reveal reveal-delay-2">Every command writes claims, every claim is git-committed, the compiler certifies, artifacts ship</p>
+    <p class="pipeline-caption rv rv-d2">Every command writes claims, every claim is git-committed, the compiler certifies, artifacts ship</p>
   </section>
 
   <div class="spacer"></div>
 
-  <!-- ═══ GET STARTED ═══ -->
+  <!-- ═══════════ GET STARTED ═══════════ -->
   <section>
-    <div class="section-label blue reveal">Get Started</div>
+    <div class="section-label blue rv">Get Started</div>
     <div class="steps-grid">
-      <div class="step reveal">
+      <div class="step rv">
         <div class="step-num">1</div>
         <div class="step-title">Clone</div>
         <code>git clone aid-ninja/wheat<br>cd wheat</code>
       </div>
-      <div class="step reveal reveal-delay-1">
+      <div class="step rv rv-d1">
         <div class="step-num">2</div>
         <div class="step-title">Init a Sprint</div>
         <div class="step-desc">Open the folder in Claude Code and bootstrap your first research question.</div>
         <code>/init</code>
       </div>
-      <div class="step reveal reveal-delay-2">
+      <div class="step rv rv-d2">
         <div class="step-num">3</div>
         <div class="step-title">Research &amp; Ship</div>
         <div class="step-desc">Gather evidence, resolve conflicts, compile to a decision brief.</div>
@@ -768,10 +523,10 @@
 
   <div class="spacer"></div>
 
-  <!-- ═══ COMMANDS ═══ -->
+  <!-- ═══════════ COMMANDS ═══════════ -->
   <section>
-    <div class="section-label gold reveal">17 Slash Commands</div>
-    <div class="cmd-columns reveal reveal-delay-1">
+    <div class="section-label gold rv">17 Slash Commands</div>
+    <div class="cmd-columns rv rv-d1">
       <div>
         <div class="cmd-col-label" style="color:var(--green)">Lifecycle</div>
         <div class="cmd-item"><button class="cmd-btn">/init <span class="chev">&#9654;</span></button><div class="cmd-detail">Bootstrap a new research sprint with a question and seed claims.</div></div>
@@ -802,559 +557,95 @@
 
   <div class="spacer"></div>
 
-  <!-- ═══ EXPLORE ═══ -->
-  <section>
-    <div class="section-label blue reveal">Explore</div>
-    <div class="explore-grid">
-      <a href="https://github.com/aid-ninja/wheat" class="explore-card blue-accent featured reveal">
-        <span class="ec-label">GitHub Repository</span>
-        <span class="ec-desc">Clone the repo, run <code style="color:var(--blue);background:rgba(96,165,250,0.1);padding:1px 5px;border-radius:3px;font-size:8.5pt;font-family:var(--mono);">/init</code> in Claude Code, and start your first research sprint. Zero dependencies — just Node.js 18+.</span>
-        <span class="ec-tag">MIT License</span>
-      </a>
-      <a href="replay.html" class="explore-card blue-accent reveal">
-        <span class="ec-label">Interactive Replay</span>
-        <span class="ec-desc">Watch a real sprint unfold — 99 frames of research, prototyping, and compilation</span>
-        <span class="ec-tag">Demo</span>
-      </a>
-      <a href="brief.html" class="explore-card green-accent reveal reveal-delay-1">
-        <span class="ec-label">Example Brief</span>
-        <span class="ec-desc">A compiled decision document produced by /brief</span>
-        <span class="ec-tag">Output</span>
-      </a>
-    </div>
-  </section>
-
-  <div class="spacer-sm"></div>
-
-  <!-- ═══ ARTIFACTS ═══ -->
-  <section>
-    <div class="section-label purple reveal">Example Sprint Artifacts</div>
-    <div class="artifacts-grid">
-      <a href="presentation.html" class="artifact-card reveal"><span class="ac-label">Presentation</span><span class="ac-desc">Stakeholder slide deck</span></a>
-      <a href="dashboard.html" class="artifact-card reveal reveal-delay-1"><span class="ac-label">Dashboard</span><span class="ac-desc">Live sprint status</span></a>
-      <a href="problem-statement.html" class="artifact-card reveal reveal-delay-2"><span class="ac-label">Problem Statement</span><span class="ac-desc">Sprint kickoff</span></a>
-      <a href="research-architecture.html" class="artifact-card reveal"><span class="ac-label">Architecture</span><span class="ac-desc">Research deep dive</span></a>
-      <a href="research-pedagogy.html" class="artifact-card reveal reveal-delay-1"><span class="ac-label">Pedagogy</span><span class="ac-desc">Research deep dive</span></a>
-      <a href="research-accessibility.html" class="artifact-card reveal reveal-delay-2"><span class="ac-label">Accessibility</span><span class="ac-desc">Research deep dive</span></a>
-      <a href="research-replay-ui.html" class="artifact-card reveal"><span class="ac-label">Replay UI</span><span class="ac-desc">Research deep dive</span></a>
-      <a href="research-commands.html" class="artifact-card reveal reveal-delay-1"><span class="ac-label">Commands</span><span class="ac-desc">Research deep dive</span></a>
-      <a href="evidence-evaluation.html" class="artifact-card reveal reveal-delay-2"><span class="ac-label">Evaluation</span><span class="ac-desc">Test results</span></a>
-    </div>
-  </section>
-
-  <div class="spacer"></div>
-
-  <!-- ═══ CLOSING ═══ -->
+  <!-- ═══════════ CLOSING ═══════════ -->
   <section class="closing-section">
-    <div class="closing-card reveal">
+    <div class="closing-card rv">
       <div class="closing-headline">Decisions deserve evidence.</div>
-      <div class="closing-sub">Start your first research sprint in under a minute.</div>
+      <div class="closing-sub">Zero dependencies. Self-contained HTML. MIT licensed.</div>
       <a href="https://github.com/aid-ninja/wheat" class="cta cta-primary">Get Started</a>
     </div>
   </section>
 
   <footer class="footer">
-    Zero dependencies. Self-contained HTML. MIT licensed. <a href="https://github.com/aid-ninja/wheat">View on GitHub</a>
+    Built by <a href="https://github.com/aid-ninja">Aid Idrizovic</a>. <a href="https://github.com/aid-ninja/wheat">View on GitHub</a>
   </footer>
 
 </div>
 
 <script>
-(function() {
-  // ── Scroll reveal ──
-  var reveals = document.querySelectorAll('.reveal');
-  var revealObserver = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        revealObserver.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
-  reveals.forEach(function(el) { revealObserver.observe(el); });
+(function(){
+  // Scroll reveal
+  var rvs=document.querySelectorAll('.rv');
+  var rObs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('vis');rObs.unobserve(e.target)}})},{threshold:.12,rootMargin:'0px 0px -30px 0px'});
+  rvs.forEach(function(el){rObs.observe(el)});
 
-  // ── Count-up ──
-  var statsObs = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      if (e.isIntersecting) {
-        document.querySelectorAll('.sa-num[data-target]').forEach(function(el) {
-          var target = parseInt(el.getAttribute('data-target'));
-          if (target === 0) { el.textContent = '0'; return; }
-          var start = performance.now();
-          (function tick(now) {
-            var t = Math.min((now - start) / 1200, 1);
-            el.textContent = Math.round(target * (1 - Math.pow(1 - t, 3)));
-            if (t < 1) requestAnimationFrame(tick);
-          })(start);
-        });
-        statsObs.disconnect();
-      }
-    });
-  }, { threshold: 0.3 });
-  var accEl = document.querySelector('.stat-accordion');
-  if (accEl) statsObs.observe(accEl);
+  // Accordion
+  document.querySelectorAll('.cmd-btn').forEach(function(b){b.addEventListener('click',function(){var it=this.parentElement;var col=it.parentElement;col.querySelectorAll('.cmd-item.open').forEach(function(el){if(el!==it)el.classList.remove('open')});it.classList.toggle('open')})});
 
-  // ── Stat accordion toggle ──
-  document.querySelectorAll('.stat-acc-item').forEach(function(item) {
-    item.querySelector('.stat-acc-header').addEventListener('click', function() {
-      var wasOpen = item.classList.contains('open');
-      document.querySelectorAll('.stat-acc-item.open').forEach(function(t) { t.classList.remove('open'); });
-      if (!wasOpen) item.classList.add('open');
-    });
-  });
+  // Particles (desktop only)
+  var pc=document.getElementById('particle-canvas');var pctx=pc.getContext('2d');var pw,ph,pts,pm={x:-999,y:-999};
+  var CS=[{r:96,g:165,b:250},{r:34,g:197,b:94},{r:167,g:139,b:250},{r:245,g:158,b:11},{r:34,g:211,b:238}];
+  function pR(){pw=pc.width=innerWidth;ph=pc.height=innerHeight}
+  function pI(){pR();pts=[];for(var i=0;i<40;i++){var c=CS[Math.floor(Math.random()*CS.length)];pts.push({x:Math.random()*pw,y:Math.random()*ph,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,r:Math.random()*1.4+.8,c:c,a:Math.random()*.25+.1,p:Math.random()*Math.PI*2})}}
+  function pD(){pctx.clearRect(0,0,pw,ph);for(var i=0;i<pts.length;i++){for(var j=i+1;j<pts.length;j++){var a=pts[i],b=pts[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy);if(d<110){var o=(1-d/110)*.06;pctx.beginPath();pctx.moveTo(a.x,a.y);pctx.lineTo(b.x,b.y);pctx.strokeStyle='rgba('+((a.c.r+b.c.r)>>1)+','+((a.c.g+b.c.g)>>1)+','+((a.c.b+b.c.b)>>1)+','+o+')';pctx.lineWidth=.5;pctx.stroke()}}}for(var i=0;i<pts.length;i++){var p=pts[i];p.p+=.007;var al=p.a+Math.sin(p.p)*.06;pctx.beginPath();pctx.arc(p.x,p.y,p.r*3.5,0,Math.PI*2);pctx.fillStyle='rgba('+p.c.r+','+p.c.g+','+p.c.b+','+(al*.12)+')';pctx.fill();pctx.beginPath();pctx.arc(p.x,p.y,p.r,0,Math.PI*2);pctx.fillStyle='rgba('+p.c.r+','+p.c.g+','+p.c.b+','+al+')';pctx.fill();var mdx=p.x-pm.x,mdy=p.y-pm.y,md=Math.sqrt(mdx*mdx+mdy*mdy);if(md<150&&md>0){var f=(1-md/150)*.015;p.vx+=(mdx/md)*f;p.vy+=(mdy/md)*f}p.vx*=.999;p.vy*=.999;p.x+=p.vx;p.y+=p.vy;if(p.x<-20)p.x=pw+20;if(p.x>pw+20)p.x=-20;if(p.y<-20)p.y=ph+20;if(p.y>ph+20)p.y=-20}requestAnimationFrame(pD)}
+  document.addEventListener('mousemove',function(e){pm.x=e.clientX;pm.y=e.clientY});
+  document.addEventListener('mouseleave',function(){pm.x=-999;pm.y=-999});
+  addEventListener('resize',pR);
+  if(!matchMedia('(prefers-reduced-motion:reduce)').matches&&innerWidth>640){pI();pD()}
 
-  // ── Command accordion ──
-  document.querySelectorAll('.cmd-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var item = this.parentElement;
-      var col = item.parentElement;
-      col.querySelectorAll('.cmd-item.open').forEach(function(el) {
-        if (el !== item) el.classList.remove('open');
-      });
-      item.classList.toggle('open');
-    });
-  });
+  // Pipeline — circuit board
+  var plc=document.getElementById('pipeline-canvas');if(!plc)return;
+  var ctx=plc.getContext('2d'),dpr=devicePixelRatio||1,PW,PH,mf,sf;
+  function plR(){var r=plc.getBoundingClientRect();PW=r.width;PH=r.height;plc.width=PW*dpr;plc.height=PH*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);var cs=getComputedStyle(document.body);mf=cs.getPropertyValue('--mono');sf=cs.getPropertyValue('--sans')}
+  plR();addEventListener('resize',plR);
 
-  // ── Particle canvas ──
-  var pc = document.getElementById('particle-canvas');
-  var pctx = pc.getContext('2d');
-  var pw, ph, pts, pmouse = { x: -999, y: -999 };
-  var PCOLS = [
-    {r:96,g:165,b:250},{r:34,g:197,b:94},{r:167,g:139,b:250},{r:245,g:158,b:11},{r:34,g:211,b:238}
+  var nds=[
+    {l:'Slash Commands',s:'17 commands',c:[96,165,250],i:'/cmd'},
+    {l:'claims.json',s:'Persistence',c:[34,197,94],i:'{ }'},
+    {l:'Git Tree',s:'Event log',c:[248,113,113],i:'git'},
+    {l:'Compiler',s:'7 passes',c:[240,160,48],i:'wheat',hub:1},
+    {l:'compilation.json',s:'Certified',c:[167,139,250],i:'.json'},
+    {l:'Artifacts',s:'HTML / PDF',c:[34,211,238],i:'out'}
   ];
+  var passes=['Schema','Types','Sort','Conflicts','Resolve','Coverage','Readiness'];
+  var edges=[[0,1],[1,2],[1,3],[3,4],[4,5]];
+  var fp=[],pT=0,aE=0,eT=0,ED=90,pI2=0,pT2=0;
 
-  function pResize() { pw = pc.width = innerWidth; ph = pc.height = innerHeight; }
+  function gP(){
+    var pad=80,cx=PW/2,mob=PW<500;
+    if(mob){var sp=(PH-pad*2)/5,y0=pad;return[{x:cx,y:y0},{x:cx,y:y0+sp},{x:cx,y:y0+sp*2},{x:cx,y:y0+sp*3},{x:cx,y:y0+sp*4},{x:cx,y:y0+sp*5}]}
+    var cL=Math.max(pad+50,cx*.3),cR=Math.min(PW-pad-50,cx*1.7),uH=PH-pad*2,y0=pad;
+    return[{x:cL,y:y0},{x:cx,y:y0+uH*.2},{x:cR,y:y0+uH*.2},{x:cx,y:y0+uH*.47},{x:cx,y:y0+uH*.7},{x:cx,y:y0+uH}]
+  }
+  function gT(a,b,i){var mob=PW<500;if(mob)return[{x:a.x,y:a.y},{x:b.x,y:b.y}];if(i===0)return[{x:a.x,y:a.y},{x:b.x,y:a.y},{x:b.x,y:b.y}];if(i===2)return[{x:a.x,y:a.y},{x:a.x,y:b.y}];return[{x:a.x,y:a.y},{x:b.x,y:b.y}]}
 
-  function pInit() {
-    pResize();
-    pts = [];
-    for (var i = 0; i < 40; i++) {
-      var c = PCOLS[Math.floor(Math.random() * PCOLS.length)];
-      pts.push({
-        x: Math.random()*pw, y: Math.random()*ph,
-        vx: (Math.random()-0.5)*0.25, vy: (Math.random()-0.5)*0.25,
-        r: Math.random()*1.4+0.8, col: c,
-        a: Math.random()*0.25+0.1, ph: Math.random()*Math.PI*2
-      });
-    }
+  function dG(){ctx.strokeStyle='rgba(255,255,255,.012)';ctx.lineWidth=.5;for(var x=24;x<PW;x+=24){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,PH);ctx.stroke()}for(var y=24;y<PH;y+=24){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(PW,y);ctx.stroke()}}
+
+  function dT(wp,col,act){if(wp.length<2)return;ctx.beginPath();ctx.moveTo(wp[0].x,wp[0].y);for(var i=1;i<wp.length;i++)ctx.lineTo(wp[i].x,wp[i].y);ctx.strokeStyle=act?'rgba('+col[0]+','+col[1]+','+col[2]+',.25)':'rgba(255,255,255,.04)';ctx.lineWidth=act?2:1;ctx.stroke();for(var i=1;i<wp.length-1;i++){ctx.beginPath();ctx.arc(wp[i].x,wp[i].y,act?3:2,0,Math.PI*2);ctx.fillStyle=act?'rgba('+col[0]+','+col[1]+','+col[2]+',.5)':'rgba(255,255,255,.08)';ctx.fill()}var la=wp[wp.length-1],pr=wp[wp.length-2],an=Math.atan2(la.y-pr.y,la.x-pr.x);ctx.beginPath();ctx.moveTo(la.x,la.y);ctx.lineTo(la.x-7*Math.cos(an-.4),la.y-7*Math.sin(an-.4));ctx.lineTo(la.x-7*Math.cos(an+.4),la.y-7*Math.sin(an+.4));ctx.closePath();ctx.fillStyle=act?'rgba('+col[0]+','+col[1]+','+col[2]+',.4)':'rgba(255,255,255,.06)';ctx.fill()}
+
+  function dC(x,y,n,act){var c=n.c,h=n.hub,w=h?100:72,ht=h?48:34,r=6,gl=act?.2:.04;
+    if(act){var g=ctx.createRadialGradient(x,y,0,x,y,w*1.5);g.addColorStop(0,'rgba('+c[0]+','+c[1]+','+c[2]+','+gl+')');g.addColorStop(1,'rgba('+c[0]+','+c[1]+','+c[2]+',0)');ctx.beginPath();ctx.arc(x,y,w*1.5,0,Math.PI*2);ctx.fillStyle=g;ctx.fill()}
+    var lx=x-w/2,ly=y-ht/2;ctx.beginPath();ctx.moveTo(lx+r,ly);ctx.lineTo(lx+w-r,ly);ctx.arcTo(lx+w,ly,lx+w,ly+r,r);ctx.lineTo(lx+w,ly+ht-r);ctx.arcTo(lx+w,ly+ht,lx+w-r,ly+ht,r);ctx.lineTo(lx+r,ly+ht);ctx.arcTo(lx,ly+ht,lx,ly+ht-r,r);ctx.lineTo(lx,ly+r);ctx.arcTo(lx,ly,lx+r,ly,r);ctx.closePath();ctx.fillStyle=act?'rgba('+c[0]+','+c[1]+','+c[2]+',.08)':'rgba(255,255,255,.02)';ctx.fill();ctx.strokeStyle=act?'rgba('+c[0]+','+c[1]+','+c[2]+',.45)':'rgba(255,255,255,.07)';ctx.lineWidth=1.5;ctx.stroke();
+    var pc2=h?4:2,pl=6;ctx.strokeStyle=act?'rgba('+c[0]+','+c[1]+','+c[2]+',.2)':'rgba(255,255,255,.04)';ctx.lineWidth=1;for(var p=0;p<pc2;p++){var py=ly+ht*(p+1)/(pc2+1);ctx.beginPath();ctx.moveTo(lx,py);ctx.lineTo(lx-pl,py);ctx.stroke();ctx.beginPath();ctx.moveTo(lx+w,py);ctx.lineTo(lx+w+pl,py);ctx.stroke()}
+    if(act){var pu=.5+.5*Math.sin(pT*.04);ctx.strokeStyle='rgba('+c[0]+','+c[1]+','+c[2]+','+ (.1*(1-pu))+')';ctx.lineWidth=1;ctx.beginPath();ctx.rect(lx-4-pu*3,ly-4-pu*3,w+8+pu*6,ht+8+pu*6);ctx.stroke()}
+    ctx.fillStyle=act?'rgba('+c[0]+','+c[1]+','+c[2]+',.95)':'rgba(155,165,183,.5)';ctx.font=(h?'700 13px ':'700 10px ')+mf;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(n.i,x,y);
+    ctx.textBaseline='top';ctx.fillStyle=act?'rgba(241,245,249,.95)':'rgba(155,165,183,.8)';ctx.font='600 10px '+sf;ctx.fillText(n.l,x,y+ht/2+10);
+    var st=n.s;if(n.hub&&act)st='Pass '+(pI2+1)+': '+passes[pI2];ctx.fillStyle='rgba(107,122,141,.75)';ctx.font='500 8.5px '+sf;ctx.fillText(st,x,y+ht/2+24)
   }
 
-  function pDraw() {
-    pctx.clearRect(0, 0, pw, ph);
-    for (var i = 0; i < pts.length; i++) {
-      for (var j = i+1; j < pts.length; j++) {
-        var a = pts[i], b = pts[j];
-        var dx = a.x-b.x, dy = a.y-b.y, d = Math.sqrt(dx*dx+dy*dy);
-        if (d < 110) {
-          var op = (1-d/110)*0.06;
-          pctx.beginPath(); pctx.moveTo(a.x,a.y); pctx.lineTo(b.x,b.y);
-          pctx.strokeStyle = 'rgba('+((a.col.r+b.col.r)>>1)+','+((a.col.g+b.col.g)>>1)+','+((a.col.b+b.col.b)>>1)+','+op+')';
-          pctx.lineWidth = 0.5; pctx.stroke();
-        }
-      }
-    }
-    for (var i = 0; i < pts.length; i++) {
-      var p = pts[i];
-      p.ph += 0.007;
-      var al = p.a + Math.sin(p.ph)*0.06;
-      pctx.beginPath(); pctx.arc(p.x,p.y,p.r*3.5,0,Math.PI*2);
-      pctx.fillStyle = 'rgba('+p.col.r+','+p.col.g+','+p.col.b+','+(al*0.12)+')';
-      pctx.fill();
-      pctx.beginPath(); pctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      pctx.fillStyle = 'rgba('+p.col.r+','+p.col.g+','+p.col.b+','+al+')';
-      pctx.fill();
+  function sF(ei){var pos=gP(),e=edges[ei],a=pos[e[0]],b=pos[e[1]];fp.push({wp:gT(a,b,ei),pr:0,sp:.008+Math.random()*.005,r:2+Math.random()*1.2,c:nds[e[0]].c,al:.6+Math.random()*.4})}
+  function tP(wp,t){var sg=[],tot=0;for(var i=1;i<wp.length;i++){var dx=wp[i].x-wp[i-1].x,dy=wp[i].y-wp[i-1].y;var l=Math.sqrt(dx*dx+dy*dy);sg.push(l);tot+=l}var d=t*tot,ac=0;for(var i=0;i<sg.length;i++){if(ac+sg[i]>=d){var st=(d-ac)/sg[i];return{x:wp[i].x+(wp[i+1].x-wp[i].x)*st,y:wp[i].y+(wp[i+1].y-wp[i].y)*st}}ac+=sg[i]}return wp[wp.length-1]}
 
-      var mdx = p.x-pmouse.x, mdy = p.y-pmouse.y, md = Math.sqrt(mdx*mdx+mdy*mdy);
-      if (md < 150 && md > 0) { var f = (1-md/150)*0.015; p.vx += (mdx/md)*f; p.vy += (mdy/md)*f; }
-      p.vx *= 0.999; p.vy *= 0.999;
-      p.x += p.vx; p.y += p.vy;
-      if (p.x < -20) p.x = pw+20; if (p.x > pw+20) p.x = -20;
-      if (p.y < -20) p.y = ph+20; if (p.y > ph+20) p.y = -20;
-    }
-    requestAnimationFrame(pDraw);
-  }
+  function plF(){ctx.clearRect(0,0,PW,PH);pT++;var pos=gP();dG();
+    eT++;if(eT>=ED){eT=0;aE=(aE+1)%edges.length;pI2=0}
+    var ae=edges[aE];if(ae[0]===3||ae[1]===3){pT2++;if(pT2>=Math.floor(ED/passes.length)){pT2=0;pI2=(pI2+1)%passes.length}}
+    if(pT%8===0)sF(aE);
+    for(var i=0;i<edges.length;i++){var e=edges[i],a=pos[e[0]],b=pos[e[1]];dT(gT(a,b,i),nds[e[0]].c,i===aE)}
+    for(var i=fp.length-1;i>=0;i--){var f=fp[i];f.pr+=f.sp;var t=f.pr<.5?2*f.pr*f.pr:-1+(4-2*f.pr)*f.pr;var pt=tP(f.wp,t);if(f.pr>=1){fp.splice(i,1)}else{var al=f.al*(1-Math.pow(Math.abs(f.pr-.5)*2,2));ctx.beginPath();ctx.arc(pt.x,pt.y,f.r*3,0,Math.PI*2);ctx.fillStyle='rgba('+f.c[0]+','+f.c[1]+','+f.c[2]+','+(al*.15)+')';ctx.fill();ctx.beginPath();ctx.arc(pt.x,pt.y,f.r,0,Math.PI*2);ctx.fillStyle='rgba('+f.c[0]+','+f.c[1]+','+f.c[2]+','+al+')';ctx.fill()}}
+    var af=edges[aE][0],at2=edges[aE][1];for(var i=0;i<nds.length;i++)dC(pos[i].x,pos[i].y,nds[i],i===af||i===at2);
+    requestAnimationFrame(plF)}
 
-  document.addEventListener('mousemove', function(e) { pmouse.x = e.clientX; pmouse.y = e.clientY; });
-  document.addEventListener('mouseleave', function() { pmouse.x = -999; pmouse.y = -999; });
-  addEventListener('resize', pResize);
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && innerWidth > 640) { pInit(); pDraw(); }
-
-  // ── Pipeline — circuit board style ──
-  var plc = document.getElementById('pipeline-canvas');
-  if (!plc) return;
-  var ctx = plc.getContext('2d');
-  var dpr = devicePixelRatio || 1;
-  var PW, PH;
-  var monoFont, sansFont;
-
-  function plResize() {
-    var r = plc.getBoundingClientRect();
-    PW = r.width; PH = r.height;
-    plc.width = PW * dpr; plc.height = PH * dpr;
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    var cs = getComputedStyle(document.body);
-    monoFont = cs.getPropertyValue('--mono');
-    sansFont = cs.getPropertyValue('--sans');
-  }
-  plResize();
-  addEventListener('resize', plResize);
-
-  var nodes = [
-    { id:'commands', label:'Slash Commands',   sub:'17 commands',        color:[96,165,250],  icon:'/cmd' },
-    { id:'claims',   label:'claims.json',      sub:'Persistence',        color:[34,197,94],   icon:'{ }' },
-    { id:'git',      label:'Git Tree',         sub:'Event log',          color:[248,113,113], icon:'git' },
-    { id:'compiler', label:'Compiler',         sub:'7 passes',           color:[240,160,48],  icon:'wheat', isHub:true },
-    { id:'compiled', label:'compilation.json', sub:'Certified output',   color:[167,139,250], icon:'.json' },
-    { id:'artifacts',label:'Artifacts',        sub:'HTML / PDF / slides',color:[34,211,238],  icon:'out' },
-  ];
-
-  var passes = ['Schema','Types','Sort','Conflicts','Resolve','Coverage','Readiness'];
-
-  // Circuit-board routing: each edge is an array of waypoints
-  // Edges connect nodes via right-angle traces
-  // [fromNodeIdx, toNodeIdx]
-  var edgeDefs = [[0,1],[1,2],[1,3],[3,4],[4,5]];
-
-  var flowParticles = [];
-  var pTime = 0;
-  var activeEdge = 0;
-  var edgeTimer = 0;
-  var EDGE_DUR = 90;
-  var passIdx = 0;
-  var passTimer = 0;
-
-  // Layout: circuit board style
-  //
-  //  Commands ──────┐
-  //                 │
-  //  Git ◄──── claims.json
-  //                 │
-  //            ┌────┘
-  //            │
-  //        [Compiler]  (large, center)
-  //            │
-  //            └────┐
-  //                 │
-  //          compilation.json
-  //                 │
-  //            Artifacts
-
-  function getPositions() {
-    var pad = 80;
-    var cx = PW / 2;
-    var mobile = PW < 500;
-
-    if (mobile) {
-      // Vertical stack — all nodes centered, evenly spaced
-      var spacing = (PH - pad * 2) / 5;
-      var y0 = pad;
-      return [
-        { x: cx, y: y0 },                    // 0: commands
-        { x: cx, y: y0 + spacing },          // 1: claims
-        { x: cx, y: y0 + spacing * 2 },      // 2: git
-        { x: cx, y: y0 + spacing * 3 },      // 3: compiler
-        { x: cx, y: y0 + spacing * 4 },      // 4: compiled
-        { x: cx, y: y0 + spacing * 5 },      // 5: artifacts
-      ];
-    }
-
-    var colL = Math.max(pad + 50, cx * 0.3);
-    var colC = cx;
-    var colR = Math.min(PW - pad - 50, cx * 1.7);
-    var usableH = PH - pad * 2;
-    var y0 = pad;
-
-    return [
-      { x: colL,  y: y0 },                                // 0: commands (top-left)
-      { x: colC,  y: y0 + usableH * 0.2 },                // 1: claims (center, row 1)
-      { x: colR,  y: y0 + usableH * 0.2 },                // 2: git (right, same row)
-      { x: colC,  y: y0 + usableH * 0.47 },               // 3: compiler (center)
-      { x: colC,  y: y0 + usableH * 0.7 },                // 4: compiled (below compiler)
-      { x: colC,  y: y0 + usableH },                       // 5: artifacts (bottom)
-    ];
-  }
-
-  // Build right-angle trace waypoints between two node positions
-  function getTrace(fromPos, toPos, edgeIdx) {
-    var ax = fromPos.x, ay = fromPos.y;
-    var bx = toPos.x, by = toPos.y;
-    var mobile = PW < 500;
-
-    if (mobile) {
-      // On mobile all nodes are stacked vertically — straight lines down
-      return [{x:ax,y:ay}, {x:bx,y:by}];
-    }
-
-    // Edge 0: commands → claims (go right then down)
-    if (edgeIdx === 0) {
-      return [{x:ax,y:ay}, {x:bx,y:ay}, {x:bx,y:by}];
-    }
-    // Edge 1: claims → git (horizontal right)
-    if (edgeIdx === 1) {
-      return [{x:ax,y:ay}, {x:bx,y:by}];
-    }
-    // Edge 2: claims → compiler (go down)
-    if (edgeIdx === 2) {
-      return [{x:ax,y:ay}, {x:ax,y:by}];
-    }
-    // Edge 3: compiler → compiled (go down)
-    if (edgeIdx === 3) {
-      return [{x:ax,y:ay}, {x:bx,y:by}];
-    }
-    // Edge 4: compiled → artifacts (go down)
-    if (edgeIdx === 4) {
-      return [{x:ax,y:ay}, {x:bx,y:by}];
-    }
-    return [{x:ax,y:ay}, {x:bx,y:by}];
-  }
-
-  function drawGrid() {
-    var spacing = 24;
-    ctx.strokeStyle = 'rgba(255,255,255,0.012)';
-    ctx.lineWidth = 0.5;
-    for (var x = spacing; x < PW; x += spacing) {
-      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,PH); ctx.stroke();
-    }
-    for (var y = spacing; y < PH; y += spacing) {
-      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(PW,y); ctx.stroke();
-    }
-  }
-
-  function drawTrace(waypoints, col, active) {
-    if (waypoints.length < 2) return;
-    ctx.beginPath();
-    ctx.moveTo(waypoints[0].x, waypoints[0].y);
-    for (var i = 1; i < waypoints.length; i++) {
-      ctx.lineTo(waypoints[i].x, waypoints[i].y);
-    }
-    ctx.strokeStyle = active
-      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.25)'
-      : 'rgba(255,255,255,0.04)';
-    ctx.lineWidth = active ? 2 : 1;
-    ctx.stroke();
-
-    // Junction dots at corners
-    for (var i = 1; i < waypoints.length - 1; i++) {
-      ctx.beginPath();
-      ctx.arc(waypoints[i].x, waypoints[i].y, active ? 3 : 2, 0, Math.PI*2);
-      ctx.fillStyle = active
-        ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.5)'
-        : 'rgba(255,255,255,0.08)';
-      ctx.fill();
-    }
-
-    // Arrow at end
-    var last = waypoints[waypoints.length-1];
-    var prev = waypoints[waypoints.length-2];
-    var ang = Math.atan2(last.y-prev.y, last.x-prev.x);
-    ctx.beginPath();
-    ctx.moveTo(last.x, last.y);
-    ctx.lineTo(last.x - 7*Math.cos(ang-0.4), last.y - 7*Math.sin(ang-0.4));
-    ctx.lineTo(last.x - 7*Math.cos(ang+0.4), last.y - 7*Math.sin(ang+0.4));
-    ctx.closePath();
-    ctx.fillStyle = active
-      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.4)'
-      : 'rgba(255,255,255,0.06)';
-    ctx.fill();
-  }
-
-  function drawChip(x, y, node, active) {
-    var col = node.color;
-    var isHub = node.isHub;
-    var w = isHub ? 100 : 72;
-    var h = isHub ? 48 : 34;
-    var r = 6;
-    var glow = active ? 0.2 : 0.04;
-
-    // Glow
-    if (active) {
-      var g = ctx.createRadialGradient(x,y,0,x,y,w*1.5);
-      g.addColorStop(0, 'rgba('+col[0]+','+col[1]+','+col[2]+','+glow+')');
-      g.addColorStop(1, 'rgba('+col[0]+','+col[1]+','+col[2]+',0)');
-      ctx.beginPath(); ctx.arc(x,y,w*1.5,0,Math.PI*2); ctx.fillStyle = g; ctx.fill();
-    }
-
-    // Chip body (rounded rect)
-    var lx = x - w/2, ly = y - h/2;
-    ctx.beginPath();
-    ctx.moveTo(lx+r, ly);
-    ctx.lineTo(lx+w-r, ly); ctx.arcTo(lx+w, ly, lx+w, ly+r, r);
-    ctx.lineTo(lx+w, ly+h-r); ctx.arcTo(lx+w, ly+h, lx+w-r, ly+h, r);
-    ctx.lineTo(lx+r, ly+h); ctx.arcTo(lx, ly+h, lx, ly+h-r, r);
-    ctx.lineTo(lx, ly+r); ctx.arcTo(lx, ly, lx+r, ly, r);
-    ctx.closePath();
-
-    ctx.fillStyle = active
-      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.08)'
-      : 'rgba(255,255,255,0.02)';
-    ctx.fill();
-    ctx.strokeStyle = active
-      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.45)'
-      : 'rgba(255,255,255,0.07)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Chip pins (small lines extending from sides)
-    var pinCount = isHub ? 4 : 2;
-    var pinLen = 6;
-    ctx.strokeStyle = active
-      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.2)'
-      : 'rgba(255,255,255,0.04)';
-    ctx.lineWidth = 1;
-    for (var p = 0; p < pinCount; p++) {
-      var py2 = ly + h * (p + 1) / (pinCount + 1);
-      // Left pins
-      ctx.beginPath(); ctx.moveTo(lx, py2); ctx.lineTo(lx - pinLen, py2); ctx.stroke();
-      // Right pins
-      ctx.beginPath(); ctx.moveTo(lx+w, py2); ctx.lineTo(lx+w+pinLen, py2); ctx.stroke();
-    }
-
-    // Pulse ring on active
-    if (active) {
-      var pulse = 0.5 + 0.5 * Math.sin(pTime * 0.04);
-      ctx.strokeStyle = 'rgba('+col[0]+','+col[1]+','+col[2]+','+(0.1*(1-pulse))+')';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.rect(lx - 4 - pulse*3, ly - 4 - pulse*3, w + 8 + pulse*6, h + 8 + pulse*6);
-      ctx.stroke();
-    }
-
-    // Icon inside chip
-    ctx.fillStyle = active
-      ? 'rgba('+col[0]+','+col[1]+','+col[2]+',0.95)'
-      : 'rgba(155,165,183,0.5)';
-    ctx.font = (isHub ? '700 13px ' : '700 10px ') + monoFont;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(node.icon, x, y);
-
-    // Label below chip
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = active ? 'rgba(241,245,249,0.95)' : 'rgba(155,165,183,0.8)';
-    ctx.font = '600 10px ' + sansFont;
-    ctx.fillText(node.label, x, y + h/2 + 10);
-
-    var subText = node.sub;
-    if (node.isHub && active) {
-      subText = 'Pass ' + (passIdx+1) + ': ' + passes[passIdx];
-    }
-    ctx.fillStyle = 'rgba(107,122,141,0.75)';
-    ctx.font = '500 8.5px ' + sansFont;
-    ctx.fillText(subText, x, y + h/2 + 24);
-  }
-
-  function spawnFlow(ei) {
-    var pos = getPositions();
-    var e = edgeDefs[ei];
-    var col = nodes[e[0]].color;
-    var wp = getTrace(pos[e[0]], pos[e[1]], ei);
-    flowParticles.push({
-      waypoints: wp,
-      progress: 0,
-      speed: 0.008 + Math.random() * 0.005,
-      r: 2 + Math.random() * 1.2,
-      col: col,
-      alpha: 0.6 + Math.random() * 0.4,
-    });
-  }
-
-  function tracePointAt(wp, t) {
-    // Get total length
-    var segs = [];
-    var total = 0;
-    for (var i = 1; i < wp.length; i++) {
-      var dx = wp[i].x-wp[i-1].x, dy = wp[i].y-wp[i-1].y;
-      var len = Math.sqrt(dx*dx+dy*dy);
-      segs.push(len);
-      total += len;
-    }
-    var dist = t * total;
-    var accum = 0;
-    for (var i = 0; i < segs.length; i++) {
-      if (accum + segs[i] >= dist) {
-        var segT = (dist - accum) / segs[i];
-        return {
-          x: wp[i].x + (wp[i+1].x - wp[i].x) * segT,
-          y: wp[i].y + (wp[i+1].y - wp[i].y) * segT
-        };
-      }
-      accum += segs[i];
-    }
-    return wp[wp.length-1];
-  }
-
-  function plFrame() {
-    ctx.clearRect(0,0,PW,PH);
-    pTime++;
-    var pos = getPositions();
-
-    // Background grid
-    drawGrid();
-
-    // Advance active edge
-    edgeTimer++;
-    if (edgeTimer >= EDGE_DUR) {
-      edgeTimer = 0;
-      activeEdge = (activeEdge + 1) % edgeDefs.length;
-      passIdx = 0;
-    }
-
-    // Compiler pass cycling
-    var ae = edgeDefs[activeEdge];
-    if (ae[0] === 3 || ae[1] === 3) {
-      passTimer++;
-      if (passTimer >= Math.floor(EDGE_DUR / passes.length)) {
-        passTimer = 0;
-        passIdx = (passIdx + 1) % passes.length;
-      }
-    }
-
-    // Spawn particles
-    if (pTime % 8 === 0) spawnFlow(activeEdge);
-
-    // Draw traces
-    for (var i = 0; i < edgeDefs.length; i++) {
-      var e = edgeDefs[i];
-      var wp = getTrace(pos[e[0]], pos[e[1]], i);
-      drawTrace(wp, nodes[e[0]].color, i === activeEdge);
-    }
-
-    // Update + draw flow particles
-    for (var i = flowParticles.length-1; i >= 0; i--) {
-      var fp = flowParticles[i];
-      fp.progress += fp.speed;
-      var t = fp.progress < 0.5 ? 2*fp.progress*fp.progress : -1+(4-2*fp.progress)*fp.progress;
-      var pt = tracePointAt(fp.waypoints, t);
-
-      if (fp.progress >= 1) {
-        flowParticles.splice(i, 1);
-      } else {
-        var al = fp.alpha * (1 - Math.pow(Math.abs(fp.progress - 0.5) * 2, 2));
-        ctx.beginPath(); ctx.arc(pt.x, pt.y, fp.r*3, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba('+fp.col[0]+','+fp.col[1]+','+fp.col[2]+','+(al*0.15)+')';
-        ctx.fill();
-        ctx.beginPath(); ctx.arc(pt.x, pt.y, fp.r, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba('+fp.col[0]+','+fp.col[1]+','+fp.col[2]+','+al+')';
-        ctx.fill();
-      }
-    }
-
-    // Draw chips on top
-    var activeFrom = edgeDefs[activeEdge][0];
-    var activeTo = edgeDefs[activeEdge][1];
-    for (var i = 0; i < nodes.length; i++) {
-      drawChip(pos[i].x, pos[i].y, nodes[i], i === activeFrom || i === activeTo);
-    }
-
-    requestAnimationFrame(plFrame);
-  }
-
-  var plStarted = false;
-  var plObs = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      if (e.isIntersecting && !plStarted) { plStarted = true; plFrame(); }
-    });
-  }, { threshold: 0.15 });
-  plObs.observe(plc);
+  var plS=false;var plO=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting&&!plS){plS=true;plF()}})},{threshold:.15});plO.observe(plc);
 })();
 </script>
 </body>
