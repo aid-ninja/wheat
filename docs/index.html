@@ -88,7 +88,7 @@
   .cta-ghost:hover{background:var(--surface-hover);color:var(--text);transform:translateY(-2px)}
 
   /* ── Concept sections ── */
-  .concept{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;margin-bottom:24px}
+  .concept{display:flex;flex-direction:column;gap:24px;margin-bottom:24px}
 
   .analogy-box{border-left:3px solid var(--blue);padding:24px 28px;background:var(--surface);border-radius:0 14px 14px 0;position:relative}
   .analogy-box.gold-border{border-left-color:var(--gold)}
@@ -194,7 +194,6 @@
   /* ── Mobile ── */
   @media(max-width:700px){
     section{padding:0 20px}
-    .concept{grid-template-columns:1fr;gap:20px}
     .steps-grid,.cmd-columns{grid-template-columns:1fr}
     .artifact-row{grid-template-columns:1fr 1fr 1fr}
     .spacer{height:90px}.spacer-sm{height:50px}
