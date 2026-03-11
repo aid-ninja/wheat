@@ -440,6 +440,62 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["self-contained", "file-protocol", "offline", "zero-external-deps"]
+    },
+    {
+      "id": "r013",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Wheat command suite expanded from 10 to 17 commands organized in 3 tiers: Tier 1 (Sprint Lifecycle) has 10 original commands for the define→research→prototype→evaluate→ship pipeline. Tier 2 (Quality Assurance) adds 4 new commands (/challenge, /blind-spot, /witness, /calibrate) for adversarial testing and corroboration. Tier 3 (Operations) adds 3 new commands (/replay, /handoff, /merge) for multi-sprint and multi-person workflows.",
+      "source": { "origin": "research", "artifact": "research/command-suite-expansion.md", "connector": null },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T10:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["command-suite", "architecture", "three-tiers"]
+    },
+    {
+      "id": "r014",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Compiler grew from ~430 lines (v0.1.0) to 685 lines (v0.2.0) with 9 new capabilities: --input/--output flags, --diff mode, source diversity tracking, type diversity tracking, corroboration system, constraint-aware coverage (W_CONSTRAINT_ONLY), wheat.config.json support, burn-residue safety check, and module exports for library usage. Still zero npm dependencies.",
+      "source": { "origin": "research", "artifact": "research/command-suite-expansion.md", "connector": null },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T10:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["compiler", "v0.2.0", "capabilities"]
+    },
+    {
+      "id": "r015",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Claim ID namespace expanded from 5 to 9 prefixes: original d### (define), r### (research), p### (prototype), e### (evaluate), f### (feedback); new x### (challenge), w### (witness), cal### (calibrate); plus burn- synthetic prefix rejected by compiler safety check.",
+      "source": { "origin": "research", "artifact": "research/command-suite-expansion.md", "connector": null },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T10:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["claim-ids", "namespace", "prefixes"]
+    },
+    {
+      "id": "r016",
+      "type": "recommendation",
+      "topic": "architecture",
+      "content": "The Tier 2 QA commands create three feedback loops: (1) self-correction (/challenge → conflict → /resolve), (2) external validation (/witness → corroboration count), (3) meta-learning (/calibrate → scores predictions against production → validates whether evidence tiers predict accuracy). The /calibrate loop is unique — it's the only command that tests whether Wheat itself works.",
+      "source": { "origin": "research", "artifact": "research/command-suite-expansion.md", "connector": null },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T10:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["feedback-loops", "self-correction", "meta-learning"]
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
-  "compiled_at": "2026-03-11T07:07:10.880Z",
-  "claims_hash": "80d9fdb",
-  "compiler_version": "0.1.0",
+  "compiled_at": "2026-03-11T07:32:39.577Z",
+  "claims_hash": "ed31168",
+  "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
   "warnings": [
@@ -13,8 +13,22 @@
       ]
     },
     {
+      "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"audience\" has only 1 claim type(s): constraint. Missing: factual, estimate, risk, recommendation, feedback",
+      "claims": [
+        "d003"
+      ]
+    },
+    {
       "code": "W_CONSTRAINT_ONLY",
       "message": "Topic \"scope\" is constraint-dominated (1/1 claims are constraints/feedback) — stated-level evidence is expected",
+      "claims": [
+        "d004"
+      ]
+    },
+    {
+      "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"scope\" has only 1 claim type(s): constraint. Missing: factual, estimate, risk, recommendation, feedback",
       "claims": [
         "d004"
       ]
@@ -658,6 +672,94 @@
         "offline",
         "zero-external-deps"
       ]
+    },
+    {
+      "id": "r013",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Wheat command suite expanded from 10 to 17 commands organized in 3 tiers: Tier 1 (Sprint Lifecycle) has 10 original commands for the define→research→prototype→evaluate→ship pipeline. Tier 2 (Quality Assurance) adds 4 new commands (/challenge, /blind-spot, /witness, /calibrate) for adversarial testing and corroboration. Tier 3 (Operations) adds 3 new commands (/replay, /handoff, /merge) for multi-sprint and multi-person workflows.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/command-suite-expansion.md",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T10:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "command-suite",
+        "architecture",
+        "three-tiers"
+      ]
+    },
+    {
+      "id": "r014",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Compiler grew from ~430 lines (v0.1.0) to 685 lines (v0.2.0) with 9 new capabilities: --input/--output flags, --diff mode, source diversity tracking, type diversity tracking, corroboration system, constraint-aware coverage (W_CONSTRAINT_ONLY), wheat.config.json support, burn-residue safety check, and module exports for library usage. Still zero npm dependencies.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/command-suite-expansion.md",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T10:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "compiler",
+        "v0.2.0",
+        "capabilities"
+      ]
+    },
+    {
+      "id": "r015",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Claim ID namespace expanded from 5 to 9 prefixes: original d### (define), r### (research), p### (prototype), e### (evaluate), f### (feedback); new x### (challenge), w### (witness), cal### (calibrate); plus burn- synthetic prefix rejected by compiler safety check.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/command-suite-expansion.md",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T10:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "claim-ids",
+        "namespace",
+        "prefixes"
+      ]
+    },
+    {
+      "id": "r016",
+      "type": "recommendation",
+      "topic": "architecture",
+      "content": "The Tier 2 QA commands create three feedback loops: (1) self-correction (/challenge → conflict → /resolve), (2) external validation (/witness → corroboration count), (3) meta-learning (/calibrate → scores predictions against production → validates whether evidence tiers predict accuracy). The /calibrate loop is unique — it's the only command that tests whether Wheat itself works.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/command-suite-expansion.md",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-11T10:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "feedback-loops",
+        "self-correction",
+        "meta-learning"
+      ]
     }
   ],
   "conflict_graph": {
@@ -683,7 +785,19 @@
         "d001",
         "p005"
       ],
-      "constraint_count": 1
+      "constraint_count": 1,
+      "source_origins": [
+        "stakeholder",
+        "prototype"
+      ],
+      "source_count": 2,
+      "type_diversity": 2,
+      "missing_types": [
+        "estimate",
+        "risk",
+        "recommendation",
+        "feedback"
+      ]
     },
     "output-format": {
       "claims": 5,
@@ -702,7 +816,18 @@
         "r010",
         "p008"
       ],
-      "constraint_count": 2
+      "constraint_count": 2,
+      "source_origins": [
+        "stakeholder",
+        "research",
+        "prototype"
+      ],
+      "source_count": 3,
+      "type_diversity": 4,
+      "missing_types": [
+        "estimate",
+        "recommendation"
+      ]
     },
     "audience": {
       "claims": 1,
@@ -714,7 +839,19 @@
       "claim_ids": [
         "d003"
       ],
-      "constraint_count": 1
+      "constraint_count": 1,
+      "source_origins": [
+        "stakeholder"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "factual",
+        "estimate",
+        "risk",
+        "recommendation",
+        "feedback"
+      ]
     },
     "scope": {
       "claims": 1,
@@ -726,7 +863,19 @@
       "claim_ids": [
         "d004"
       ],
-      "constraint_count": 1
+      "constraint_count": 1,
+      "source_origins": [
+        "stakeholder"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "factual",
+        "estimate",
+        "risk",
+        "recommendation",
+        "feedback"
+      ]
     },
     "quality": {
       "claims": 4,
@@ -744,10 +893,20 @@
         "r009",
         "r011"
       ],
-      "constraint_count": 2
+      "constraint_count": 2,
+      "source_origins": [
+        "stakeholder",
+        "research"
+      ],
+      "source_count": 2,
+      "type_diversity": 4,
+      "missing_types": [
+        "estimate",
+        "recommendation"
+      ]
     },
     "architecture": {
-      "claims": 8,
+      "claims": 12,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -763,9 +922,25 @@
         "p004",
         "f001",
         "f003",
-        "r012"
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016"
       ],
-      "constraint_count": 2
+      "constraint_count": 2,
+      "source_origins": [
+        "research",
+        "prototype",
+        "stakeholder"
+      ],
+      "source_count": 3,
+      "type_diversity": 3,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "risk"
+      ]
     },
     "ux-pattern": {
       "claims": 8,
@@ -787,8 +962,54 @@
         "p007",
         "f006"
       ],
-      "constraint_count": 2
+      "constraint_count": 2,
+      "source_origins": [
+        "research",
+        "prototype",
+        "stakeholder"
+      ],
+      "source_count": 3,
+      "type_diversity": 4,
+      "missing_types": [
+        "estimate",
+        "risk"
+      ]
     }
+  },
+  "corroboration": {
+    "d001": 0,
+    "d002": 0,
+    "d003": 0,
+    "d004": 0,
+    "d005": 0,
+    "r002": 0,
+    "r003": 0,
+    "r004": 0,
+    "r005": 0,
+    "r006": 0,
+    "r007": 0,
+    "p001": 0,
+    "p002": 0,
+    "p003": 0,
+    "p004": 0,
+    "p005": 0,
+    "f001": 0,
+    "f002": 0,
+    "f003": 0,
+    "f004": 0,
+    "f005": 0,
+    "p006": 0,
+    "p007": 0,
+    "f006": 0,
+    "r009": 0,
+    "r010": 0,
+    "r011": 0,
+    "r012": 0,
+    "p008": 0,
+    "r013": 0,
+    "r014": 0,
+    "r015": 0,
+    "r016": 0
   },
   "phase_summary": {
     "define": {
@@ -796,7 +1017,7 @@
       "complete": true
     },
     "research": {
-      "claims": 12,
+      "claims": 16,
       "complete": true
     },
     "prototype": {
@@ -819,15 +1040,15 @@
     ],
     "initiated": "2026-03-11",
     "phase": "prototype",
-    "total_claims": 31,
-    "active_claims": 29,
+    "total_claims": 35,
+    "active_claims": 33,
     "conflicted_claims": 0,
     "superseded_claims": 2,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:80d9fdb23709e747411d144b2f81c502de3d4080980ee9a760650dfefb9f30a8",
-    "compiler_version": "0.1.0",
+    "input_hash": "sha256:ed3116812229cb803ca2785c5e8a758d92f316509331d07c14fe319cd0e7db33",
+    "compiler_version": "0.2.0",
     "deterministic": true
   }
 }
