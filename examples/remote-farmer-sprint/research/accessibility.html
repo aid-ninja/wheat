@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accessibility Audit — Wheat Dashboard</title>
+<style>
+  :root {
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263548;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.12);
+    --pink: #f472b6;
+    --pink-dim: rgba(244,114,182,0.12);
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    scroll-behavior: smooth;
+  }
+
+  html {
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    font-size: 11pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+  }
+
+  .slide {
+    width: 100%;
+    height: 100vh;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    scroll-snap-align: start;
+  }
+
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40%;
+    height: 100%;
+    background: radial-gradient(ellipse at top right, rgba(59,130,246,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  h1 {
+    font-size: 42pt;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  h2 {
+    font-size: 32pt;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+
+  h3 {
+    font-size: 14pt;
+    font-weight: 600;
+    color: var(--accent-light);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  p {
+    font-size: 14pt;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+    text-align: left;
+    font-weight: 400;
+    max-width: 85%;
+  }
+
+  .subtitle {
+    font-size: 18pt;
+    color: var(--text-muted);
+    font-weight: 300;
+    max-width: 70%;
+  }
+
+  .label {
+    display: inline-block;
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-light);
+    background: rgba(59,130,246,0.12);
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+
+  .label.green { color: var(--green); background: var(--green-dim); }
+  .label.orange { color: var(--orange); background: var(--orange-dim); }
+  .label.red { color: var(--red); background: var(--red-dim); }
+  .label.purple { color: var(--purple); background: var(--purple-dim); }
+
+  .divider {
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin: 16px 0 24px 0;
+  }
+
+  .two-col {
+    display: flex;
+    gap: 60px;
+    align-items: flex-start;
+  }
+
+  .two-col > div { flex: 1; }
+
+  .card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 32px;
+    border: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px 0 0 4px;
+  }
+
+  .card.green::after { background: var(--green); }
+  .card.orange::after { background: var(--orange); }
+  .card.red::after { background: var(--red); }
+  .card.purple::after { background: var(--purple); }
+
+  .card-label {
+    font-size: 9pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent-light);
+    margin-bottom: 8px;
+  }
+
+  .card.green .card-label { color: var(--green); }
+  .card.orange .card-label { color: var(--orange); }
+  .card.red .card-label { color: var(--red); }
+  .card.purple .card-label { color: var(--purple); }
+
+  .card-text {
+    font-size: 16pt;
+    color: var(--text);
+    line-height: 1.5;
+    font-weight: 500;
+  }
+
+  .card-detail {
+    font-size: 12pt;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-top: 12px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 11pt;
+  }
+
+  th {
+    text-align: left;
+    padding: 10px 16px;
+    background: var(--bg-card);
+    color: var(--accent-light);
+    font-weight: 600;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 2px solid rgba(59,130,246,0.3);
+  }
+
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: var(--text-muted);
+  }
+
+  td.pass { color: var(--green); font-weight: 600; }
+  td.fail { color: var(--red); font-weight: 600; }
+
+  .claim-ref {
+    font-size: 8pt;
+    color: var(--text-dim);
+    font-family: monospace;
+  }
+
+  .slide-nav {
+    position: fixed;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+  }
+
+  .slide-nav a {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    display: block;
+    transition: all 0.2s;
+  }
+
+  .slide-nav a:hover,
+  .slide-nav a.active {
+    background: var(--accent);
+    transform: scale(1.5);
+  }
+
+  .fix-list {
+    list-style: none;
+    counter-reset: fix;
+  }
+
+  .fix-list li {
+    counter-increment: fix;
+    position: relative;
+    padding-left: 48px;
+    margin-bottom: 20px;
+  }
+
+  .fix-list li::before {
+    content: counter(fix);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(59,130,246,0.15);
+    color: var(--accent-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13pt;
+  }
+
+  .fix-title {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 13pt;
+    margin-bottom: 4px;
+  }
+
+  .fix-desc {
+    color: var(--text-muted);
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+
+  .fix-effort {
+    display: inline-block;
+    font-size: 9pt;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 6px;
+  }
+
+  .effort-low { background: var(--green-dim); color: var(--green); }
+  .effort-med { background: var(--orange-dim); color: var(--orange); }
+
+  .swatch-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  .swatch {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .swatch-info {
+    font-size: 11pt;
+    color: var(--text-muted);
+  }
+
+  .swatch-info strong {
+    display: block;
+    color: var(--text);
+    font-size: 13pt;
+  }
+
+  .arrow {
+    font-size: 24pt;
+    color: var(--accent-light);
+    margin: 0 8px;
+  }
+
+  .three-col {
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .three-col > div { flex: 1; }
+
+  .wheat-footer {
+    position: absolute;
+    bottom: 24px;
+    right: 40px;
+    font-size: 8pt;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+
+<nav class="slide-nav" aria-label="Slide navigation">
+  <a href="#slide-1" aria-label="Slide 1: Title"></a>
+  <a href="#slide-2" aria-label="Slide 2: Contrast Audit"></a>
+  <a href="#slide-3" aria-label="Slide 3: Missing Infrastructure"></a>
+  <a href="#slide-4" aria-label="Slide 4: The Fix"></a>
+  <a href="#slide-5" aria-label="Slide 5: Contrast Fix"></a>
+</nav>
+
+<!-- Slide 1: Title -->
+<div class="slide" id="slide-1">
+  <span class="label red">Accessibility Audit</span>
+  <h1>Zero A11y<br>Infrastructure</h1>
+  <p class="subtitle">The Wheat dashboard has no ARIA landmarks, no keyboard navigation, no screen reader support, and one critical contrast failure. Five targeted fixes bring it to WCAG 2.2 AA.</p>
+  <div class="wheat-footer">Compiled by Wheat &mdash; <span class="claim-ref">[r017&ndash;r022]</span></div>
+</div>
+
+<!-- Slide 2: Contrast Audit -->
+<div class="slide" id="slide-2">
+  <span class="label">Color Contrast</span>
+  <h2>Contrast Audit</h2>
+  <div class="divider"></div>
+  <p>Tested all dashboard color pairs against WCAG 2.2 AA: 4.5:1 for text, 3:1 for UI components.</p>
+
+  <table>
+    <thead>
+      <tr><th>Color Pair</th><th>Ratio</th><th>Text (4.5:1)</th><th>UI (3:1)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>--text on --bg</td><td>16.26:1</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>--text-mid on --bg</td><td>6.38:1</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr style="background:rgba(239,68,68,0.08)"><td><strong>--text-dim on --bg</strong></td><td><strong>2.78:1</strong></td><td class="fail">FAIL</td><td class="fail">FAIL</td></tr>
+      <tr><td>--accent on --bg</td><td>8.96:1</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>--blue on --bg</td><td>5.99:1</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>--green on --bg</td><td>8.67:1</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>--red on --bg</td><td>5.65:1</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>--purple on --bg</td><td>6.45:1</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>--cyan on --bg</td><td>10.39:1</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+    </tbody>
+  </table>
+  <p><span class="claim-ref">[r017]</span> &mdash; Only --text-dim fails. One CSS variable change fixes it.</p>
+</div>
+
+<!-- Slide 3: Missing Infrastructure -->
+<div class="slide" id="slide-3">
+  <span class="label red">Critical Gaps</span>
+  <h2>What's Missing</h2>
+  <div class="divider"></div>
+
+  <div class="three-col">
+    <div class="card red">
+      <div class="card-label">No Landmarks</div>
+      <div class="card-text">Zero Semantic HTML</div>
+      <div class="card-detail">All structure uses &lt;div&gt;. No &lt;header&gt;, &lt;main&gt;, &lt;nav&gt;, no ARIA roles. Screen readers see a flat soup of text.</div>
+      <div style="margin-top:12px"><span class="claim-ref">[r018]</span></div>
+    </div>
+
+    <div class="card orange">
+      <div class="card-label">No Keyboard</div>
+      <div class="card-text">Mouse-Only Interaction</div>
+      <div class="card-detail">Claim rows use onclick on &lt;div&gt;. No tabindex, no role="button", no Enter/Space handlers. Keyboard users can't expand claims.</div>
+      <div style="margin-top:12px"><span class="claim-ref">[r019]</span></div>
+    </div>
+
+    <div class="card purple">
+      <div class="card-label">No Live Region</div>
+      <div class="card-text">Silent DOM Updates</div>
+      <div class="card-detail">SSE updates change the page silently. No aria-live regions. Screen readers don't know when new claims arrive or status changes.</div>
+      <div style="margin-top:12px"><span class="claim-ref">[r020]</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 4: The Fix -->
+<div class="slide" id="slide-4">
+  <span class="label green">Remediation</span>
+  <h2>Five Fixes to AA</h2>
+  <div class="divider"></div>
+
+  <div class="two-col">
+    <div>
+      <ol class="fix-list">
+        <li>
+          <div class="fix-title">Raise --text-dim contrast</div>
+          <div class="fix-desc">#505a6e &rarr; #7a839a (4.5:1 ratio). One CSS variable.</div>
+          <span class="fix-effort effort-low">1 line</span>
+        </li>
+        <li>
+          <div class="fix-title">Add semantic landmarks</div>
+          <div class="fix-desc">&lt;header&gt; for topbar, &lt;main&gt; for layout, role="status" on scoreboard.</div>
+          <span class="fix-effort effort-low">3 tag changes</span>
+        </li>
+        <li>
+          <div class="fix-title">Keyboard support on claims</div>
+          <div class="fix-desc">tabindex="0", role="button", aria-expanded, keydown handler for Enter/Space.</div>
+          <span class="fix-effort effort-med">~15 lines JS</span>
+        </li>
+      </ol>
+    </div>
+    <div>
+      <ol class="fix-list" style="counter-reset: fix 3;">
+        <li>
+          <div class="fix-title">aria-live on dynamic regions</div>
+          <div class="fix-desc">aria-live="polite" on scoreboard and timeline. Screen readers announce updates.</div>
+          <span class="fix-effort effort-low">2 attributes</span>
+        </li>
+        <li>
+          <div class="fix-title">Focus-visible outlines</div>
+          <div class="fix-desc">:focus-visible styles on all interactive elements. Blue outline on keyboard focus.</div>
+          <span class="fix-effort effort-low">~5 lines CSS</span>
+        </li>
+      </ol>
+      <div class="card green" style="margin-top:24px">
+        <div class="card-label">Total Effort</div>
+        <div class="card-text">~30 lines of changes</div>
+        <div class="card-detail">No visual impact on the existing design. All fixes are additive. <span class="claim-ref">[r021]</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 5: Contrast Fix Detail -->
+<div class="slide" id="slide-5">
+  <span class="label">Before &amp; After</span>
+  <h2>The Contrast Fix</h2>
+  <div class="divider"></div>
+
+  <div class="two-col">
+    <div>
+      <h3>Before (2.78:1 &mdash; FAIL)</h3>
+      <div class="swatch-row">
+        <div class="swatch" style="background:#0a0e1a;display:flex;align-items:center;justify-content:center;width:auto;height:auto;padding:16px 24px;">
+          <span style="color:#505a6e;font-size:14pt;font-weight:500;">Metadata text</span>
+        </div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch" style="background:#505a6e;width:48px;height:48px;"></div>
+        <div class="swatch-info">
+          <strong>#505a6e</strong>
+          --text-dim (current)
+        </div>
+      </div>
+      <p style="margin-top:16px">Used for: labels, tags, timestamps, compiler pass names, scoreboard labels, phase subtitles, "Now" text.</p>
+    </div>
+    <div>
+      <h3>After (4.5:1 &mdash; PASS)</h3>
+      <div class="swatch-row">
+        <div class="swatch" style="background:#0a0e1a;display:flex;align-items:center;justify-content:center;width:auto;height:auto;padding:16px 24px;">
+          <span style="color:#7a839a;font-size:14pt;font-weight:500;">Metadata text</span>
+        </div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch" style="background:#7a839a;width:48px;height:48px;"></div>
+        <div class="swatch-info">
+          <strong>#7a839a</strong>
+          --text-dim (proposed)
+        </div>
+      </div>
+      <p style="margin-top:16px">Same visual role, same subdued feel. Just enough luminance to clear AA. The design stays exactly the same — text just becomes legible.</p>
+    </div>
+  </div>
+
+  <p style="margin-top:24px"><span class="claim-ref">[r017, r021]</span> &mdash; Also flag: explainer template imports external Google Fonts <span class="claim-ref">[r022]</span></p>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<script>
+  // Slide nav active state
+  const navLinks = document.querySelectorAll('.slide-nav a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('active'));
+        const idx = e.target.id.split('-')[1] - 1;
+        if (navLinks[idx]) navLinks[idx].classList.add('active');
+      }
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.slide').forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

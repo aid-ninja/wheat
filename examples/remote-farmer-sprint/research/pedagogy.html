@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedagogy Research — How the Wheat Visualization Teaches</title>
+<style>
+  :root {
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263548;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.12);
+    --pink: #f472b6;
+    --pink-dim: rgba(244,114,182,0.12);
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    scroll-behavior: smooth;
+  }
+
+  html {
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    font-size: 11pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+  }
+
+  .slide {
+    width: 100%;
+    height: 100vh;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    scroll-snap-align: start;
+  }
+
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40%;
+    height: 100%;
+    background: radial-gradient(ellipse at top right, rgba(59,130,246,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  h1 {
+    font-size: 42pt;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  h2 {
+    font-size: 32pt;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+
+  h3 {
+    font-size: 14pt;
+    font-weight: 600;
+    color: var(--accent-light);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  h4 {
+    font-size: 13pt;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 14pt;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+    text-align: left;
+    font-weight: 400;
+    max-width: 85%;
+  }
+
+  .subtitle {
+    font-size: 18pt;
+    color: var(--text-muted);
+    font-weight: 300;
+    max-width: 70%;
+  }
+
+  .label {
+    display: inline-block;
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-light);
+    background: rgba(59,130,246,0.12);
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+
+  .label.green { color: var(--green); background: var(--green-dim); }
+  .label.orange { color: var(--orange); background: var(--orange-dim); }
+  .label.red { color: var(--red); background: var(--red-dim); }
+  .label.purple { color: var(--purple); background: var(--purple-dim); }
+  .label.pink { color: var(--pink); background: var(--pink-dim); }
+
+  .divider {
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin: 16px 0 24px 0;
+  }
+
+  .two-col {
+    display: flex;
+    gap: 60px;
+    align-items: flex-start;
+  }
+
+  .two-col > div { flex: 1; }
+
+  .three-col {
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .three-col > div { flex: 1; }
+
+  .card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 32px;
+    border: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px 0 0 4px;
+  }
+
+  .card.green::after { background: var(--green); }
+  .card.orange::after { background: var(--orange); }
+  .card.red::after { background: var(--red); }
+  .card.purple::after { background: var(--purple); }
+  .card.pink::after { background: var(--pink); }
+
+  .card-label {
+    font-size: 9pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent-light);
+    margin-bottom: 8px;
+  }
+
+  .card.green .card-label { color: var(--green); }
+  .card.orange .card-label { color: var(--orange); }
+  .card.red .card-label { color: var(--red); }
+  .card.purple .card-label { color: var(--purple); }
+
+  .card-text {
+    font-size: 16pt;
+    color: var(--text);
+    line-height: 1.5;
+    font-weight: 500;
+  }
+
+  .card-detail {
+    font-size: 12pt;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-top: 12px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 11pt;
+  }
+
+  th {
+    text-align: left;
+    padding: 10px 16px;
+    background: var(--bg-card);
+    color: var(--accent-light);
+    font-weight: 600;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 2px solid rgba(59,130,246,0.3);
+  }
+
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: var(--text-muted);
+  }
+
+  tr:hover td {
+    background: rgba(255,255,255,0.02);
+  }
+
+  .claim-ref {
+    font-size: 8pt;
+    color: var(--text-dim);
+    font-family: monospace;
+  }
+
+  .slide-nav {
+    position: fixed;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+  }
+
+  .slide-nav a {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    display: block;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .slide-nav a:hover,
+  .slide-nav a.active {
+    background: var(--accent);
+    transform: scale(1.5);
+  }
+
+  @keyframes fadeInUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .fade-in {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .wheat-footer {
+    position: absolute;
+    bottom: 24px;
+    right: 40px;
+    font-size: 8pt;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0;
+  }
+
+  ul li {
+    padding: 6px 0;
+    color: var(--text-muted);
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  ul li::before {
+    content: '\2192';
+    color: var(--accent-light);
+    margin-right: 10px;
+    font-weight: 600;
+  }
+
+  .objective-num {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 10pt;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+
+  .objective-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .objective-row p {
+    margin: 0;
+    font-size: 12pt;
+  }
+</style>
+</head>
+<body>
+
+<nav class="slide-nav">
+  <a href="#title"></a>
+  <a href="#gap"></a>
+  <a href="#worked-examples"></a>
+  <a href="#progressive"></a>
+  <a href="#explorable"></a>
+  <a href="#prior-art"></a>
+  <a href="#objectives"></a>
+  <a href="#recommendations"></a>
+  <a href="#risk"></a>
+</nav>
+
+<!-- Slide 1: Title -->
+<div class="slide" id="title">
+  <span class="label">Wheat Research Sprint</span>
+  <h1>How the Visualization Teaches</h1>
+  <p class="subtitle">Learning design principles for interactive code visualizations. Addressing the sprint's biggest blind spot: 139 claims about architecture, nearly zero about pedagogy.</p>
+  <p style="margin-top: 24px;"><span class="claim-ref">[r060-r068]</span> &mdash; responding to blind-spot claims <span class="claim-ref">[r048, r049, r050]</span></p>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<!-- Slide 2: The Gap -->
+<div class="slide" id="gap">
+  <h3>The Blind Spot</h3>
+  <h2>Building vs. Teaching</h2>
+  <div class="divider"></div>
+  <div class="three-col">
+    <div class="card red">
+      <div class="card-label">r048</div>
+      <div class="card-text">No learning design</div>
+      <div class="card-detail">~5 of 139 claims address teaching or onboarding. No claim covers cognitive load, worked examples, or scaffolded complexity.</div>
+    </div>
+    <div class="card red">
+      <div class="card-label">r049</div>
+      <div class="card-text">No learning objectives</div>
+      <div class="card-detail">What should a viewer understand after watching the replay? Without explicit goals, the visualization is a demo, not a teaching tool.</div>
+    </div>
+    <div class="card red">
+      <div class="card-label">r050</div>
+      <div class="card-text">Shows WHAT, not WHY</div>
+      <div class="card-detail">No annotations or tooltips link viewer actions to Wheat concepts. The visualization assumes the knowledge it was designed to impart.</div>
+    </div>
+  </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<!-- Slide 3: Worked Examples -->
+<div class="slide" id="worked-examples">
+  <h3>Cognitive Load Theory</h3>
+  <h2>The Worked Examples Effect</h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <p>John Sweller (1980s): studying solved examples reduces cognitive load more effectively than solving equivalent problems. Learners avoid weak strategies like means-ends analysis that overwhelm working memory.</p>
+      <p style="margin-top: 16px;"><strong style="color: var(--green);">Good news:</strong> The Wheat replay IS a worked example &mdash; a complete, solved research sprint.</p>
+      <p><strong style="color: var(--red);">Bad news:</strong> The <em>split-attention effect</em> means separated text and diagrams increase extraneous load. The replay shows transitions without inline explanation, forcing learners to mentally integrate what they see with what it means.</p>
+    </div>
+    <div class="card green">
+      <div class="card-label">Implication</div>
+      <div class="card-text">Annotations must be integrated directly into the visualization</div>
+      <div class="card-detail">Not in a separate panel, not in docs &mdash; inline, contextual, triggered by the frame being viewed. This is the split-attention fix.</div>
+      <div style="margin-top: 12px;"><span class="claim-ref">[r060]</span></div>
+    </div>
+  </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<!-- Slide 4: Progressive Disclosure -->
+<div class="slide" id="progressive">
+  <h3>Progressive Disclosure</h3>
+  <h2>Incremental Is Not Scaffolded</h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <table>
+        <tr><th>Approach</th><th>Meaning</th><th>Wheat?</th></tr>
+        <tr><td>Incremental</td><td>Shows more data over time</td><td style="color: var(--green);">Yes &mdash; claims accumulate</td></tr>
+        <tr><td>Scaffolded</td><td>Gates complexity by conceptual dependency</td><td style="color: var(--red);">No &mdash; everything shown at once per frame</td></tr>
+      </table>
+      <p style="margin-top: 16px;">Progressive disclosure (NN/g) improves learnability, efficiency, and error rate by synchronizing complexity with user involvement. A scaffolded replay ensures learners understand claim types <em>before</em> evidence upgrades, and evidence tiers <em>before</em> conflict resolution.</p>
+    </div>
+    <div class="card orange">
+      <div class="card-label">Key Distinction</div>
+      <div class="card-text">Synchronize revealed complexity with the learner's current understanding</div>
+      <div class="card-detail">Beginners don't need to see compiler gates. But hiding them forever frustrates advanced users. The solution: conceptual acts with optional gating.</div>
+      <div style="margin-top: 12px;"><span class="claim-ref">[r061]</span></div>
+    </div>
+  </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<!-- Slide 5: Explorable Explanations -->
+<div class="slide" id="explorable">
+  <h3>Explorable Explanations</h3>
+  <h2>Victor &amp; Case: Four Principles</h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-label">1. Compelling Question</div>
+        <div class="card-detail">"Traditional teaching fails because it answers questions the student hasn't thought to ask." &mdash; Nicky Case</div>
+      </div>
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-label">2. Isolate Mechanics</div>
+        <div class="card-detail">Teach individual cause-and-effect relationships one at a time before combining them.</div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-label">3. Let Readers Create Data</div>
+        <div class="card-detail">Active exploration beats passive observation. Let learners create their own claims and see the system respond.</div>
+      </div>
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-label">4. End with Open Questions</div>
+        <div class="card-detail">The learner should be able to go beyond the teacher &mdash; exploring questions even the author didn't anticipate.</div>
+      </div>
+    </div>
+  </div>
+  <p style="margin-top: 16px;">The Wheat replay should open with: <em>"How does a research sprint turn messy exploration into a structured recommendation?"</em></p>
+  <span class="claim-ref">[r062]</span>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<!-- Slide 6: Prior Art -->
+<div class="slide" id="prior-art">
+  <h3>Prior Art</h3>
+  <h2>Tools That Teach by Showing Themselves</h2>
+  <div class="divider"></div>
+  <div class="three-col">
+    <div class="card purple">
+      <div class="card-label">LearnGitBranching</div>
+      <div class="card-text">Visualize + Interact</div>
+      <div class="card-detail">100% client-side. Commit trees update in real-time. Dual mode: sandbox for exploration, structured levels for isolated mechanics. The visualization IS the learning.</div>
+    </div>
+    <div class="card purple">
+      <div class="card-label">Redux DevTools</div>
+      <div class="card-text">Make Invisible Visible</div>
+      <div class="card-detail">Time-travel debugging, action inspection, state diffs. Developers learn state patterns by seeing and manipulating them. The tool teaches by making the implicit explicit.</div>
+    </div>
+    <div class="card purple">
+      <div class="card-label">Observable</div>
+      <div class="card-text">Interleave Prose + Code</div>
+      <div class="card-detail">Reactive documents where explanation IS running code. Inline annotations explain each cell. Readers modify and see results immediately.</div>
+    </div>
+  </div>
+  <p style="margin-top: 24px;"><strong style="color: #fff;">Shared pattern:</strong> Make the invisible visible, let users manipulate, annotate what's happening. Wheat does #1 but not #2 or #3.</p>
+  <span class="claim-ref">[r063]</span>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<!-- Slide 7: Learning Objectives -->
+<div class="slide" id="objectives">
+  <h3>Learning Objectives</h3>
+  <h2>What Should a Viewer Learn?</h2>
+  <div class="divider"></div>
+  <div class="objective-row">
+    <span class="objective-num">1</span>
+    <p><strong style="color: #fff;">UNDERSTAND</strong> that a Wheat sprint converts open-ended questions into typed, evidence-graded claims</p>
+  </div>
+  <div class="objective-row">
+    <span class="objective-num">2</span>
+    <p><strong style="color: #fff;">IDENTIFY</strong> the six claim types (constraint, factual, estimate, risk, recommendation, feedback) and when each is used</p>
+  </div>
+  <div class="objective-row">
+    <span class="objective-num">3</span>
+    <p><strong style="color: #fff;">EXPLAIN</strong> how evidence tiers work (stated &rarr; web &rarr; documented &rarr; tested &rarr; production) and why upgrading matters</p>
+  </div>
+  <div class="objective-row">
+    <span class="objective-num">4</span>
+    <p><strong style="color: #fff;">RECOGNIZE</strong> the conflict-resolution pattern: when claims contradict, challenges force resolution</p>
+  </div>
+  <div class="objective-row">
+    <span class="objective-num">5</span>
+    <p><strong style="color: #fff;">DESCRIBE</strong> how the compiler enforces quality gates before producing output artifacts</p>
+  </div>
+  <p style="margin-top: 20px;">Follows Bloom's taxonomy (lower &rarr; higher order). Measurable via self-check quiz at replay end.</p>
+  <span class="claim-ref">[r064]</span>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<!-- Slide 8: Recommendations -->
+<div class="slide" id="recommendations">
+  <h3>Recommendations</h3>
+  <h2>Four Design Changes</h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <div class="card green" style="margin-bottom: 16px;">
+        <div class="card-label">r065 &mdash; Contextual Annotations</div>
+        <div class="card-text">Tooltips on key frames</div>
+        <div class="card-detail">First claim: "This is a [type] claim." Evidence upgrade: "Upgraded because [artifact] verified it." Conflict: "These claims contradict &mdash; /challenge surfaces tensions."</div>
+      </div>
+      <div class="card green" style="margin-bottom: 16px;">
+        <div class="card-label">r066 &mdash; Three-Act Scaffolding</div>
+        <div class="card-text">Explore &rarr; Complicate &rarr; Resolve</div>
+        <div class="card-detail">Act 1: Claims and types. Act 2: Evidence, conflicts, challenges. Act 3: Compiler gates and output. Optional 1-question check between acts.</div>
+      </div>
+    </div>
+    <div>
+      <div class="card orange" style="margin-bottom: 16px;">
+        <div class="card-label">r067 &mdash; Dual Mode</div>
+        <div class="card-text">Learn mode + Review mode</div>
+        <div class="card-detail">Learn: annotations on, gating enabled, slower autoplay. Review: annotations off, free scrubbing, full speed. Prior art unanimously uses this pattern.</div>
+      </div>
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-label">r068 &mdash; Sandbox Mode</div>
+        <div class="card-text">Create your own claim</div>
+        <div class="card-detail">Let learners create a mock claim, set type and evidence tier, see dashboard and compiler response. Client-side only. Highest-leverage pedagogical feature.</div>
+      </div>
+    </div>
+  </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<!-- Slide 9: Risk -->
+<div class="slide" id="risk">
+  <h3>Risk</h3>
+  <h2>The Tutorial Trap</h2>
+  <div class="divider"></div>
+  <div class="card red" style="max-width: 70%; margin-bottom: 24px;">
+    <div class="card-label">r067</div>
+    <div class="card-text">Pedagogical scaffolding can make a tool feel like a tutorial</div>
+    <div class="card-detail">Developers who already understand Wheat will find gating and tooltips patronizing. Without dual-mode, pedagogical features annoy experts or are invisible to novices. LearnGitBranching, Redux DevTools, and Observable all solve this with sandbox/guided separation.</div>
+  </div>
+  <p><strong style="color: #fff;">Mitigation:</strong> Default to Review mode for returning users. First-time visitors get a single prompt: "New to Wheat? Try Learn mode." One click, no forced onboarding.</p>
+  <div style="margin-top: 32px; padding: 20px; background: var(--bg-card); border-radius: 12px; border-left: 4px solid var(--accent);">
+    <h4 style="color: var(--accent-light); margin-bottom: 12px;">Next steps</h4>
+    <p style="font-family: monospace; font-size: 11pt; color: var(--text-muted); margin-bottom: 6px;">/prototype &mdash; build annotation overlay for replay viewer</p>
+    <p style="font-family: monospace; font-size: 11pt; color: var(--text-muted); margin-bottom: 6px;">/challenge r066 &mdash; stress-test whether three-act structure fits real sprint data</p>
+    <p style="font-family: monospace; font-size: 11pt; color: var(--text-muted); margin-bottom: 6px;">/witness r060 <url> &mdash; corroborate split-attention effect with empirical study</p>
+    <p style="font-family: monospace; font-size: 11pt; color: var(--text-muted);">/blind-spot &mdash; recheck for remaining gaps after pedagogy research</p>
+  </div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<script>
+  // Slide nav active state
+  const slides = document.querySelectorAll('.slide');
+  const navLinks = document.querySelectorAll('.slide-nav a');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = Array.from(slides).indexOf(entry.target);
+        navLinks.forEach((l, i) => l.classList.toggle('active', i === idx));
+      }
+    });
+  }, { threshold: 0.5 });
+  slides.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

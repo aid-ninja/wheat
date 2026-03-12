@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Farmer</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --bg2: #1e293b;
+    --bg3: #263548;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --orange: #f59e0b;
+    --red: #ef4444;
+    --purple: #a78bfa;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --dim: #64748b;
+    --border: rgba(255,255,255,0.06);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Layout */
+  .app { display: flex; flex-direction: column; height: 100vh; }
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+    padding-left: calc(24px + env(safe-area-inset-left));
+    padding-right: calc(24px + env(safe-area-inset-right));
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .header h1 { font-size: 18px; font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(135deg, #f0a030, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .header .status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .header .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
+  .header .dot.connected { background: var(--green); }
+  .trust-badge {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin-left: 8px;
+  }
+  .trust-badge.paranoid { background: rgba(239,68,68,0.15); color: var(--red); }
+  .trust-badge.standard { background: rgba(245,158,11,0.15); color: var(--orange); }
+  .trust-badge.autonomous { background: rgba(34,197,94,0.15); color: var(--green); }
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    padding: 0 24px;
+  }
+  .tab {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent-light); border-bottom-color: var(--accent); }
+  .tab .badge {
+    display: inline-block;
+    background: var(--red);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .content { flex: 1; overflow-y: auto; padding: 24px; }
+
+  /* Permissions View */
+  .perm-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    border-left: 4px solid var(--orange);
+    animation: slideIn 0.3s ease-out;
+  }
+  .perm-card.resolved { opacity: 0.5; border-left-color: var(--dim); }
+  .perm-card.danger { border-left-color: var(--red); background: rgba(239,68,68,0.05); }
+  .perm-card.danger .tool-name { color: var(--red); }
+  .perm-card.question-card { border-left-color: var(--accent); }
+  .perm-card .tool-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .perm-card.question-card .tool-name { color: var(--accent-light); }
+  .perm-card .tool-input {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    background: var(--bg);
+    padding: 12px;
+    border-radius: 8px;
+    margin: 8px 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: var(--text);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .perm-card .meta {
+    font-size: 12px;
+    color: var(--dim);
+    margin-bottom: 12px;
+  }
+  .perm-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 8px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-allow { background: var(--green); color: #000; }
+  .btn-allow:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-deny { background: var(--red); color: #fff; }
+  .btn-deny:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-sm { padding: 4px 12px; font-size: 12px; }
+  .btn-blue { background: var(--accent); color: #fff; }
+  .btn-blue:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+  /* Quick rules dropdown */
+  .quick-rules {
+    position: relative;
+    margin-left: auto;
+  }
+  .quick-rules-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .quick-rules-btn:hover { color: var(--text); border-color: var(--accent); }
+  .quick-rules-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    bottom: 100%;
+    margin-bottom: 4px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 0;
+    min-width: 260px;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .quick-rules-menu.open { display: block; }
+  .quick-rules-menu .qr-item {
+    padding: 8px 16px;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .quick-rules-menu .qr-item:hover {
+    background: var(--bg3);
+    color: var(--text);
+  }
+
+  /* Question input */
+  .question-input {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    margin-top: 8px;
+    resize: vertical;
+    min-height: 40px;
+  }
+  .question-input:focus { outline: none; border-color: var(--accent-light); box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+
+  /* Activity View */
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .activity-icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .activity-icon.success { background: rgba(34,197,94,0.15); color: var(--green); }
+  .activity-icon.failure { background: rgba(239,68,68,0.15); color: var(--red); }
+  .activity-icon.decision { background: rgba(59,130,246,0.15); color: var(--accent-light); }
+  .activity-tool { font-weight: 600; color: var(--text); }
+  .activity-detail { color: var(--muted); font-family: monospace; font-size: 12px; }
+  .activity-time { color: var(--dim); font-size: 11px; margin-left: auto; flex-shrink: 0; }
+
+  /* Claims View */
+  .claim-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .claim-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .claim-id {
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--accent-light);
+    background: rgba(59,130,246,0.12);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .claim-type {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .claim-type.constraint { color: var(--red); background: rgba(239,68,68,0.12); }
+  .claim-type.factual { color: var(--green); background: rgba(34,197,94,0.12); }
+  .claim-type.risk { color: var(--orange); background: rgba(245,158,11,0.12); }
+  .claim-type.recommendation { color: var(--purple); background: rgba(167,139,250,0.12); }
+  .claim-type.estimate { color: var(--accent-light); background: rgba(59,130,246,0.12); }
+  .claim-type.feedback { color: #f472b6; background: rgba(244,114,182,0.12); }
+  .claim-topic { font-size: 11px; color: var(--dim); }
+  .claim-content { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .claim-evidence {
+    font-size: 11px; margin-top: 8px; color: var(--dim);
+  }
+  .evidence-bar {
+    display: inline-block;
+    height: 4px;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .evidence-bar.stated { width: 20px; background: var(--dim); }
+  .evidence-bar.web { width: 35px; background: var(--orange); }
+  .evidence-bar.documented { width: 55px; background: var(--accent); }
+  .evidence-bar.tested { width: 75px; background: var(--green); }
+  .evidence-bar.production { width: 100px; background: var(--purple); }
+
+  /* Sprint Status */
+  .sprint-meta {
+    background: var(--bg2);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+  .sprint-meta h2 { font-size: 18px; margin-bottom: 8px; }
+  .sprint-meta .question { font-size: 14px; color: var(--muted); }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .stat-card {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-card .num { font-size: 28px; font-weight: 700; }
+  .stat-card .label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* Topic filter */
+  .topic-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .topic-chip {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: var(--bg2);
+    color: var(--muted);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: all 0.15s;
+  }
+  .topic-chip:hover, .topic-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* Rules View */
+  .rules-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .rules-section h3 {
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+  }
+  .trust-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .trust-btn {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--muted);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    font-size: 13px;
+  }
+  .trust-btn:hover { border-color: var(--dim); color: var(--text); }
+  .trust-btn.active { border-color: var(--accent); color: var(--text); background: rgba(59,130,246,0.08); }
+  .trust-btn .trust-label { font-weight: 600; font-size: 14px; display: block; margin-bottom: 4px; }
+  .trust-btn .trust-desc { font-size: 11px; color: var(--dim); }
+  .trust-btn.active .trust-desc { color: var(--muted); }
+
+  .rule-category {
+    margin-bottom: 16px;
+  }
+  .rule-category-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+  .rule-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .rule-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 13px;
+    user-select: none;
+  }
+  .rule-check:hover { border-color: var(--dim); }
+  .rule-check.active { border-color: var(--green); background: rgba(34,197,94,0.08); color: var(--green); }
+  .rule-check input[type="checkbox"] { display: none; }
+
+  .active-rules-list {
+    margin-top: 12px;
+  }
+  .active-rule-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--bg);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .active-rule-item .rule-tool {
+    font-weight: 600;
+    color: var(--green);
+  }
+  .active-rule-item .rule-pattern {
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--dim);
+  }
+  .active-rule-item .rule-remove {
+    color: var(--red);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 4px;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+  }
+  .active-rule-item .rule-remove:hover { opacity: 1; }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--dim);
+  }
+  .empty .icon { font-size: 48px; margin-bottom: 12px; }
+
+  @keyframes slideIn {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Mobile */
+  @media (max-width: 640px) {
+    .header { padding: 10px 16px; }
+    .content { padding: 16px; }
+    .tabs { padding: 0 16px; overflow-x: auto; }
+    .perm-actions { flex-direction: column; }
+    .btn { width: 100%; text-align: center; }
+    .trust-selector { flex-direction: column; }
+    .quick-rules { margin-left: 0; margin-top: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="header">
+    <h1>farmer</h1>
+    <div class="status">
+      <div class="dot" id="statusDot"></div>
+      <span id="statusText">Connecting...</span>
+      <span class="trust-badge paranoid" id="trustBadge">paranoid</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="permissions">
+      Permissions <span class="badge" id="permBadge" style="display:none">0</span>
+    </div>
+    <div class="tab" data-tab="activity">Activity</div>
+    <div class="tab" data-tab="claims">Claims</div>
+    <div class="tab" data-tab="sprint">Sprint</div>
+    <div class="tab" data-tab="rules">Rules</div>
+    <div class="tab" data-tab="agents">Agents <span class="badge" id="agentBadge" style="display:none">0</span></div>
+    <div class="tab" data-tab="messages">Messages <span class="badge" id="msgBadge" style="display:none">0</span></div>
+  </div>
+
+  <div class="content" id="content"></div>
+</div>
+
+<script>
+const TOKEN = '{{TOKEN}}';
+const API = (path) => `${location.origin}${path}?token=${TOKEN}`;
+
+let evtSource;
+let state = { pending: [], activity: [], messages: [], claims: null, compilation: null, trustLevel: 'paranoid', sessionRules: [], agents: [] };
+let activeTab = 'permissions';
+let topicFilter = null;
+let openQuickRules = null; // requestId of open quick-rules dropdown
+
+// --- Connection: always poll, SSE upgrades if it works ---
+let pollInterval = null;
+
+function connect() {
+  // Always start polling immediately
+  poll();
+  pollInterval = setInterval(poll, 2000);
+
+  // Also try SSE — if it works, it gives faster updates
+  try {
+    evtSource = new EventSource(`${location.origin}/events?token=${TOKEN}`);
+    evtSource.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      handleMessage(msg);
+      document.getElementById('statusText').textContent = 'Connected (live)';
+    };
+    evtSource.onerror = () => { evtSource.close(); };
+  } catch { /* SSE not available, polling handles it */ }
+}
+
+let prevPendingIds = new Set();
+let lastPollHash = '';
+
+async function poll() {
+  try {
+    const res = await fetch(`${location.origin}/api/state?token=${TOKEN}`);
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+
+    // Detect new pending items for notifications
+    const newPending = (data.pending || []);
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      for (const p of newPending) {
+        const id = p.id || p.requestId;
+        if (!prevPendingIds.has(id)) {
+          if (p.isQuestion) {
+            new Notification('Claude Code has a question', { body: p.prompt, tag: id });
+          } else {
+            new Notification(`${p.tool_name} needs approval`, { body: formatInput(p.tool_input), tag: id });
+          }
+        }
+      }
+    }
+    prevPendingIds = new Set(newPending.map(p => p.id || p.requestId));
+
+    // Auto-clear stale pending items (older than 2 min = already timed out server-side)
+    const now = Date.now();
+    const freshPending = newPending.filter(p => !p.timestamp || (now - p.timestamp) < 130000);
+
+    // Only re-render if data actually changed
+    const newState = {
+      pending: freshPending,
+      activity: data.activity || [],
+      messages: data.messages || [],
+      claims: data.claims,
+      compilation: data.compilation,
+      trustLevel: data.trustLevel,
+      sessionRules: data.sessionRules || [],
+    };
+    const changed = JSON.stringify(newState) !== lastPollHash;
+    if (changed) {
+      Object.assign(state, newState);
+      lastPollHash = JSON.stringify(newState);
+      render();
+    }
+    document.getElementById('statusDot').className = 'dot connected';
+    document.getElementById('statusText').textContent = 'Connected (polling)';
+  } catch (err) {
+    document.getElementById('statusDot').className = 'dot';
+    document.getElementById('statusText').textContent = 'Error: ' + (err.message || err);
+  }
+}
+
+function handleMessage(msg) {
+  switch (msg.type) {
+    case 'init':
+      state = { ...state, ...msg.data };
+      break;
+    case 'permission_request':
+      state.pending.push(msg.data);
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        new Notification(`${msg.data.tool_name} needs approval`, {
+          body: formatInput(msg.data.tool_input),
+          tag: msg.data.requestId,
+        });
+      }
+      break;
+    case 'permission_resolved':
+      state.pending = state.pending.filter(p => p.requestId !== msg.data.requestId);
+      break;
+    case 'permission_expired':
+      state.pending = state.pending.filter(p => p.requestId !== msg.data.requestId);
+      break;
+    case 'notification_card':
+      if (msg.data.tool_name === 'Message') {
+        state.messages.push({ content: msg.data.prompt, timestamp: msg.data.timestamp });
+        if (state.messages.length > 50) state.messages.shift();
+      } else {
+        state.activity.unshift({ type: 'info', tool_name: msg.data.tool_name, tool_input: { prompt: msg.data.prompt }, timestamp: msg.data.timestamp });
+        if (state.activity.length > 200) state.activity.pop();
+      }
+      break;
+    case 'message':
+      state.messages.push(msg.data);
+      if (state.messages.length > 50) state.messages.shift();
+      break;
+    case 'auto_approved':
+      // Flash in activity, no pending entry
+      break;
+    case 'activity':
+      state.activity.push(msg.data);
+      if (state.activity.length > 200) state.activity.shift();
+      break;
+    case 'claims':
+      state.claims = msg.data;
+      break;
+    case 'compilation':
+      state.compilation = msg.data;
+      break;
+    case 'trust_level':
+      state.trustLevel = msg.data.level;
+      updateTrustBadge();
+      break;
+    case 'rules_updated':
+      state.sessionRules = msg.data.sessionRules;
+      break;
+    case 'agent_start':
+      state.agents = state.agents.filter(a => a.id !== msg.data.id);
+      state.agents.push({ ...msg.data, agent_type: msg.data.agentType, status: 'running', startedAt: Date.now() });
+      break;
+    case 'agent_stop':
+      state.agents = state.agents.map(a => a.id === msg.data.id ? { ...a, status: 'done', stoppedAt: Date.now() } : a);
+      break;
+    case 'notification':
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        new Notification(msg.data.title, { body: msg.data.body });
+      }
+      break;
+  }
+  render();
+}
+
+// --- Actions ---
+async function decide(requestId, allow) {
+  await fetch(API('/api/decide'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requestId, allow, reason: allow ? 'Approved remotely' : 'Denied remotely' }),
+  });
+}
+
+async function respondToQuestion(requestId) {
+  const input = document.getElementById('question-input-' + requestId);
+  if (!input) return;
+  await fetch(API('/api/decide'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requestId, response: input.value }),
+  });
+}
+
+async function setTrustLevel(level) {
+  await fetch(API('/api/trust-level'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ level }),
+  });
+  state.trustLevel = level;
+  updateTrustBadge();
+  render();
+}
+
+async function toggleRule(tool) {
+  const existing = state.sessionRules.find(r => r.tool === tool && !r.pattern);
+  const action = existing ? 'remove' : 'add';
+  const resp = await fetch(API('/api/rules'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, rule: { tool } }),
+  });
+  const data = await resp.json();
+  if (data.sessionRules) state.sessionRules = data.sessionRules;
+  render();
+}
+
+async function addQuickRule(tool) {
+  const existing = state.sessionRules.find(r => r.tool === tool && !r.pattern);
+  if (!existing) {
+    const resp = await fetch(API('/api/rules'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'add', rule: { tool } }),
+    });
+    const data = await resp.json();
+    if (data.sessionRules) state.sessionRules = data.sessionRules;
+  }
+  openQuickRules = null;
+  render();
+}
+
+async function addQuickRuleGroup(tools) {
+  for (const tool of tools) {
+    const existing = state.sessionRules.find(r => r.tool === tool && !r.pattern);
+    if (!existing) {
+      const resp = await fetch(API('/api/rules'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add', rule: { tool } }),
+      });
+      const data = await resp.json();
+      if (data.sessionRules) state.sessionRules = data.sessionRules;
+    }
+  }
+  openQuickRules = null;
+  render();
+}
+
+async function removeRule(tool, pattern) {
+  const resp = await fetch(API('/api/rules'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'remove', rule: { tool, pattern: pattern || undefined } }),
+  });
+  const data = await resp.json();
+  if (data.sessionRules) state.sessionRules = data.sessionRules;
+  render();
+}
+
+function toggleQuickRulesMenu(requestId, event) {
+  event.stopPropagation();
+  openQuickRules = openQuickRules === requestId ? null : requestId;
+  render();
+}
+
+function updateTrustBadge() {
+  const badge = document.getElementById('trustBadge');
+  badge.textContent = state.trustLevel;
+  badge.className = 'trust-badge ' + state.trustLevel;
+}
+
+// --- Render ---
+function render() {
+  updateBadge();
+  updateTrustBadge();
+  const el = document.getElementById('content');
+  switch (activeTab) {
+    case 'permissions': el.innerHTML = renderPermissions(); break;
+    case 'activity': el.innerHTML = renderActivity(); break;
+    case 'claims': el.innerHTML = renderClaims(); break;
+    case 'sprint': el.innerHTML = renderSprint(); break;
+    case 'rules': el.innerHTML = renderRules(); break;
+    case 'agents': el.innerHTML = renderAgents(); break;
+    case 'messages': el.innerHTML = renderMessages(); break;
+  }
+  // Update agents badge
+  const ab = document.getElementById('agentBadge');
+  const running = state.agents.filter(a => a.status === 'running').length;
+  ab.style.display = running > 0 ? 'inline-block' : 'none';
+  ab.textContent = running;
+  const mb = document.getElementById('msgBadge');
+  mb.style.display = state.messages.length > 0 ? 'inline-block' : 'none';
+  mb.textContent = state.messages.length;
+  ab.style.background = 'var(--accent)';
+}
+
+function updateBadge() {
+  const badge = document.getElementById('permBadge');
+  const n = state.pending.length;
+  badge.style.display = n > 0 ? 'inline-block' : 'none';
+  badge.textContent = n;
+  document.title = n > 0 ? `(${n}) Farmer` : 'Farmer';
+}
+
+function renderPermissions() {
+  if (state.pending.length === 0) {
+    return `<div class="empty"><div class="icon">&#10003;</div><p>No pending permissions</p><p style="font-size:12px;margin-top:4px;">Claude Code will send requests here when it needs approval</p></div>`;
+  }
+  return state.pending.map(p => {
+    if (p.isQuestion) {
+      return renderQuestionCard(p);
+    }
+    return renderPermissionCard(p);
+  }).join('');
+}
+
+function describePermission(p) {
+  const t = p.tool_name || '';
+  const i = p.tool_input || {};
+  if (t === 'Bash') return { icon: '&#9654;', title: 'Run command', detail: i.command || '', danger: /\brm\b|sudo|--force|--hard/.test(i.command || '') };
+  if (t === 'Edit') return { icon: '&#9998;', title: 'Edit file', detail: i.file_path || '' };
+  if (t === 'Write') return { icon: '&#128190;', title: 'Create/overwrite file', detail: i.file_path || '' };
+  if (t === 'Agent') return { icon: '&#129302;', title: 'Launch agent', detail: i.description || '' };
+  if (t === 'Read') return { icon: '&#128196;', title: 'Read file', detail: i.file_path || '' };
+  return { icon: '&#128274;', title: `${t} permission`, detail: formatInput(i) };
+}
+
+function renderPermissionCard(p) {
+  const readTools = ['Read', 'Grep', 'Glob'];
+  const toolName = p.tool_name || '';
+  const isReadTool = readTools.includes(toolName);
+  const desc = describePermission(p);
+
+  return `
+    <div class="perm-card${desc.danger ? ' danger' : ''}" id="perm-${p.requestId}">
+      <div class="tool-name">${desc.icon} ${esc(desc.title)}</div>
+      <div class="tool-input" style="font-family:monospace;font-size:12px;background:var(--bg);padding:8px;border-radius:6px;margin:6px 0;word-break:break-all;">${esc(desc.detail)}</div>
+      <div class="perm-actions">
+        <button class="btn btn-allow" onclick="decide('${esc(p.requestId)}', true)">Allow</button>
+        <button class="btn btn-deny" onclick="decide('${esc(p.requestId)}', false)">Deny</button>
+        <div class="quick-rules">
+          <button class="quick-rules-btn" onclick="toggleQuickRulesMenu('${esc(p.requestId)}', event)">Quick Rules &#9662;</button>
+          <div class="quick-rules-menu ${openQuickRules === p.requestId ? 'open' : ''}">
+            <div class="qr-item" onclick="addQuickRule('${esc(toolName)}'); decide('${esc(p.requestId)}', true)">Always allow <strong>${esc(toolName)}</strong> this session</div>
+            ${isReadTool ? `<div class="qr-item" onclick="addQuickRuleGroup(['Read','Grep','Glob']); decide('${esc(p.requestId)}', true)">Always allow all <strong>Read tools</strong></div>` : ''}
+            ${toolName === 'Edit' || toolName === 'Write' ? `<div class="qr-item" onclick="addQuickRuleGroup(['Edit','Write']); decide('${esc(p.requestId)}', true)">Always allow all <strong>Write tools</strong></div>` : ''}
+            ${toolName === 'WebFetch' || toolName === 'WebSearch' ? `<div class="qr-item" onclick="addQuickRuleGroup(['WebFetch','WebSearch']); decide('${esc(p.requestId)}', true)">Always allow all <strong>Web tools</strong></div>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderQuestionCard(p) {
+  return `
+    <div class="perm-card question-card" id="perm-${p.requestId}">
+      <div class="tool-name">&#63; Question from Claude Code</div>
+      <div class="meta">Session ${esc((p.session_id||'').slice(0,8))}</div>
+      <div class="tool-input">${esc(p.prompt || '')}</div>
+      <textarea class="question-input" id="question-input-${esc(p.requestId)}" placeholder="Type your response..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();respondToQuestion('${esc(p.requestId)}')}"></textarea>
+      <div class="perm-actions">
+        <button class="btn btn-blue" onclick="respondToQuestion('${esc(p.requestId)}')">Send Response</button>
+      </div>
+    </div>
+  `;
+}
+
+function describeAction(a) {
+  const t = a.tool_name || '';
+  const i = a.tool_input || {};
+  if (t === 'Read') return { icon: '&#128196;', verb: 'Read file', detail: i.file_path || '' };
+  if (t === 'Write') return { icon: '&#9998;', verb: 'Wrote file', detail: i.file_path || '' };
+  if (t === 'Edit') return { icon: '&#9998;', verb: 'Edited file', detail: i.file_path || '' };
+  if (t === 'Bash') return { icon: '&#9654;', verb: 'Ran command', detail: i.command || '' };
+  if (t === 'Grep') return { icon: '&#128269;', verb: 'Searched', detail: `"${i.pattern || ''}" ${i.path ? 'in ' + i.path : ''}` };
+  if (t === 'Glob') return { icon: '&#128193;', verb: 'Found files', detail: i.pattern || '' };
+  if (t === 'Agent') return { icon: '&#129302;', verb: 'Launched agent', detail: i.description || i.subagent_type || '' };
+  if (t === 'WebFetch') return { icon: '&#127760;', verb: 'Fetched URL', detail: i.url || '' };
+  if (t === 'WebSearch') return { icon: '&#128269;', verb: 'Web search', detail: i.query || '' };
+  if (t === 'Notification' || a.type === 'info') return { icon: '&#128172;', verb: 'Info', detail: i.prompt || '' };
+  return { icon: '&#9881;', verb: t, detail: formatInput(i) };
+}
+
+function renderActivity() {
+  if (state.activity.length === 0) {
+    return `<div class="empty"><div class="icon">&#9881;</div><p>No activity yet</p><p style="font-size:12px;margin-top:4px;">Tool calls will appear here as Claude Code works</p></div>`;
+  }
+  return [...state.activity].reverse().map(a => {
+    const d = describeAction(a);
+    const failCls = a.type === 'failure' ? ' style="border-left:2px solid var(--red);padding-left:8px;"' : '';
+    const decisionLabel = a.decision === 'auto-allowed'
+      ? ` <span style="color:var(--green);font-size:11px;">auto</span>`
+      : a.decision === 'allowed'
+        ? ` <span style="color:var(--green);font-size:11px;">approved</span>`
+        : a.decision === 'denied'
+          ? ` <span style="color:var(--red);font-size:11px;">denied</span>`
+          : '';
+    return `
+      <div class="activity-item"${failCls}>
+        <div class="activity-icon" style="font-size:16px;">${d.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;">${esc(d.verb)}${decisionLabel}</div>
+          <div class="activity-detail" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(d.detail)}</div>
+        </div>
+        <div class="activity-time">${timeAgo(a.timestamp)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderClaims() {
+  if (!state.claims || !state.claims.claims) {
+    return `<div class="empty"><div class="icon">&#128203;</div><p>No claims loaded</p><p style="font-size:12px;margin-top:4px;">Point the server at your claims.json with --claims</p></div>`;
+  }
+
+  const claims = state.claims.claims;
+  const topics = [...new Set(claims.map(c => c.topic))];
+
+  let filtered = topicFilter ? claims.filter(c => c.topic === topicFilter) : claims;
+
+  return `
+    <div class="topic-filters">
+      <div class="topic-chip ${!topicFilter ? 'active' : ''}" onclick="topicFilter=null;render()">All (${claims.length})</div>
+      ${topics.map(t => {
+        const n = claims.filter(c => c.topic === t).length;
+        return `<div class="topic-chip ${topicFilter === t ? 'active' : ''}" onclick="topicFilter='${esc(t)}';render()">${esc(t)} (${n})</div>`;
+      }).join('')}
+    </div>
+    ${filtered.map(c => `
+      <div class="claim-card">
+        <div class="claim-header">
+          <span class="claim-id">${esc(c.id)}</span>
+          <span class="claim-type ${esc(c.type)}">${esc(c.type)}</span>
+          <span class="claim-topic">${esc(c.topic)}</span>
+        </div>
+        <div class="claim-content">${esc(c.content)}</div>
+        <div class="claim-evidence">
+          <span class="evidence-bar ${esc(c.evidence)}"></span>
+          ${esc(c.evidence)} · ${esc(c.phase_added)} phase
+          ${c.tags ? ` · ${c.tags.map(t => `<span style="color:var(--dim)">#${esc(t)}</span>`).join(' ')}` : ''}
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function renderSprint() {
+  if (!state.claims) {
+    return `<div class="empty"><div class="icon">&#128640;</div><p>No sprint data</p></div>`;
+  }
+
+  const meta = state.claims.meta;
+  const claims = state.claims.claims;
+  const types = {};
+  const evidence = {};
+  const topics = {};
+  for (const c of claims) {
+    types[c.type] = (types[c.type] || 0) + 1;
+    evidence[c.evidence] = (evidence[c.evidence] || 0) + 1;
+    topics[c.topic] = (topics[c.topic] || 0) + 1;
+  }
+
+  return `
+    <div class="sprint-meta">
+      <h2>${esc(meta.phase)} phase</h2>
+      <div class="question">${esc(meta.question)}</div>
+      <div style="font-size:12px;color:var(--dim);margin-top:4px;">
+        Started ${esc(meta.initiated)} · Audience: ${(meta.audience||[]).map(esc).join(', ')}
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="num" style="color:var(--accent-light)">${claims.length}</div>
+        <div class="label">Total Claims</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" style="color:var(--green)">${claims.filter(c => c.status === 'active').length}</div>
+        <div class="label">Active</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" style="color:var(--orange)">${Object.keys(topics).length}</div>
+        <div class="label">Topics</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" style="color:var(--purple)">${state.pending.length}</div>
+        <div class="label">Pending Perms</div>
+      </div>
+    </div>
+
+    <h3 style="font-size:13px;color:var(--muted);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.08em;">By Type</h3>
+    ${(() => {
+      const maxLabel = Math.max(...Object.keys(types).map(t => t.length));
+      const labelW = Math.max(110, maxLabel * 10 + 20);
+      return Object.entries(types).map(([t, n]) => `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span class="claim-type ${t}" style="min-width:${labelW}px;max-width:${labelW}px;text-align:center;">${t}</span>
+          <div style="flex:1;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;">
+            <div style="width:${(n/claims.length*100).toFixed(0)}%;height:100%;background:var(--accent);border-radius:4px;"></div>
+          </div>
+          <span style="font-size:12px;color:var(--dim);min-width:24px;text-align:right;">${n}</span>
+        </div>
+      `).join('');
+    })()}
+
+    <h3 style="font-size:13px;color:var(--muted);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.08em;">By Evidence</h3>
+    ${(() => {
+      const evLabels = ['stated','web','documented','tested','production'].filter(e => evidence[e]);
+      const maxLabel = Math.max(...evLabels.map(e => e.length));
+      const labelW = Math.max(110, maxLabel * 10 + 20);
+      const evColors = { stated: '#94a3b8', web: '#60a5fa', documented: '#a78bfa', tested: '#34d399', production: '#fbbf24' };
+      return evLabels.map(e => `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:11px;font-weight:600;color:${evColors[e]};background:${evColors[e]}22;padding:3px 10px;border-radius:99px;min-width:${labelW}px;max-width:${labelW}px;text-align:center;">${e}</span>
+          <div style="flex:1;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;">
+            <div style="width:${(evidence[e]/claims.length*100).toFixed(0)}%;height:100%;background:${evColors[e]};border-radius:4px;"></div>
+          </div>
+          <span style="font-size:12px;color:var(--dim);min-width:24px;text-align:right;">${evidence[e]}</span>
+        </div>
+      `).join('');
+    })()}
+
+    <h3 style="font-size:13px;color:var(--muted);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.08em;">Output Artifacts</h3>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      ${['brief.html','presentation.html','problem-statement.html','dashboard.html','replay.html'].map(f => `
+        <a href="/output/${f}?token=${TOKEN}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg2);border-radius:8px;color:var(--text);text-decoration:none;font-size:13px;">
+          <span style="font-size:16px;">&#128196;</span>
+          <span>${f}</span>
+          <span style="margin-left:auto;color:var(--dim);font-size:11px;">open &#8599;</span>
+        </a>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderRules() {
+  const categories = [
+    { name: 'Read tools', tools: ['Read', 'Grep', 'Glob'] },
+    { name: 'Write tools', tools: ['Edit', 'Write'] },
+    { name: 'Execution', tools: ['Bash'] },
+    { name: 'Web', tools: ['WebFetch', 'WebSearch'] },
+  ];
+
+  const activeRuleSet = new Set(state.sessionRules.filter(r => !r.pattern).map(r => r.tool));
+
+  return `
+    <div class="rules-section">
+      <h3>Trust Level</h3>
+      <div class="trust-selector">
+        <div class="trust-btn ${state.trustLevel === 'paranoid' ? 'active' : ''}" onclick="setTrustLevel('paranoid')">
+          <span class="trust-label">Paranoid</span>
+          <span class="trust-desc">Approve everything manually</span>
+        </div>
+        <div class="trust-btn ${state.trustLevel === 'standard' ? 'active' : ''}" onclick="setTrustLevel('standard')">
+          <span class="trust-label">Standard</span>
+          <span class="trust-desc">Auto-approve Read, Grep, Glob, WebSearch, WebFetch</span>
+        </div>
+        <div class="trust-btn ${state.trustLevel === 'autonomous' ? 'active' : ''}" onclick="setTrustLevel('autonomous')">
+          <span class="trust-label">Autonomous</span>
+          <span class="trust-desc">Auto-approve all except dangerous Bash (rm, push, sudo...)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rules-section">
+      <h3>Session Rules</h3>
+      <p style="font-size:12px;color:var(--dim);margin-bottom:16px;">Toggle tools to auto-approve for this session. These override trust level.</p>
+      ${categories.map(cat => `
+        <div class="rule-category">
+          <div class="rule-category-title">${esc(cat.name)}</div>
+          <div class="rule-checkboxes">
+            ${cat.tools.map(tool => {
+              const isActive = activeRuleSet.has(tool);
+              return `
+                <label class="rule-check ${isActive ? 'active' : ''}" onclick="toggleRule('${esc(tool)}')">
+                  <input type="checkbox" ${isActive ? 'checked' : ''}>
+                  <span>${isActive ? '&#10003; ' : ''}${esc(tool)}</span>
+                </label>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="rules-section">
+      <h3>Active Auto-Approve Rules</h3>
+      ${state.sessionRules.length === 0
+        ? `<p style="font-size:12px;color:var(--dim);">No custom session rules active. Use checkboxes above or Quick Rules on permission cards.</p>`
+        : `<div class="active-rules-list">
+            ${state.sessionRules.map(r => `
+              <div class="active-rule-item">
+                <span class="rule-tool">${esc(r.tool)}</span>
+                ${r.pattern ? `<span class="rule-pattern">${esc(r.pattern)}</span>` : '<span class="rule-pattern">all</span>'}
+                <span class="rule-remove" onclick="removeRule('${esc(r.tool)}', '${esc(r.pattern || '')}')" title="Remove rule">&#10005;</span>
+              </div>
+            `).join('')}
+          </div>`
+      }
+    </div>
+  `;
+}
+
+function renderMessages() {
+  if (state.messages.length === 0) {
+    return `<div class="empty"><div class="icon">&#128172;</div><p>No messages yet</p><p style="font-size:12px;margin-top:4px;">Claude's text responses will appear here</p></div>`;
+  }
+  return [...state.messages].reverse().map(m => `
+    <div style="background:var(--bg2);border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid var(--border);border-left:3px solid var(--accent);">
+      <div style="font-size:12px;color:var(--dim);margin-bottom:8px;">${timeAgo(m.timestamp)}</div>
+      <div style="font-size:13px;line-height:1.6;color:var(--text);white-space:pre-wrap;">${esc(m.content)}</div>
+    </div>
+  `).join('');
+}
+
+function renderAgents() {
+  const running = state.agents.filter(a => a.status === 'running');
+  const done = state.agents.filter(a => a.status === 'done');
+
+  if (state.agents.length === 0) {
+    return `<div class="empty"><div class="icon">&#9881;</div><p>No agents detected</p><p style="font-size:12px;margin-top:4px;">Subagents will appear here when Claude Code spawns them.<br>Requires SubagentStart/SubagentStop hooks.</p></div>`;
+  }
+
+  return `
+    ${running.length > 0 ? `
+      <div class="rules-section">
+        <h3>Running (${running.length})</h3>
+        ${running.map(a => `
+          <div class="active-rule-item" style="border-left:3px solid var(--green);padding-left:16px;">
+            <div>
+              <span class="rule-tool">${esc(a.agent_type || a.description || 'Agent')}</span>
+              <div style="font-size:11px;color:var(--dim);margin-top:2px;">${esc(a.id || '').slice(0,12)} · started ${timeAgo(a.startedAt)}</div>
+              ${a.prompt ? `<div style="font-size:12px;color:var(--muted);margin-top:4px;max-height:60px;overflow:hidden;">${esc((a.prompt||'').slice(0,200))}</div>` : ''}
+            </div>
+            <div style="font-size:20px;animation:pulse 2s infinite;">&#9679;</div>
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+    ${done.length > 0 ? `
+      <div class="rules-section">
+        <h3>Completed (${done.length})</h3>
+        ${done.map(a => `
+          <div class="active-rule-item" style="border-left:3px solid var(--dim);padding-left:16px;opacity:0.7;">
+            <div>
+              <span style="font-weight:600;color:var(--muted);">${esc(a.agent_type || a.description || 'Agent')}</span>
+              <div style="font-size:11px;color:var(--dim);margin-top:2px;">${esc(a.id || '').slice(0,12)} · ran ${timeAgo(a.startedAt)} ${a.stoppedAt ? '— done ' + timeAgo(a.stoppedAt) : ''}</div>
+            </div>
+            <span style="color:var(--green);">&#10003;</span>
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+  `;
+}
+
+// --- Helpers ---
+function formatInput(input) {
+  if (!input) return '';
+  if (input.command) return input.command;
+  if (input.file_path) return `${input.file_path}${input.content ? '\n' + input.content.slice(0, 500) : ''}`;
+  if (input.pattern) return `pattern: ${input.pattern}`;
+  if (input.prompt) return input.prompt.slice(0, 300);
+  return JSON.stringify(input, null, 2).slice(0, 500);
+}
+
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const diff = Math.floor((Date.now() - ts) / 1000);
+  if (diff < 5) return 'now';
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  return `${Math.floor(diff/3600)}h ago`;
+}
+
+// --- Tabs ---
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    activeTab = tab.dataset.tab;
+    render();
+  });
+});
+
+// Close quick-rules dropdowns on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.quick-rules') && openQuickRules) {
+    openQuickRules = null;
+    render();
+  }
+});
+
+// --- Notifications ---
+if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+
+// --- Boot ---
+connect();
+</script>
+</body>
+</html>

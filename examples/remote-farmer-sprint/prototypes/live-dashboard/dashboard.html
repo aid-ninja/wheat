@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wheat — Live Sprint</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #131825;
+    --surface2: #1a2030;
+    --surface3: #212738;
+    --border: rgba(255,255,255,0.05);
+    --border-b: rgba(255,255,255,0.08);
+    --text: #e8ecf4;
+    --text-mid: #8b95a8;
+    --text-dim: #7a839a;
+    --accent: #f0a030;
+    --accent-dim: rgba(240,160,48,0.10);
+    --blue: #4d8ef7;
+    --blue-dim: rgba(77,142,247,0.10);
+    --green: #34c759;
+    --green-dim: rgba(52,199,89,0.10);
+    --red: #ff453a;
+    --red-dim: rgba(255,69,58,0.10);
+    --purple: #b07df0;
+    --purple-dim: rgba(176,125,240,0.10);
+    --cyan: #32d1e0;
+    --cyan-dim: rgba(50,209,224,0.10);
+    --pink: #f270b0;
+    --pink-dim: rgba(242,112,176,0.10);
+
+    /* Phase colors */
+    --ph-define: #f0a030;
+    --ph-research: #4d8ef7;
+    --ph-prototype: #34c759;
+    --ph-evaluate: #b07df0;
+    --ph-feedback: #32d1e0;
+    --ph-define-dim: rgba(240,160,48,0.10);
+    --ph-research-dim: rgba(77,142,247,0.10);
+    --ph-prototype-dim: rgba(52,199,89,0.10);
+    --ph-evaluate-dim: rgba(176,125,240,0.10);
+    --ph-feedback-dim: rgba(50,209,224,0.10);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ── Top Bar ───────────────────────────────────────────── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,14,26,0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 52px;
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .topbar-logo {
+    font-size: 18px; font-weight: 800; letter-spacing: -0.04em;
+    color: var(--accent); flex-shrink: 0;
+  }
+
+  .topbar-sep { width: 1px; height: 20px; background: var(--border-b); flex-shrink: 0; }
+
+  .topbar-question {
+    flex: 1; font-size: 12px; color: var(--text-dim);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .tb-pills { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+
+  .pill {
+    font-size: 10px; font-weight: 600; padding: 3px 10px;
+    border-radius: 99px; letter-spacing: 0.02em;
+  }
+  .pill-phase { background: var(--blue-dim); color: var(--blue); }
+  .pill-count { background: rgba(255,255,255,0.04); color: var(--text-dim); }
+  .pill-ready { background: var(--green-dim); color: var(--green); }
+  .pill-blocked { background: var(--red-dim); color: var(--red); }
+
+  .live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  .disconnected .live-dot { background: var(--red); animation: none; }
+
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(52,199,89,0.5); }
+    50% { box-shadow: 0 0 0 4px rgba(52,199,89,0); }
+  }
+
+  /* ── Compiler Strip ───────────────────────────────────── */
+  .compiler {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 38px;
+    display: flex; align-items: center; gap: 2px;
+    overflow-x: auto;
+  }
+
+  .c-label {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--text-dim);
+    margin-right: 12px; flex-shrink: 0;
+  }
+
+  .c-pass {
+    display: flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 5px;
+    font-size: 11px; font-weight: 500; color: var(--text-dim);
+    transition: all 0.2s ease; white-space: nowrap;
+  }
+  .c-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(255,255,255,0.06); transition: all 0.2s; flex-shrink: 0;
+  }
+  .c-arr { color: rgba(255,255,255,0.08); font-size: 9px; flex-shrink: 0; }
+
+  .c-pass.done { color: var(--text-mid); }
+  .c-pass.done .c-dot { background: var(--green); }
+  .c-pass.running { color: var(--blue); background: var(--blue-dim); }
+  .c-pass.running .c-dot { background: var(--blue); animation: pulse 0.5s infinite; }
+  .c-pass.warn { color: var(--accent); }
+  .c-pass.warn .c-dot { background: var(--accent); }
+  .c-pass.fail { color: var(--red); }
+  .c-pass.fail .c-dot { background: var(--red); }
+
+  /* ── Layout ────────────────────────────────────────────── */
+  .layout {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 32px 64px;
+  }
+
+  /* ── Scoreboard ────────────────────────────────────────── */
+  .scoreboard {
+    display: flex; gap: 1px; margin-bottom: 28px;
+    background: var(--border); border-radius: 10px; overflow: hidden;
+  }
+
+  .sb-cell {
+    flex: 1; background: var(--surface); padding: 14px 16px;
+    text-align: center;
+  }
+
+  .sb-n { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .sb-l { font-size: 10px; color: var(--text-dim); font-weight: 500; margin-top: 2px; letter-spacing: 0.02em; }
+
+  /* ── Coverage Strip ────────────────────────────────────── */
+  .cov-strip {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+
+  .cov-chip {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px;
+    font-size: 11px; font-weight: 500; color: var(--text-mid);
+    transition: border-color 0.2s;
+  }
+  .cov-chip:hover { border-color: var(--border-b); }
+
+  .cov-dots { display: flex; gap: 3px; }
+  .cov-d {
+    width: 5px; height: 5px; border-radius: 50%;
+  }
+
+  .cov-tier-label {
+    font-size: 9px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; padding: 1px 5px; border-radius: 3px;
+  }
+
+  /* ── Timeline ──────────────────────────────────────────── */
+  .timeline { position: relative; }
+
+  .tl-line {
+    position: absolute; left: 15px; top: 0; bottom: 0;
+    width: 2px; background: var(--border-b);
+  }
+
+  /* Phase header node */
+  .tl-phase {
+    position: relative; padding-left: 44px;
+    margin-bottom: 4px;
+  }
+
+  .tl-phase-dot {
+    position: absolute; left: 8px; top: 4px;
+    width: 16px; height: 16px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tl-phase-dot::after {
+    content: ''; width: 8px; height: 8px; border-radius: 50%;
+  }
+
+  .tl-phase-head {
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 6px 0 2px;
+  }
+
+  .tl-phase-name {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .tl-phase-sub {
+    font-size: 11px; color: var(--text-dim); font-weight: 400;
+  }
+
+  .tl-phase-count {
+    font-size: 9px; font-weight: 600; padding: 1px 6px;
+    border-radius: 4px; margin-left: 4px;
+  }
+
+  /* Claim nodes */
+  .tl-claim {
+    position: relative; padding-left: 44px;
+    margin-bottom: 2px;
+  }
+
+  .tl-claim-dot {
+    position: absolute; left: 13px; top: 10px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-dim);
+    transition: all 0.2s;
+  }
+
+  .tl-claim-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 12px; border-radius: 6px;
+    cursor: pointer; transition: background 0.15s;
+    user-select: none;
+  }
+  .tl-claim-row:hover { background: rgba(255,255,255,0.03); }
+
+  .tl-claim-id {
+    font-size: 11px; font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+    min-width: 32px;
+  }
+
+  .tl-claim-type {
+    font-size: 9px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; padding: 1px 6px; border-radius: 3px;
+  }
+
+  .tl-claim-text {
+    flex: 1; font-size: 12px; color: var(--text-mid);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .tl-claim-ev {
+    font-size: 9px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; padding: 1px 5px; border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .tl-claim.superseded .tl-claim-row { opacity: 0.3; }
+  .tl-claim.superseded .tl-claim-text { text-decoration: line-through; }
+
+  /* Expanded claim detail */
+  .tl-detail {
+    margin-left: 12px; padding: 10px 16px 14px;
+    background: var(--surface2); border-radius: 8px;
+    margin-bottom: 4px; margin-top: 2px;
+    animation: detailIn 0.2s ease;
+    display: none;
+  }
+  .tl-detail.open { display: block; }
+
+  @keyframes detailIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .tl-detail-text {
+    font-size: 12px; color: var(--text-mid); line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  .tl-detail-meta {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    font-size: 10px; color: var(--text-dim);
+  }
+
+  .tl-detail-meta span { display: flex; align-items: center; gap: 4px; }
+
+  .tl-detail-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+  .tl-tag {
+    font-size: 9px; padding: 1px 6px; border-radius: 3px;
+    background: rgba(255,255,255,0.04); color: var(--text-dim);
+  }
+
+  /* Resolution inline event */
+  .tl-event {
+    position: relative; padding-left: 44px;
+    margin-bottom: 4px;
+  }
+
+  .tl-event-dot {
+    position: absolute; left: 11px; top: 8px;
+    width: 10px; height: 10px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 7px; line-height: 1;
+  }
+
+  .tl-event-body {
+    padding: 6px 12px; border-radius: 6px;
+    font-size: 11px; display: flex; align-items: center; gap: 8px;
+  }
+
+  .tl-event-body.resolved {
+    background: var(--green-dim); color: var(--green);
+  }
+  .tl-event-body.warning {
+    background: var(--accent-dim); color: var(--accent);
+  }
+
+  /* Phase spacer */
+  .tl-spacer { height: 20px; }
+
+  /* Now node */
+  .tl-now {
+    position: relative; padding-left: 44px; margin-top: 8px;
+  }
+
+  .tl-now-dot {
+    position: absolute; left: 8px; top: 4px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--green-dim);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tl-now-dot::after {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green); animation: pulse 2s ease-in-out infinite;
+  }
+
+  .tl-now-text {
+    font-size: 11px; color: var(--text-dim); padding-top: 2px;
+    font-style: italic;
+  }
+
+  /* ── New claim animation ───────────────────────────────── */
+  .tl-claim.new, .tl-event.new {
+    animation: slideIn 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ── Type colors ───────────────────────────────────────── */
+  .t-constraint { background: var(--red-dim); color: var(--red); }
+  .t-factual { background: var(--blue-dim); color: var(--blue); }
+  .t-estimate { background: var(--purple-dim); color: var(--purple); }
+  .t-risk { background: var(--pink-dim); color: var(--pink); }
+  .t-recommendation { background: var(--green-dim); color: var(--green); }
+  .t-feedback { background: var(--cyan-dim); color: var(--cyan); }
+
+  /* Evidence colors */
+  .ev-stated { background: rgba(255,255,255,0.04); color: var(--text-dim); }
+  .ev-web { background: var(--blue-dim); color: var(--blue); }
+  .ev-documented { background: var(--purple-dim); color: var(--purple); }
+  .ev-tested { background: var(--green-dim); color: var(--green); }
+  .ev-production { background: var(--accent-dim); color: var(--accent); }
+
+  /* Phase dot/name colors */
+  .ph-define .tl-phase-dot { background: var(--ph-define-dim); }
+  .ph-define .tl-phase-dot::after { background: var(--ph-define); }
+  .ph-define .tl-phase-name { color: var(--ph-define); }
+  .ph-define .tl-phase-count { background: var(--ph-define-dim); color: var(--ph-define); }
+  .ph-define .tl-claim-dot { background: var(--ph-define); opacity: 0.5; }
+
+  .ph-research .tl-phase-dot { background: var(--ph-research-dim); }
+  .ph-research .tl-phase-dot::after { background: var(--ph-research); }
+  .ph-research .tl-phase-name { color: var(--ph-research); }
+  .ph-research .tl-phase-count { background: var(--ph-research-dim); color: var(--ph-research); }
+  .ph-research .tl-claim-dot { background: var(--ph-research); opacity: 0.5; }
+
+  .ph-prototype .tl-phase-dot { background: var(--ph-prototype-dim); }
+  .ph-prototype .tl-phase-dot::after { background: var(--ph-prototype); }
+  .ph-prototype .tl-phase-name { color: var(--ph-prototype); }
+  .ph-prototype .tl-phase-count { background: var(--ph-prototype-dim); color: var(--ph-prototype); }
+  .ph-prototype .tl-claim-dot { background: var(--ph-prototype); opacity: 0.5; }
+
+  .ph-evaluate .tl-phase-dot { background: var(--ph-evaluate-dim); }
+  .ph-evaluate .tl-phase-dot::after { background: var(--ph-evaluate); }
+  .ph-evaluate .tl-phase-name { color: var(--ph-evaluate); }
+  .ph-evaluate .tl-phase-count { background: var(--ph-evaluate-dim); color: var(--ph-evaluate); }
+  .ph-evaluate .tl-claim-dot { background: var(--ph-evaluate); opacity: 0.5; }
+
+  .ph-feedback .tl-phase-dot { background: var(--ph-feedback-dim); }
+  .ph-feedback .tl-phase-dot::after { background: var(--ph-feedback); }
+  .ph-feedback .tl-phase-name { color: var(--ph-feedback); }
+  .ph-feedback .tl-phase-count { background: var(--ph-feedback-dim); color: var(--ph-feedback); }
+  .ph-feedback .tl-claim-dot { background: var(--ph-feedback); opacity: 0.5; }
+
+  /* Claim ID colors by phase */
+  .id-d { color: var(--ph-define); }
+  .id-r { color: var(--ph-research); }
+  .id-p { color: var(--ph-prototype); }
+  .id-e { color: var(--ph-evaluate); }
+  .id-f { color: var(--ph-feedback); }
+
+  /* ── Scrollbar ─────────────────────────────────────────── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 3px; }
+
+  /* ── Flash on update ───────────────────────────────────── */
+  .flash-ring {
+    animation: flashRing 0.6s ease;
+  }
+  @keyframes flashRing {
+    0% { box-shadow: 0 0 0 2px rgba(52,199,89,0.3); }
+    100% { box-shadow: 0 0 0 2px transparent; }
+  }
+
+  /* ── Responsive ────────────────────────────────────────── */
+  /* ── Focus styles (a11y) ──────────────────────────────── */
+  .tl-claim-row:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: -2px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.03);
+  }
+  .cov-chip:focus-visible, .slide-nav a:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 768px) {
+    .topbar, .compiler { padding-left: 16px; padding-right: 16px; }
+    .layout { padding: 16px; }
+    .scoreboard { flex-wrap: wrap; }
+    .sb-cell { min-width: 80px; }
+    .tl-claim-text { max-width: 200px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<header class="topbar" id="topbar">
+  <div class="topbar-logo">wheat</div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-question" id="hd-question">Loading...</div>
+  <div class="tb-pills">
+    <span class="pill pill-phase" id="hd-phase">-</span>
+    <span class="pill pill-count" id="hd-claims">-</span>
+    <span class="pill" id="hd-status">-</span>
+    <div class="live-dot" id="hd-live" role="status" aria-label="Connection status"></div>
+  </div>
+</header>
+
+<!-- Compiler Strip -->
+<div class="compiler" id="compiler">
+  <span class="c-label">Compiler</span>
+  <div class="c-pass" data-i="0"><div class="c-dot"></div>Schema</div><span class="c-arr">›</span>
+  <div class="c-pass" data-i="1"><div class="c-dot"></div>Types</div><span class="c-arr">›</span>
+  <div class="c-pass" data-i="2"><div class="c-dot"></div>Evidence</div><span class="c-arr">›</span>
+  <div class="c-pass" data-i="3"><div class="c-dot"></div>Conflicts</div><span class="c-arr">›</span>
+  <div class="c-pass" data-i="4"><div class="c-dot"></div>Resolve</div><span class="c-arr">›</span>
+  <div class="c-pass" data-i="5"><div class="c-dot"></div>Coverage</div><span class="c-arr">›</span>
+  <div class="c-pass" data-i="6"><div class="c-dot"></div>Ready</div>
+</div>
+
+<!-- Main Layout -->
+<main class="layout">
+  <!-- Scoreboard -->
+  <div class="scoreboard" id="scoreboard" role="status" aria-live="polite" aria-label="Sprint scoreboard">
+    <div class="sb-cell"><div class="sb-n" id="sb-total">-</div><div class="sb-l">Total Claims</div></div>
+    <div class="sb-cell"><div class="sb-n" id="sb-active" style="color:var(--green)">-</div><div class="sb-l">Active</div></div>
+    <div class="sb-cell"><div class="sb-n" id="sb-topics">-</div><div class="sb-l">Topics</div></div>
+    <div class="sb-cell"><div class="sb-n" id="sb-conflicts" style="color:var(--text-dim)">-</div><div class="sb-l">Conflicts</div></div>
+    <div class="sb-cell"><div class="sb-n" id="sb-evidence">-</div><div class="sb-l">Max Evidence</div></div>
+  </div>
+
+  <!-- Coverage Strip -->
+  <div class="cov-strip" id="cov-strip"></div>
+
+  <!-- Timeline -->
+  <div class="timeline" id="timeline" role="region" aria-label="Sprint timeline" aria-live="polite">
+    <div class="tl-line"></div>
+    <div id="tl-body"></div>
+  </div>
+</main>
+
+<script>
+let comp = null, claimsData = null, prevHash = null;
+
+const tierVal = { stated:1, web:2, documented:3, tested:4, production:5 };
+const tierNames = ['','stated','web','documented','tested','production'];
+const phaseOrder = ['define','research','prototype','evaluate','feedback'];
+const phaseLabels = { define:'Constraints defined', research:'Research findings', prototype:'Prototype findings', evaluate:'Evaluation results', feedback:'Stakeholder feedback' };
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+// ── SSE ─────────────────────────────────────────────────
+function connectSSE() {
+  const es = new EventSource('/events');
+  es.addEventListener('connected', () => {
+    document.getElementById('topbar').classList.remove('disconnected');
+    fetchAll();
+  });
+  es.addEventListener('compilation', () => fetchAll());
+  es.onerror = () => document.getElementById('topbar').classList.add('disconnected');
+}
+
+async function fetchAll() {
+  animatePasses();
+  try {
+    const [cr, clr, gr] = await Promise.all([
+      fetch('/compilation.json'), fetch('/claims.json'), fetch('/git-log')
+    ]);
+    comp = await cr.json();
+    claimsData = await clr.json();
+    const git = await gr.text();
+    if (comp.claims_hash !== prevHash) {
+      prevHash = comp.claims_hash;
+      render(git);
+    }
+  } catch(e) { console.error('fetch error:', e); }
+}
+
+// ── Compiler animation ──────────────────────────────────
+function animatePasses() {
+  const passes = document.querySelectorAll('.c-pass');
+  passes.forEach((p, i) => {
+    p.className = 'c-pass';
+    setTimeout(() => {
+      p.classList.add('running');
+      setTimeout(() => {
+        p.classList.remove('running');
+        p.classList.add('done');
+      }, 80);
+    }, i * 60);
+  });
+}
+
+function finalizeCompiler() {
+  if (!comp) return;
+  const passes = document.querySelectorAll('.c-pass');
+  if (comp.conflict_graph.unresolved.length > 0) passes[3].className = 'c-pass fail';
+  const weak = Object.values(comp.coverage).filter(c => c.status === 'weak').length;
+  if (weak > 0) passes[5].className = 'c-pass warn';
+  passes[6].className = comp.status === 'ready' ? 'c-pass done' : 'c-pass fail';
+}
+
+// ── Render ──────────────────────────────────────────────
+function render(git) {
+  if (!comp || !claimsData) return;
+  const m = comp.sprint_meta;
+
+  // Topbar
+  document.getElementById('hd-question').textContent = m.question || 'No sprint';
+  document.getElementById('hd-phase').textContent = m.phase;
+  document.getElementById('hd-claims').textContent = m.total_claims + ' claims';
+  const sb = document.getElementById('hd-status');
+  sb.textContent = comp.status;
+  sb.className = 'pill ' + (comp.status === 'ready' ? 'pill-ready' : 'pill-blocked');
+
+  setTimeout(finalizeCompiler, 480);
+
+  // Scoreboard
+  document.getElementById('sb-total').textContent = m.total_claims;
+  document.getElementById('sb-active').textContent = m.active_claims;
+  document.getElementById('sb-topics').textContent = Object.keys(comp.coverage).length;
+  const unres = comp.conflict_graph.unresolved.length;
+  const sbConf = document.getElementById('sb-conflicts');
+  sbConf.textContent = unres;
+  sbConf.style.color = unres > 0 ? 'var(--red)' : 'var(--green)';
+  // Max evidence across all topics
+  let maxTier = 0;
+  Object.values(comp.coverage).forEach(c => {
+    const v = tierVal[c.max_evidence] || 0;
+    if (v > maxTier) maxTier = v;
+  });
+  const sbEv = document.getElementById('sb-evidence');
+  sbEv.textContent = tierNames[maxTier] || '-';
+  sbEv.style.color = maxTier >= 4 ? 'var(--green)' : maxTier >= 3 ? 'var(--purple)' : maxTier >= 2 ? 'var(--blue)' : 'var(--text-dim)';
+
+  renderCoverage();
+  renderTimeline(git);
+
+  // Flash scoreboard
+  document.getElementById('scoreboard').classList.add('flash-ring');
+  setTimeout(() => document.getElementById('scoreboard').classList.remove('flash-ring'), 600);
+}
+
+// ── Coverage chips ──────────────────────────────────────
+function renderCoverage() {
+  const strip = document.getElementById('cov-strip');
+  const sorted = Object.entries(comp.coverage)
+    .sort((a,b) => (tierVal[b[1].max_evidence]||0) - (tierVal[a[1].max_evidence]||0));
+
+  let h = '';
+  sorted.forEach(([topic, d]) => {
+    const col = d.max_evidence === 'tested' || d.max_evidence === 'production'
+      ? 'var(--green)' : d.max_evidence === 'documented'
+      ? 'var(--purple)' : d.max_evidence === 'web'
+      ? 'var(--blue)' : 'var(--text-dim)';
+
+    // Dots = one per claim, colored by evidence tier of the topic
+    let dots = '';
+    for (let i = 0; i < d.claims; i++) {
+      dots += `<div class="cov-d" style="background:${col}; opacity:${0.4 + (i/d.claims)*0.6}"></div>`;
+    }
+
+    h += `<div class="cov-chip">
+      <span style="font-weight:600">${topic}</span>
+      <div class="cov-dots">${dots}</div>
+      <span class="cov-tier-label ev-${d.max_evidence}">${d.max_evidence}</span>
+    </div>`;
+  });
+  strip.innerHTML = h;
+}
+
+// ── Timeline ────────────────────────────────────────────
+function renderTimeline(git) {
+  const body = document.getElementById('tl-body');
+  const claims = claimsData.claims || [];
+  if (!claims.length) {
+    body.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-dim)">No claims yet. Run /init to start.</div>';
+    return;
+  }
+
+  // Group claims by phase_added
+  const grouped = {};
+  phaseOrder.forEach(p => grouped[p] = []);
+  claims.forEach(c => {
+    const p = c.phase_added || 'define';
+    if (!grouped[p]) grouped[p] = [];
+    grouped[p].push(c);
+  });
+
+  // Build conflict/resolution lookup
+  const resolved = {};
+  (comp.conflict_graph.resolved || []).forEach(r => {
+    resolved[r.loser] = r;
+  });
+
+  let h = '';
+
+  // "Now" node at the top — newest first
+  h += `<div class="tl-now">
+    <div class="tl-now-dot"></div>
+    <div class="tl-now-text">Watching claims.json &mdash; compiled at ${new Date(comp.compiled_at).toLocaleTimeString()}</div>
+  </div>`;
+
+  // Warnings right below "now"
+  const warns = comp.warnings || [];
+  if (warns.length) {
+    h += '<div class="tl-spacer"></div>';
+    warns.forEach(w => {
+      h += `<div class="tl-event">
+        <div class="tl-event-dot" style="background:var(--accent-dim); color:var(--accent);">!</div>
+        <div class="tl-event-body warning">${esc(w.message)}</div>
+      </div>`;
+    });
+  }
+
+  // Phases in reverse order — newest first
+  const reversedPhases = [...phaseOrder].reverse();
+  let firstPhase = true;
+
+  reversedPhases.forEach((phase) => {
+    const list = grouped[phase];
+    if (!list.length) return;
+
+    h += '<div class="tl-spacer"></div>';
+    firstPhase = false;
+
+    // Phase header
+    h += `<div class="tl-phase ph-${phase}">
+      <div class="tl-phase-dot"></div>
+      <div class="tl-phase-head">
+        <span class="tl-phase-name">${phase}</span>
+        <span class="tl-phase-count">${list.length}</span>
+        <span class="tl-phase-sub">${phaseLabels[phase] || ''}</span>
+      </div>
+    </div>`;
+
+    // Claims in reverse order within each phase (newest first)
+    const reversed = [...list].reverse();
+    reversed.forEach(c => {
+      const prefix = c.id.charAt(0);
+      const isSup = c.status === 'superseded';
+      const truncated = c.content.length > 90 ? c.content.substring(0, 90) + '...' : c.content;
+
+      // If this claim was superseded, show resolution event above it
+      if (isSup && resolved[c.id]) {
+        const r = resolved[c.id];
+        h += `<div class="tl-event">
+          <div class="tl-event-dot" style="background:var(--green-dim); color:var(--green);">&#10003;</div>
+          <div class="tl-event-body resolved">
+            <strong>${r.winner}</strong> superseded <strong>${r.loser}</strong> &mdash; ${esc(r.reason)}
+          </div>
+        </div>`;
+      }
+
+      h += `<div class="tl-claim ph-${phase} ${isSup ? 'superseded' : ''}" data-id="${c.id}">
+        <div class="tl-claim-dot"></div>
+        <div class="tl-claim-row" tabindex="0" role="button" aria-expanded="false" onclick="toggleDetail('${c.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDetail('${c.id}')}">
+          <span class="tl-claim-id id-${prefix}">${c.id}</span>
+          <span class="tl-claim-type t-${c.type}">${c.type}</span>
+          <span class="tl-claim-text">${esc(truncated)}</span>
+          <span class="tl-claim-ev ev-${c.evidence}">${c.evidence}</span>
+        </div>
+        <div class="tl-detail" id="detail-${c.id}">
+          <div class="tl-detail-text">${esc(c.content)}</div>
+          <div class="tl-detail-meta">
+            <span>Topic: <strong style="color:var(--text-mid)">${c.topic}</strong></span>
+            <span>Source: ${c.source.origin}</span>
+            ${c.source.artifact ? `<span>Artifact: ${c.source.artifact}</span>` : ''}
+            ${c.resolved_by ? `<span style="color:var(--red)">Resolved by ${c.resolved_by}</span>` : ''}
+            ${c.conflicts_with && c.conflicts_with.length ? `<span style="color:var(--accent)">Conflicts: ${c.conflicts_with.join(', ')}</span>` : ''}
+          </div>
+          ${c.tags && c.tags.length ? `<div class="tl-detail-tags">${c.tags.map(t => `<span class="tl-tag">${t}</span>`).join('')}</div>` : ''}
+        </div>
+      </div>`;
+    });
+  });
+
+  body.innerHTML = h;
+}
+
+// ── Progressive disclosure ──────────────────────────────
+function toggleDetail(id) {
+  const el = document.getElementById('detail-' + id);
+  if (!el) return;
+  const isOpen = el.classList.toggle('open');
+  // Update aria-expanded on the trigger row
+  const row = el.previousElementSibling;
+  if (row) row.setAttribute('aria-expanded', isOpen);
+}
+
+// ── Init ────────────────────────────────────────────────
+connectSSE();
+</script>
+</body>
+</html>
