@@ -696,6 +696,7 @@ function connect() {
   // Always start polling immediately
   poll();
   pollInterval = setInterval(poll, 2000);
+  setInterval(tickCountdowns, 1000);
 
   // Also try SSE — if it works, it gives faster updates
   try {
@@ -874,11 +875,10 @@ async function decide(requestId, allow) {
   render();
 }
 
-async function respondToQuestion(requestId) {
+async function respondToQuestion(requestId, directVal) {
   const input = document.getElementById('question-input-' + requestId);
-  if (!input) return;
-  const val = input.value || 'Approved remotely';
-  input.blur();
+  const val = directVal || (input && input.value) || 'Approved remotely';
+  if (input) input.blur();
   const card = document.getElementById('perm-' + requestId);
   if (card) { card.style.opacity = '0.4'; card.style.pointerEvents = 'none'; }
   showToast('Sent: ' + val.slice(0, 40));
@@ -896,6 +896,15 @@ function showToast(msg) {
   if (!t) { t = document.createElement('div'); t.id = 'toast'; t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#34d399;color:#000;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;max-width:80vw;text-align:center;'; document.body.appendChild(t); }
   t.textContent = msg; t.style.opacity = '1';
   clearTimeout(t._timer); t._timer = setTimeout(() => t.style.opacity = '0', 2000);
+}
+
+function tickCountdowns() {
+  document.querySelectorAll('.countdown').forEach(el => {
+    const expires = parseInt(el.dataset.expires);
+    const remaining = Math.max(0, Math.ceil((expires - Date.now()) / 1000));
+    el.textContent = remaining + 's';
+    el.style.color = remaining < 30 ? 'var(--red)' : remaining < 60 ? 'var(--orange)' : 'var(--dim)';
+  });
 }
 
 let sprintSwitcherOpen = false;
@@ -1066,13 +1075,19 @@ function renderRequests() {
     const prompt = ti.prompt || p.prompt || (ti.questions && ti.questions[0] && ti.questions[0].question) || '';
     const options = (ti.questions && ti.questions[0] && ti.questions[0].options) || [];
     const isNew = !seenCardIds.has(p.requestId);
+    const elapsed = Math.floor((Date.now() - (p.timestamp || Date.now())) / 1000);
+    const remaining = Math.max(0, 120 - elapsed);
+    const timerColor = remaining < 30 ? 'var(--red)' : remaining < 60 ? 'var(--orange)' : 'var(--dim)';
     return `
       <div class="perm-card question-card${isNew ? ' new-card' : ''}" id="perm-${p.requestId}" data-session-id="${esc(p.session_id || '')}">
-        <div class="tool-name">&#128172; Question from Claude ${sessionTag(p.session_id)}</div>
-        <div class="meta">${sessionTag(p.session_id) ? '' : 'Session ' + esc((p.session_id||'').slice(0,8)) + ' &middot; '}${new Date(p.timestamp || Date.now()).toLocaleTimeString()}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="tool-name">&#128172; Question from Claude ${sessionTag(p.session_id)}</div>
+          <span class="countdown" data-expires="${(p.timestamp || Date.now()) + 120000}" style="font-size:12px;font-weight:700;color:${timerColor};font-variant-numeric:tabular-nums;">${remaining}s</span>
+        </div>
+        <div class="meta">${new Date(p.timestamp || Date.now()).toLocaleTimeString()}</div>
         <div class="tool-input">${esc(prompt)}</div>
-        ${options.length > 0 ? `<div style="display:flex;flex-direction:column;gap:6px;margin:8px 0;">${options.map(o => `
-          <button class="btn" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);text-align:left;padding:10px 12px;border-radius:8px;" onclick="document.getElementById('question-input-${esc(p.requestId)}').value='${esc(o.label)}';respondToQuestion('${esc(p.requestId)}')">
+        ${options.length > 0 ? `<div style="display:flex;flex-direction:column;gap:6px;margin:8px 0;">${options.map((o, i) => `
+          <button class="btn" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);text-align:left;padding:10px 12px;border-radius:8px;" ontouchend="event.preventDefault();respondToQuestion('${esc(p.requestId)}','${esc(o.label)}')" onclick="respondToQuestion('${esc(p.requestId)}','${esc(o.label)}')">
             <strong>${esc(o.label)}</strong>${o.description ? `<br><span style="font-size:11px;color:var(--dim);">${esc(o.description)}</span>` : ''}
           </button>`).join('')}</div>` : ''}
         <textarea class="question-input" id="question-input-${esc(p.requestId)}" placeholder="Type your response..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();respondToQuestion('${esc(p.requestId)}')}"></textarea>
