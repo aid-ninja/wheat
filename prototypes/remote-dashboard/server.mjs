@@ -12,8 +12,8 @@
  */
 
 import { createServer } from 'node:http';
-import { readFileSync, watchFile, existsSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { readFileSync, readdirSync, statSync, watchFile, unwatchFile, existsSync } from 'node:fs';
+import { join, resolve, basename, dirname } from 'node:path';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
@@ -28,6 +28,159 @@ const PORT = parseInt(arg('port', '9090'), 10);
 const TOKEN = arg('token', randomBytes(16).toString('hex'));
 const CLAIMS_PATH = resolve(arg('claims', './claims.json'));
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
+// --- Multi-sprint support ---
+// Resolve sprints directory: --sprints-dir flag > wheat.config.json > fallback to single --claims mode
+function resolveSprintsDir() {
+  const explicit = arg('sprints-dir', null);
+  if (explicit) return resolve(explicit);
+
+  // Try wheat.config.json relative to claims path
+  const configPaths = [
+    resolve(dirname(CLAIMS_PATH), 'wheat.config.json'),
+    resolve('wheat.config.json'),
+  ];
+  for (const cp of configPaths) {
+    try {
+      if (existsSync(cp)) {
+        const cfg = JSON.parse(readFileSync(cp, 'utf8'));
+        if (cfg.sprintsDir) return resolve(dirname(cp), cfg.sprintsDir);
+      }
+    } catch { /* ignore */ }
+  }
+  return null;
+}
+
+const SPRINTS_DIR = resolveSprintsDir();
+const sprints = new Map(); // slug -> { claims, compilation, claimsPath, compilationPath, meta }
+let activeSprint = null; // slug of active sprint
+
+function scanSprints() {
+  if (!SPRINTS_DIR || !existsSync(SPRINTS_DIR)) return;
+  try {
+    const entries = readdirSync(SPRINTS_DIR);
+    for (const entry of entries) {
+      const dir = join(SPRINTS_DIR, entry);
+      try {
+        if (!statSync(dir).isDirectory()) continue;
+      } catch { continue; }
+      const claimsPath = join(dir, 'claims.json');
+      if (!existsSync(claimsPath)) continue;
+      if (!sprints.has(entry)) {
+        loadSprint(entry, claimsPath);
+        watchSprintFiles(entry, claimsPath);
+      }
+    }
+  } catch { /* ignore scan errors */ }
+}
+
+function loadSprint(slug, claimsPath) {
+  const compilationPath = claimsPath.replace('claims.json', 'compilation.json');
+  let claims = null, compilation = null, meta = null;
+  try {
+    claims = JSON.parse(readFileSync(claimsPath, 'utf8'));
+    meta = claims.meta || null;
+  } catch { /* ignore */ }
+  try {
+    if (existsSync(compilationPath)) {
+      compilation = JSON.parse(readFileSync(compilationPath, 'utf8'));
+    }
+  } catch { /* ignore */ }
+  sprints.set(slug, { claims, compilation, claimsPath, compilationPath, meta });
+}
+
+function reloadSprint(slug) {
+  const sprint = sprints.get(slug);
+  if (!sprint) return;
+  loadSprint(slug, sprint.claimsPath);
+  broadcastSprintsList();
+  // If this is the active sprint, also update main claims/compilation state
+  if (activeSprint === slug) {
+    const s = sprints.get(slug);
+    claimsData = s.claims;
+    compilationData = s.compilation;
+    broadcast({ type: 'claims', data: claimsData });
+    if (compilationData) broadcast({ type: 'compilation', data: compilationData });
+  }
+}
+
+function watchSprintFiles(slug, claimsPath) {
+  const compilationPath = claimsPath.replace('claims.json', 'compilation.json');
+  watchFile(claimsPath, { interval: 1000 }, () => reloadSprint(slug));
+  if (existsSync(compilationPath)) {
+    watchFile(compilationPath, { interval: 1000 }, () => reloadSprint(slug));
+  }
+}
+
+function getSprintsList() {
+  const list = [];
+  for (const [slug, s] of sprints) {
+    const meta = s.meta || {};
+    const claimCount = s.claims?.claims?.length || 0;
+    let lastModified = null;
+    try { lastModified = statSync(s.claimsPath).mtime.toISOString(); } catch { /* ignore */ }
+    list.push({
+      slug,
+      question: meta.question || slug,
+      phase: meta.phase || 'unknown',
+      claimCount,
+      lastModified,
+      active: slug === activeSprint,
+    });
+  }
+  // Sort: active first, then by lastModified descending
+  list.sort((a, b) => {
+    if (a.active && !b.active) return -1;
+    if (!a.active && b.active) return 1;
+    return (b.lastModified || '').localeCompare(a.lastModified || '');
+  });
+  return list;
+}
+
+function broadcastSprintsList() {
+  broadcast({ type: 'sprints_list', data: getSprintsList() });
+}
+
+function switchToSprint(slug) {
+  const sprint = sprints.get(slug);
+  if (!sprint) return false;
+  activeSprint = slug;
+  claimsData = sprint.claims;
+  compilationData = sprint.compilation;
+  broadcast({ type: 'claims', data: claimsData });
+  if (compilationData) broadcast({ type: 'compilation', data: compilationData });
+  broadcastSprintsList();
+  return true;
+}
+
+// Initial sprint scan
+scanSprints();
+// Also register the root claims.json as a sprint if in multi-sprint mode
+if (SPRINTS_DIR && existsSync(SPRINTS_DIR)) {
+  // If no sprints found, or root claims exists alongside sprints dir, register root as "current"
+  if (existsSync(CLAIMS_PATH) && !activeSprint) {
+    // Check if root claims is already covered by a sprint
+    let rootCovered = false;
+    for (const [, s] of sprints) {
+      if (resolve(s.claimsPath) === CLAIMS_PATH) { rootCovered = true; break; }
+    }
+    if (!rootCovered) {
+      const rootSlug = '_root';
+      loadSprint(rootSlug, CLAIMS_PATH);
+      watchSprintFiles(rootSlug, CLAIMS_PATH);
+    }
+  }
+  // Set first sprint as active if none set
+  if (!activeSprint && sprints.size > 0) {
+    activeSprint = sprints.keys().next().value;
+    const s = sprints.get(activeSprint);
+    if (s) { claimsData = s.claims; compilationData = s.compilation; }
+  }
+}
+// Periodic re-scan for new sprint directories (every 5s)
+if (SPRINTS_DIR) {
+  setInterval(scanSprints, 5000);
+}
 
 // --- State ---
 const pending = new Map();   // requestId → { resolve, data, timestamp }
@@ -190,6 +343,7 @@ const server = createServer(async (req, res) => {
     res.write(`data: ${initBase}\n\n`);
     if (claimsData) res.write(`data: ${JSON.stringify({ type: 'claims', data: claimsData })}\n\n`);
     if (compilationData) res.write(`data: ${JSON.stringify({ type: 'compilation', data: compilationData })}\n\n`);
+    if (sprints.size > 0) res.write(`data: ${JSON.stringify({ type: 'sprints_list', data: getSprintsList() })}\n\n`);
 
     sseClients.add(res);
     req.on('close', () => sseClients.delete(res));
@@ -287,6 +441,40 @@ const server = createServer(async (req, res) => {
       sessionRules,
       agents,
     }));
+    return;
+  }
+
+  // --- Sprint endpoints ---
+  if (req.method === 'GET' && url.pathname === '/api/sprints') {
+    if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ sprints: getSprintsList(), activeSprint }));
+    return;
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/switch-sprint') {
+    if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
+    let body;
+    try { body = await readBody(req); } catch { res.writeHead(413); res.end('Request too large'); return; }
+    let data;
+    try { data = JSON.parse(body); } catch { res.writeHead(400); res.end('Bad JSON'); return; }
+    const slug = data.slug;
+    if (!slug || !sprints.has(slug)) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Sprint not found', available: [...sprints.keys()] }));
+      return;
+    }
+    switchToSprint(slug);
+    addActivity({
+      type: 'decision',
+      tool_name: 'system',
+      tool_input: null,
+      decision: 'sprint-switched',
+      reason: `Switched to sprint: ${slug}`,
+      timestamp: Date.now(),
+    });
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true, activeSprint: slug }));
     return;
   }
 
@@ -701,6 +889,10 @@ server.listen(PORT, () => {
   console.log(`  Local:  http://localhost:${PORT}/?token=${TOKEN}`);
   console.log(`  Token:  ${TOKEN}`);
   console.log(`  Claims: ${CLAIMS_PATH}`);
+  if (SPRINTS_DIR) {
+    console.log(`  Sprints: ${SPRINTS_DIR} (${sprints.size} sprint${sprints.size !== 1 ? 's' : ''} found)`);
+    if (activeSprint) console.log(`  Active:  ${activeSprint}`);
+  }
   console.log(`\n  Hook endpoints:`);
   console.log(`    http://localhost:${PORT}/hooks/permission`);
   console.log(`    http://localhost:${PORT}/hooks/activity`);

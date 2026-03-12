@@ -798,6 +798,19 @@
         "SessionState",
         "prototype"
       ]
+    },
+    {
+      "id": "p004",
+      "type": "factual",
+      "content": "Multi-sprint server support implemented: --sprints-dir flag, sprint scanning, /api/sprints endpoint, hot-reload via fs.watchFile, backwards compatible with --claims.",
+      "evidence": "tested",
+      "topic": "multi-sprint",
+      "tags": ["prototype", "tested", "sprint-switching"],
+      "phase_added": "prototype",
+      "status": "active",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null
     }
   ]
 }

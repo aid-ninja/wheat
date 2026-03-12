@@ -318,10 +318,59 @@
   }
   .sprint-meta h2 { font-size: 18px; margin-bottom: 8px; }
   .sprint-meta .question { font-size: 14px; color: var(--muted); }
+
+  /* Sprint switcher */
+  .sprint-switcher-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--bg2);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .sprint-switcher-header:hover { border-color: var(--accent); }
+  .sprint-switcher-header .active-name { font-size: 14px; font-weight: 600; }
+  .sprint-switcher-header .toggle { font-size: 12px; color: var(--muted); }
+  .sprint-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .sprint-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .sprint-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .sprint-card.active-sprint { border-color: var(--accent); background: rgba(59,130,246,0.08); }
+  .sprint-card .sprint-card-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .sprint-card .sprint-card-meta { font-size: 11px; color: var(--dim); display: flex; gap: 10px; flex-wrap: wrap; }
+  .phase-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: 8px;
+    display: inline-block;
+  }
+  .phase-badge.define { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .phase-badge.research { background: rgba(96,165,250,0.15); color: var(--accent-light); }
+  .phase-badge.prototype { background: rgba(245,158,11,0.15); color: var(--orange); }
+  .phase-badge.evaluate { background: rgba(34,197,94,0.15); color: var(--green); }
+  .phase-badge.archived { background: rgba(100,116,139,0.15); color: var(--dim); }
   .stat-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
     margin: 16px 0;
   }
   .stat-card {
@@ -512,7 +561,7 @@ const TOKEN = '{{TOKEN}}';
 const API = (path) => `${location.origin}${path}?token=${TOKEN}`;
 
 let evtSource;
-let state = { pending: [], activity: [], messages: [], claims: null, compilation: null, trustLevel: 'paranoid', sessionRules: [], agents: [] };
+let state = { pending: [], activity: [], messages: [], claims: null, compilation: null, trustLevel: 'paranoid', sessionRules: [], agents: [], sprints: [], activeSprint: null };
 let activeTab = 'permissions';
 let topicFilter = null;
 let openQuickRules = null; // requestId of open quick-rules dropdown
@@ -648,6 +697,10 @@ function handleMessage(msg) {
     case 'compilation':
       state.compilation = msg.data;
       break;
+    case 'sprints_list':
+      state.sprints = msg.data || [];
+      state.activeSprint = (msg.data || []).find(s => s.active)?.slug || null;
+      break;
     case 'trust_level':
       state.trustLevel = msg.data.level;
       updateTrustBadge();
@@ -688,6 +741,31 @@ async function respondToQuestion(requestId) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ requestId, allow: true, reason: input.value || 'Approved remotely', response: input.value }),
   });
+}
+
+let sprintSwitcherOpen = false;
+
+async function switchSprint(slug) {
+  try {
+    const resp = await fetch(API('/api/switch-sprint'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug }),
+    });
+    if (resp.ok) {
+      state.activeSprint = slug;
+      state.sprints = state.sprints.map(s => ({ ...s, active: s.slug === slug }));
+      sprintSwitcherOpen = false;
+      render();
+    }
+  } catch (e) {
+    console.error('Switch sprint failed:', e);
+  }
+}
+
+function toggleSprintSwitcher() {
+  sprintSwitcherOpen = !sprintSwitcherOpen;
+  render();
 }
 
 async function setTrustLevel(level) {
@@ -974,6 +1052,44 @@ function renderClaims() {
   `;
 }
 
+function renderSprintSwitcher() {
+  if (!state.sprints || state.sprints.length <= 1) return '';
+  const active = state.sprints.find(s => s.active);
+  const activeName = active ? active.slug : 'No sprint';
+
+  if (!sprintSwitcherOpen) {
+    return `
+      <div class="sprint-switcher-header" onclick="toggleSprintSwitcher()">
+        <span class="active-name">${esc(activeName)}</span>
+        <span class="toggle">${state.sprints.length} sprints &#9662;</span>
+      </div>`;
+  }
+
+  return `
+    <div class="sprint-switcher-header" onclick="toggleSprintSwitcher()">
+      <span class="active-name">${esc(activeName)}</span>
+      <span class="toggle">&#9652; collapse</span>
+    </div>
+    <div class="sprint-card-list">
+      ${state.sprints.map(s => `
+        <div class="sprint-card ${s.active ? 'active-sprint' : ''}" onclick="switchSprint('${esc(s.slug)}')">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <span class="phase-badge ${esc(s.phase)}">${esc(s.phase)}</span>
+            <span class="sprint-card-title">${esc(s.slug)}</span>
+            ${s.active ? '<span style="font-size:10px;color:var(--green);font-weight:600;">ACTIVE</span>' : ''}
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+            ${esc(s.question)}
+          </div>
+          <div class="sprint-card-meta">
+            <span>${s.claimCount} claims</span>
+            ${s.lastModified ? `<span>updated ${new Date(s.lastModified).toLocaleDateString()}</span>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
 function renderSprint() {
   if (!state.claims) {
     return `<div class="empty"><div class="icon">&#128640;</div><p>No sprint data</p></div>`;
@@ -991,8 +1107,10 @@ function renderSprint() {
   }
 
   return `
+    ${renderSprintSwitcher()}
+
     <div class="sprint-meta">
-      <h2>${esc(meta.phase)} phase</h2>
+      <h2>${state.activeSprint ? `<span style="color:var(--accent-light)">${esc(state.activeSprint)}</span> · ` : ''}${esc(meta.phase)} phase</h2>
       <div class="question">${esc(meta.question)}</div>
       <div style="font-size:12px;color:var(--dim);margin-top:4px;">
         Started ${esc(meta.initiated)} · Audience: ${(meta.audience||[]).map(esc).join(', ')}
