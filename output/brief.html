@@ -30,25 +30,52 @@
   .card-green { border-left: 3px solid var(--green); }
   .card-orange { border-left: 3px solid var(--orange); }
   .card-red { border-left: 3px solid var(--red); }
+  .card-purple { border-left: 3px solid var(--purple); }
   .cert { margin-top: 32px; padding: 16px; background: var(--bg2); border-radius: 8px; font-family: monospace; font-size: 12px; color: var(--dim); }
   ul { padding-left: 20px; }
   code { font-family: 'SF Mono', monospace; font-size: 13px; background: rgba(96,165,250,0.1); padding: 1px 5px; border-radius: 3px; }
-  @media (max-width: 640px) { .slide { padding: 40px 20px; } h1 { font-size: 22px; } }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center; margin-top: 24px; }
+  .grid-3 > div { padding: 16px; border-radius: 8px; }
+  .num { font-size: 24px; font-weight: 800; }
+  .label { font-size: 11px; color: var(--dim); }
+  @media (max-width: 640px) { .slide { padding: 40px 20px; } h1 { font-size: 22px; } .grid-3 { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
 <div class="slide">
   <h1>Scaling Remote Farmer</h1>
-  <p class="meta">Decision Brief | 2026-03-12 | 37 claims | 5 topics | 3 prototypes validated</p>
-  <p>Three independent workstreams to scale Remote Farmer: <strong>multi-session</strong> via session-keyed Maps, <strong>multi-sprint</strong> via sprints/ directory with config pointer, and <strong>repo cartography</strong> via compiler-generated topic-map manifest.</p>
-  <p>All three prototypes are <strong>built and tested</strong>. The manifest generator runs in <10ms <span class="claim-ref">p001</span>. Multi-session refactor is working <span class="claim-ref">p003</span>. Multi-sprint scanning is operational <span class="claim-ref">p004</span>. Total effort: 5-9 hours <span class="claim-ref">r008</span> <span class="claim-ref">r026</span>.</p>
+  <p class="meta">Decision Brief | 2026-03-12 | 55 claims | 7 topics | 4 prototypes validated</p>
+  <p>Three core workstreams to scale Remote Farmer — all <strong>prototyped and validated</strong>: multi-session via session-keyed Maps <span class="claim-ref">p003</span>, multi-sprint via sprints/ directory with config pointer <span class="claim-ref">p004</span>, and repo cartography via compiler-generated topic-map manifest in &lt;10ms <span class="claim-ref">p001</span>.</p>
+  <p>Security hardening is <strong>implemented</strong> <span class="claim-ref">p005</span>, backwards compatibility <strong>verified</strong> (10/10 tests) <span class="claim-ref">p006</span>, and state persistence researched with a clear ~40 LOC path <span class="claim-ref">r039</span>.</p>
+  <div class="grid-3">
+    <div style="background:rgba(52,211,153,0.1);"><div class="num" style="color:var(--green);">55</div><div class="label">CLAIMS</div></div>
+    <div style="background:rgba(96,165,250,0.1);"><div class="num" style="color:var(--accent);">7</div><div class="label">TOPICS</div></div>
+    <div style="background:rgba(251,191,36,0.1);"><div class="num" style="color:var(--orange);">0</div><div class="label">CONFLICTS</div></div>
+  </div>
   <div style="margin-top: 24px; display: flex; gap: 8px; flex-wrap: wrap;">
     <span class="tag tested">multi-session: tested</span>
     <span class="tag tested">multi-sprint: tested</span>
     <span class="tag tested">cartography: tested</span>
+    <span class="tag tested">security: tested</span>
+    <span class="tag tested">compatibility: tested</span>
     <span class="tag tested">performance: tested</span>
-    <span class="tag stated">compatibility: stated</span>
+    <span class="tag documented">state-persistence: documented</span>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>Recommendation</h2>
+  <div class="card card-green">
+    <h3>Proceed to Production Integration</h3>
+    <p>All three core workstreams are prototype-validated. Remaining work:</p>
+    <ul>
+      <li><strong>Compiler manifest integration</strong> (~1 hour) — wire <code>generate-manifest.js</code> into <code>wheat-compiler.js</code> <span class="claim-ref">r011</span> <span class="claim-ref">p001</span></li>
+      <li><strong>State persistence</strong> (~1 hour) — JSON file snapshots + graceful shutdown handlers <span class="claim-ref">r039</span> <span class="claim-ref">r041</span></li>
+      <li><strong>Named Cloudflare tunnel</strong> — replace quick tunnel for SSE support + stable subdomain <span class="claim-ref">r027</span> <span class="claim-ref">r036</span></li>
+      <li><strong>Token rotation</strong> — on-demand rotation to mitigate leak scenarios <span class="claim-ref">r034</span></li>
+    </ul>
+    <p>Total estimated remaining effort: <strong>3–5 hours</strong> <span class="claim-ref">r008</span> <span class="claim-ref">r026</span></p>
   </div>
 </div>
 
@@ -57,24 +84,20 @@
   <p class="meta">13 claims | tested evidence | 4 sources | prototype working</p>
   <div class="card card-green">
     <h3>Prototype Validated</h3>
-    <p>SessionState class, session-keyed Maps, getSession(id) lazy init, SSE tagged with session_id, dashboard session pills with hue-from-hash. Backwards compatible with single-session via 'default' fallback <span class="claim-ref">p003</span>.</p>
+    <p>SessionState class, session-keyed Maps, <code>getSession(id)</code> lazy init, SSE tagged with session_id, dashboard session pills with hue-from-hash. Backwards compatible with single-session via 'default' fallback <span class="claim-ref">p003</span>.</p>
   </div>
   <div class="card card-accent">
     <h3>Architecture</h3>
-    <p>Single server, session-keyed state: <code>Map&lt;session_id, SessionState&gt;</code> with lazy <code>getSession(id)</code> initializer <span class="claim-ref">r003</span> <span class="claim-ref">r004</span>. Hook payloads already include stable <code>session_id</code> UUID <span class="claim-ref">r001</span>.</p>
-  </div>
-  <div class="card card-accent">
-    <h3>Lifecycle</h3>
-    <p>SessionStart/SessionEnd hooks provide explicit boundaries <span class="claim-ref">r002</span> <span class="claim-ref">w001</span>. Heartbeat timeout (5min) for crashed sessions <span class="claim-ref">r007</span>.</p>
+    <p>Single server, <code>Map&lt;session_id, SessionState&gt;</code> with lazy initializer <span class="claim-ref">r003</span> <span class="claim-ref">r004</span>. Hook payloads include stable UUID <code>session_id</code> <span class="claim-ref">r001</span>. SessionStart/SessionEnd hooks provide explicit boundaries <span class="claim-ref">r002</span> <span class="claim-ref">w001</span>. Heartbeat timeout (5min) for crashed sessions <span class="claim-ref">r007</span>.</p>
     <p style="color:var(--orange)"><strong>Constraint:</strong> Lifecycle hooks are command-only, not HTTP <span class="claim-ref">w002</span> — curl wrapper required.</p>
   </div>
   <div class="card card-accent">
     <h3>Dashboard UX</h3>
-    <p>Unified feed with session color-coding (hue from hash). Pill-bar session switcher. No split views on mobile <span class="claim-ref">r005</span> <span class="claim-ref">p002</span>.</p>
+    <p>Unified feed with session color-coding (hue from hash). Pill-bar session switcher. No split views on mobile <span class="claim-ref">r005</span> <span class="claim-ref">p002</span>. Estimated 2–4 hours effort <span class="claim-ref">r008</span>.</p>
   </div>
   <div class="card card-red">
     <h3>Risk: Approval Confusion</h3>
-    <p>Two sessions needing approval simultaneously — user could approve wrong one. Mitigate with prominent session labels + colors <span class="claim-ref">r006</span>.</p>
+    <p>Two sessions needing approval simultaneously — user could approve wrong one. Mitigated with prominent session labels + colors <span class="claim-ref">r006</span>.</p>
   </div>
 </div>
 
@@ -87,19 +110,11 @@
   </div>
   <div class="card card-accent">
     <h3>Data Model</h3>
-    <p>Each sprint in <code>sprints/&lt;slug&gt;/</code>, self-contained with own claims.json <span class="claim-ref">r020</span>. Current sprint pointer in <code>wheat.config.json</code> (not symlinks) for portability <span class="claim-ref">r025</span>.</p>
+    <p>Each sprint in <code>sprints/&lt;slug&gt;/</code>, self-contained with own claims.json <span class="claim-ref">r020</span>. Current sprint pointer in <code>wheat.config.json</code> (not symlinks) for portability <span class="claim-ref">r025</span>. Cross-sprint references: <code>sprint-slug:claim-id</code> <span class="claim-ref">r024</span>.</p>
   </div>
   <div class="card card-accent">
     <h3>Dashboard</h3>
-    <p>Collapsible sprint card list — shows question, phase badge, claim count <span class="claim-ref">r022</span>. Server adds <code>--sprints-dir</code> with hot-reload <span class="claim-ref">r021</span>.</p>
-  </div>
-  <div class="card card-accent">
-    <h3>Cross-Sprint References</h3>
-    <p>Format: <code>sprint-slug:claim-id</code> (e.g., <code>remote-farmer:r003</code>). No schema changes needed <span class="claim-ref">r024</span>.</p>
-  </div>
-  <div class="card card-orange">
-    <h3>Resolved: Symlinks vs Config</h3>
-    <p><span class="claim-ref">r020</span> proposed symlinks. <span class="claim-ref">r025</span> flagged Windows portability. Resolution: config file is canonical, symlinks are optional convenience.</p>
+    <p>Collapsible sprint card list — question, phase badge, claim count <span class="claim-ref">r022</span>. Server adds <code>--sprints-dir</code> with hot-reload <span class="claim-ref">r021</span>. Estimated 3–5 hours <span class="claim-ref">r026</span>.</p>
   </div>
 </div>
 
@@ -108,7 +123,7 @@
   <p class="meta">8 claims | tested evidence | 4 sources | generator built</p>
   <div class="card card-green">
     <h3>Manifest Generator (BUILT)</h3>
-    <p><code>wheat-manifest.json</code> — topic map generated in <10ms, ~5KB <span class="claim-ref">p001</span>. Maps topics to claims, files, and sprints. Single <code>Read</code> replaces 3-5 Glob/Grep calls <span class="claim-ref">r012</span>.</p>
+    <p><code>wheat-manifest.json</code> — topic map generated in &lt;10ms, ~5KB <span class="claim-ref">p001</span>. Maps topics to claims, files, and sprints. Single <code>Read</code> replaces 3–5 Glob/Grep calls <span class="claim-ref">r012</span>.</p>
   </div>
   <div class="card card-accent">
     <h3>Design</h3>
@@ -116,25 +131,77 @@
   </div>
   <div class="card card-red">
     <h3>Urgency: Cartography Needed NOW</h3>
-    <p>Repo already at 157 files (not 80 as estimated) <span class="claim-ref">x001</span>. The <code>examples/</code> dir creates 62 duplicate-named files causing search noise <span class="claim-ref">x002</span>. Context window pollution — not I/O — is the real cost <span class="claim-ref">x003</span>.</p>
+    <p>Repo at 157 files (not 80 as estimated) <span class="claim-ref">x001</span>. <code>examples/</code> creates 62 duplicate-named files causing search noise <span class="claim-ref">x002</span>. Context window pollution — not I/O — is the real cost <span class="claim-ref">x003</span>.</p>
   </div>
 </div>
 
 <div class="slide">
-  <h2>Blind Spots</h2>
-  <p class="meta">Identified gaps from /blind-spot analysis</p>
+  <h2>Security</h2>
+  <p class="meta">12 claims | tested evidence | 5 sources | hardening implemented</p>
+  <div class="card card-green">
+    <h3>Mitigations Implemented</h3>
+    <p>Cookie-based auth (HttpOnly, SameSite=Strict) with 302-redirect to clean URL. CORS restricted to request origin. Referrer-Policy: no-referrer. X-Content-Type-Options: nosniff <span class="claim-ref">p005</span>.</p>
+  </div>
   <div class="card card-red">
-    <h3>Security — No Coverage</h3>
-    <p>Farmer is exposed via Cloudflare Tunnel with token-based auth. No claims analyze attack vectors, token leakage, session hijacking, or tunnel reliability.</p>
+    <h3>SSE Broken Through Quick Tunnels</h3>
+    <p>CF quick tunnels do not support SSE — dashboard falls back to 2s polling <span class="claim-ref">r027</span>. Quick tunnels are dev-only with 200 req limit <span class="claim-ref">r028</span>.</p>
+  </div>
+  <div class="card card-red">
+    <h3>Token Compromise Blast Radius</h3>
+    <p>If token leaks: approve arbitrary tool executions, set autonomous mode, inject /api/ask responses, read all data <span class="claim-ref">r031</span>. No token rotation — restart is only fix <span class="claim-ref">r034</span>.</p>
   </div>
   <div class="card card-orange">
-    <h3>Compatibility — Untested</h3>
-    <p>Single constraint (d004) states "zero deps, backwards compat" but no claim verifies single-session still works after multi-session refactor.</p>
+    <h3>Remaining Gaps</h3>
+    <ul>
+      <li>CSRF tokens for state-changing endpoints <span class="claim-ref">r035</span></li>
+      <li>Named tunnel or WebSocket transport <span class="claim-ref">r036</span></li>
+      <li>Token rotation mechanism <span class="claim-ref">r034</span></li>
+      <li>Rate limiting on auth failures <span class="claim-ref">r033</span></li>
+    </ul>
   </div>
-  <div class="card card-orange">
-    <h3>Zero Corroboration</h3>
-    <p>None of the 37 claims have been independently corroborated by a second source. Multi-sprint has no external documentation witness.</p>
+</div>
+
+<div class="slide">
+  <h2>State Persistence</h2>
+  <p class="meta">5 claims | documented evidence | 2 sources | new topic from blind-spot analysis</p>
+  <div class="card card-red">
+    <h3>All State In-Memory</h3>
+    <p>Server restart = total loss of trust levels, session rules, activity log, and all session state. No SIGTERM/SIGINT handlers <span class="claim-ref">r038</span>.</p>
   </div>
+  <div class="card card-green">
+    <h3>Recommended: JSON Snapshots</h3>
+    <p>Persist trust levels, rules, and activity log to <code>farmer-state.json</code>. ~40 LOC using built-in <code>fs</code> module (zero deps) <span class="claim-ref">r039</span>. Pending permissions are ephemeral — do NOT persist <span class="claim-ref">r040</span>.</p>
+  </div>
+  <div class="card card-accent">
+    <h3>Graceful Shutdown</h3>
+    <p>SIGTERM/SIGINT handlers: flush state, deny pending permissions with 'server shutting down', broadcast shutdown SSE event <span class="claim-ref">r041</span>. Event sourcing is over-engineered at this scale <span class="claim-ref">r042</span>.</p>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>Compatibility</h2>
+  <p class="meta">2 claims | tested evidence | 2 sources</p>
+  <div class="card card-green">
+    <h3>10/10 Tests Pass</h3>
+    <p>Automated test suite confirms single-session workflow survives all refactors: token auth, cookie auth, /api/state, hook fallback to 'default' session, SSE stream, login page, auth rejection <span class="claim-ref">p006</span>. Zero npm dependencies maintained <span class="claim-ref">d004</span>.</p>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>Risks and Tradeoffs</h2>
+  <table>
+    <tr><th>Risk</th><th>Severity</th><th>Evidence</th><th>Mitigation</th></tr>
+    <tr><td>SSE broken via quick tunnels <span class="claim-ref">r027</span></td><td style="color:var(--red);">HIGH</td><td>documented</td><td>Named tunnel or WebSocket</td></tr>
+    <tr><td>Token-in-URL leakage <span class="claim-ref">r029</span></td><td style="color:var(--red);">HIGH</td><td>web</td><td style="color:var(--green);">Cookie auth done</td></tr>
+    <tr><td>CORS wildcard <span class="claim-ref">r030</span></td><td style="color:var(--red);">HIGH</td><td>documented</td><td style="color:var(--green);">Restricted done</td></tr>
+    <tr><td>Full compromise on leak <span class="claim-ref">r031</span></td><td style="color:var(--red);">HIGH</td><td>documented</td><td>Token rotation TODO</td></tr>
+    <tr><td>/api/ask injection <span class="claim-ref">r032</span></td><td style="color:var(--orange);">MED</td><td>documented</td><td>CSRF tokens TODO</td></tr>
+    <tr><td>Approval confusion <span class="claim-ref">r006</span></td><td style="color:var(--orange);">MED</td><td>stated</td><td>Session labels + colors</td></tr>
+    <tr><td>No token rotation <span class="claim-ref">r034</span></td><td style="color:var(--orange);">MED</td><td>documented</td><td>Planned</td></tr>
+    <tr><td>All state in-memory <span class="claim-ref">r038</span></td><td style="color:var(--orange);">MED</td><td>documented</td><td>JSON snapshots recommended</td></tr>
+    <tr><td>Stale manifest <span class="claim-ref">r014</span></td><td style="color:var(--dim);">LOW</td><td>documented</td><td>Compiler-generated</td></tr>
+    <tr><td>Symlinks on Windows <span class="claim-ref">r025</span></td><td style="color:var(--dim);">LOW</td><td>documented</td><td>Config file canonical</td></tr>
+  </table>
 </div>
 
 <div class="slide">
@@ -144,21 +211,28 @@
     <tr><td>1</td><td style="color:var(--green)">Manifest generator</td><td>—</td><td style="color:var(--green)">DONE (p001)</td></tr>
     <tr><td>2</td><td style="color:var(--green)">Multi-session refactor</td><td>2-4h</td><td style="color:var(--green)">DONE (p003)</td></tr>
     <tr><td>3</td><td style="color:var(--green)">Multi-sprint support</td><td>3-5h</td><td style="color:var(--green)">DONE (p004)</td></tr>
-    <tr><td>4</td><td>Compiler manifest integration</td><td>1h</td><td style="color:var(--orange)">TODO</td></tr>
+    <tr><td>4</td><td style="color:var(--green)">Security hardening</td><td>—</td><td style="color:var(--green)">DONE (p005)</td></tr>
+    <tr><td>5</td><td style="color:var(--green)">Backwards compat tests</td><td>—</td><td style="color:var(--green)">DONE (p006)</td></tr>
+    <tr><td>6</td><td>Compiler manifest integration</td><td>1h</td><td style="color:var(--orange)">TODO</td></tr>
+    <tr><td>7</td><td>State persistence</td><td>1h</td><td style="color:var(--orange)">TODO</td></tr>
+    <tr><td>8</td><td>Named tunnel / WebSocket</td><td>2h</td><td style="color:var(--orange)">TODO</td></tr>
+    <tr><td>9</td><td>Token rotation + CSRF</td><td>1h</td><td style="color:var(--orange)">TODO</td></tr>
   </table>
 
   <h3 style="margin-top: 32px;">Evidence Coverage</h3>
   <table>
     <tr><th>Topic</th><th>Claims</th><th>Evidence</th><th>Sources</th><th>Types</th></tr>
     <tr><td>multi-session</td><td>13</td><td><span class="tag tested">tested</span></td><td>4</td><td>5/6</td></tr>
+    <tr><td>security</td><td>12</td><td><span class="tag tested">tested</span></td><td>5</td><td>3/6</td></tr>
     <tr><td>multi-sprint</td><td>9</td><td><span class="tag tested">tested</span></td><td>3</td><td>5/6</td></tr>
     <tr><td>cartography</td><td>8</td><td><span class="tag tested">tested</span></td><td>4</td><td>4/6</td></tr>
     <tr><td>performance</td><td>6</td><td><span class="tag tested">tested</span></td><td>4</td><td>4/6</td></tr>
-    <tr><td>compatibility</td><td>1</td><td><span class="tag stated">stated</span></td><td>1</td><td>1/6</td></tr>
+    <tr><td>state-persistence</td><td>5</td><td><span class="tag documented">documented</span></td><td>2</td><td>4/6</td></tr>
+    <tr><td>compatibility</td><td>2</td><td><span class="tag tested">tested</span></td><td>2</td><td>2/6</td></tr>
   </table>
 
   <div class="cert">
-    Compilation certificate: sha256:ae441976e7a83 | Compiler: wheat v0.2.0 | Claims: 37 | Compiled: 2026-03-12T07:52:28.621Z
+    Compilation certificate: sha256:fd11e538f52f8ed1e699e34caa1d93cb31ee4cf5c11c1eca7582582335dd0cee | Compiler: wheat v0.2.0 | Claims: 55 | Compiled: 2026-03-12T08:35:10.988Z
   </div>
 </div>
 
