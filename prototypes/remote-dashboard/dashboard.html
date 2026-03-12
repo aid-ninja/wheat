@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Claude Code — Remote Dashboard</title>
+<title>Remote Farmer</title>
 <style>
   :root {
     --bg: #0f172a;
@@ -292,7 +292,7 @@
 <body>
 <div class="app" id="app">
   <div class="header">
-    <h1>Claude Code Remote</h1>
+    <h1>Remote Farmer</h1>
     <div class="status">
       <div class="dot" id="statusDot"></div>
       <span id="statusText">Connecting...</span>
@@ -313,27 +313,25 @@
 
 <script>
 const TOKEN = '{{TOKEN}}';
-const WS_URL = `ws://${location.host}/ws?token=${TOKEN}`;
 const API = (path) => `${location.origin}${path}?token=${TOKEN}`;
 
-let ws;
+let evtSource;
 let state = { pending: [], activity: [], claims: null, compilation: null };
 let activeTab = 'permissions';
 let topicFilter = null;
 
-// --- WebSocket ---
+// --- Server-Sent Events ---
 function connect() {
-  ws = new WebSocket(WS_URL);
-  ws.onopen = () => {
+  evtSource = new EventSource(`${location.origin}/events?token=${TOKEN}`);
+  evtSource.onopen = () => {
     document.getElementById('statusDot').className = 'dot connected';
     document.getElementById('statusText').textContent = 'Connected';
   };
-  ws.onclose = () => {
+  evtSource.onerror = () => {
     document.getElementById('statusDot').className = 'dot';
     document.getElementById('statusText').textContent = 'Disconnected — reconnecting...';
-    setTimeout(connect, 2000);
   };
-  ws.onmessage = (e) => {
+  evtSource.onmessage = (e) => {
     const msg = JSON.parse(e.data);
     handleMessage(msg);
   };
@@ -405,7 +403,7 @@ function updateBadge() {
   badge.style.display = n > 0 ? 'inline-block' : 'none';
   badge.textContent = n;
   // Update tab title
-  document.title = n > 0 ? `(${n}) Claude Code Remote` : 'Claude Code Remote';
+  document.title = n > 0 ? `(${n}) Remote Farmer` : 'Remote Farmer';
 }
 
 function renderPermissions() {
