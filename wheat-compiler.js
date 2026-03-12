@@ -17,6 +17,7 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 // ─── Configuration ──────────────────────────────────────────────────────────
 /** @returns {{ dirs: Object<string, string>, compiler: Object<string, string> }} Merged config from wheat.config.json with defaults */
@@ -487,6 +488,37 @@ function diffCompilations(before, after) {
   return delta;
 }
 
+// ─── Manifest Generation (topic map) ─────────────────────────────────────────
+/**
+ * Run generate-manifest.js to produce wheat-manifest.json.
+ * Called automatically after each compilation. Failures are non-fatal
+ * (manifest is an optimization, not a correctness requirement).
+ * @param {object} compilation - The compiled output (unused, but available for future use)
+ */
+function generateManifest(compilation) {
+  const manifestScript = path.join(__dirname, 'generate-manifest.js');
+  if (!fs.existsSync(manifestScript)) {
+    // Manifest generator not present — skip silently
+    return;
+  }
+  try {
+    const result = execFileSync(process.execPath, [manifestScript], {
+      cwd: __dirname,
+      timeout: 10000,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    // Print manifest summary on --summary runs (stdout captured above)
+    const output = result.toString().trim();
+    if (output && process.argv.includes('--summary')) {
+      console.log(`\nManifest: ${output}`);
+    }
+  } catch (err) {
+    // Non-fatal: warn but don't block compilation
+    const stderr = err.stderr ? err.stderr.toString().trim() : err.message;
+    console.error(`Warning: manifest generation failed — ${stderr}`);
+  }
+}
+
 // ─── Main Compilation Pipeline ───────────────────────────────────────────────
 /**
  * Run the full compilation pipeline: validate, sort, detect conflicts, resolve, compute coverage.
@@ -573,6 +605,9 @@ function compile(inputPath, outputPath) {
 
   // Write compilation output
   fs.writeFileSync(compilationOutputPath, JSON.stringify(compilation, null, 2));
+
+  // Generate topic-map manifest (wheat-manifest.json)
+  generateManifest(compilation);
 
   return compilation;
 }
@@ -1035,5 +1070,5 @@ function computeNextActions(comp) {
 
 // Export for use as a library
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { compile, diffCompilations, computeNextActions, loadConfig, EVIDENCE_TIERS, VALID_TYPES };
+  module.exports = { compile, diffCompilations, computeNextActions, generateManifest, loadConfig, EVIDENCE_TIERS, VALID_TYPES };
 }

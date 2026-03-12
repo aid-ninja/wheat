@@ -1168,6 +1168,24 @@
       "conflicts_with": ["r020", "r025"],
       "resolved_by": null,
       "tags": ["config", "derivable-state", "single-source-of-truth", "DRY"]
+    },
+    {
+      "id": "p007",
+      "type": "factual",
+      "topic": "cartography",
+      "content": "generate-manifest.js wired into wheat-compiler.js — topic-map manifest (wheat-manifest.json) auto-generates on every compilation via child_process.execFileSync. Non-fatal: manifest failure warns but does not block compilation. Measured at 6.7ms on current repo (7 topics, 16 files, 3 sprints, 5.8KB output). Zero new dependencies added.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "wheat-compiler.js generateManifest() — spawns generate-manifest.js after compilation.json write"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["cartography", "manifest", "compiler-integration", "topic-map", "prototype"]
     }
   ]
 }

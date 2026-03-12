@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T08:47:02.560Z",
-  "claims_hash": "e502002",
+  "compiled_at": "2026-03-12T09:03:19.907Z",
+  "claims_hash": "9bf1528",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -1261,6 +1261,30 @@
         "regression-test",
         "prototype"
       ]
+    },
+    {
+      "id": "p007",
+      "type": "factual",
+      "topic": "cartography",
+      "content": "generate-manifest.js wired into wheat-compiler.js — topic-map manifest (wheat-manifest.json) auto-generates on every compilation via child_process.execFileSync. Non-fatal: manifest failure warns but does not block compilation. Measured at 6.7ms on current repo (7 topics, 16 files, 3 sprints, 5.8KB output). Zero new dependencies added.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "wheat-compiler.js generateManifest() — spawns generate-manifest.js after compilation.json write"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "cartography",
+        "manifest",
+        "compiler-integration",
+        "topic-map",
+        "prototype"
+      ]
     }
   ],
   "conflict_graph": {
@@ -1280,7 +1304,7 @@
   },
   "coverage": {
     "cartography": {
-      "claims": 8,
+      "claims": 9,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -1297,7 +1321,8 @@
         "r014",
         "r015",
         "r017",
-        "p001"
+        "p001",
+        "p007"
       ],
       "constraint_count": 1,
       "source_origins": [
@@ -1568,7 +1593,8 @@
     "r041": 0,
     "r042": 0,
     "p005": 0,
-    "p006": 0
+    "p006": 0,
+    "p007": 0
   },
   "phase_summary": {
     "define": {
@@ -1580,7 +1606,7 @@
       "complete": true
     },
     "prototype": {
-      "claims": 6,
+      "claims": 7,
       "complete": true
     },
     "evaluate": {
@@ -1600,14 +1626,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 56,
-    "active_claims": 55,
+    "total_claims": 57,
+    "active_claims": 56,
     "conflicted_claims": 0,
     "superseded_claims": 1,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:e502002a5834ffffcf8a66b379c2d85ed562e87d5e83dc1ef387b188918ecd89",
+    "input_hash": "sha256:9bf152819498d479aba9b33b676b6bb0051da2dff7d2ed3857c6c785106e5ea6",
     "compiler_version": "0.2.0",
     "deterministic": true
   }
