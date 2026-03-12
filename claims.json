@@ -6,7 +6,7 @@
       "solo developer",
       "team leads"
     ],
-    "phase": "define",
+    "phase": "research",
     "connectors": []
   },
   "claims": [
@@ -114,6 +114,150 @@
         "performance",
         "scale"
       ]
+    },
+    {
+      "id": "r001",
+      "type": "factual",
+      "topic": "multi-session",
+      "content": "Every Claude Code hook payload includes session_id (UUID format), transcript_path, cwd, and hook_event_name as common fields. The session_id is a stable UUID assigned at session creation and persists across resume/continue. This is the natural routing key for multi-session Farmer — no custom identification needed.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "https://code.claude.com/docs/en/hooks",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["session_id", "hooks", "routing"]
+    },
+    {
+      "id": "r002",
+      "type": "factual",
+      "topic": "multi-session",
+      "content": "Claude Code supports SessionStart and SessionEnd lifecycle hooks. SessionStart fires on new sessions and resumes (with source field: 'startup', 'resume', 'clear', 'compact'). SessionEnd fires on session termination but cannot block it. These provide explicit session lifecycle signals — no need to infer session boundaries from tool-use gaps.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "https://code.claude.com/docs/en/hooks",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["lifecycle", "SessionStart", "SessionEnd"]
+    },
+    {
+      "id": "r003",
+      "type": "recommendation",
+      "topic": "multi-session",
+      "content": "Use single-server, session-keyed state architecture: one Map<session_id, SessionState> where SessionState holds pending permissions, activity log, trust level, and session rules independently. This is the simplest path that satisfies d001 without breaking d004 (zero deps, backwards compat). Multiple server instances add port management complexity with no benefit for a localhost dashboard.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["architecture", "state-management", "Map"]
+    },
+    {
+      "id": "r004",
+      "type": "recommendation",
+      "topic": "multi-session",
+      "content": "The current server stores global singletons (pending, activity, messages, trustLevel, sessionRules) that must become per-session. Minimal refactor: create a sessions Map, and a getSession(id) function that lazily initializes SessionState on first hook from a new session_id. The SSE broadcast should tag every message with session_id so the dashboard can filter/route client-side.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["refactor", "state", "SSE"]
+    },
+    {
+      "id": "r005",
+      "type": "recommendation",
+      "topic": "multi-session",
+      "content": "Dashboard UX should use a session-aware unified feed as default view, with session color-coding (assign each session_id a stable hue via hash). Add a session switcher pill bar at top for filtering to one session. Avoid split-view on mobile — phone screen real estate is too limited. Permission cards already show truncated session_id (first 8 chars); extend this with color dots and cwd-derived labels (e.g., 'wheat', 'api-server').",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/dashboard.html",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["UX", "dashboard", "mobile"]
+    },
+    {
+      "id": "r006",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Concurrent permission requests from multiple sessions create phone-UX pressure: if two sessions both need approval within seconds, the user must context-switch between unrelated tool calls. Risk of approving the wrong session's action. Mitigation: permission cards must prominently display session label + cwd, and use distinct session colors. Consider audio/haptic differentiation per session.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["risk", "UX", "permissions", "concurrent"]
+    },
+    {
+      "id": "r007",
+      "type": "factual",
+      "topic": "multi-session",
+      "content": "Session lifecycle detection: SessionStart hook fires with source='startup' for new sessions and source='resume' for continued ones. SessionEnd hook fires on termination but cannot block it. For sessions that crash without firing SessionEnd, implement a heartbeat timeout (e.g., 5 minutes with no hook activity = session marked stale). The server already has a 120s timeout for individual permissions; session-level staleness needs a longer window.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "https://code.claude.com/docs/en/hooks",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["lifecycle", "heartbeat", "cleanup"]
+    },
+    {
+      "id": "r008",
+      "type": "estimate",
+      "topic": "multi-session",
+      "content": "Refactoring server.mjs from global state to session-keyed Maps is a ~100-line change (add SessionState class, getSession helper, update 6 handler functions to pass session context). Dashboard HTML changes are larger (~200 lines) for session switcher UI and color-coding. Total estimated effort: 2-4 hours for a working multi-session prototype, assuming SessionStart/SessionEnd hooks are configured to POST to new /hooks/lifecycle endpoint.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["effort", "estimate", "prototype"]
     }
   ]
 }
