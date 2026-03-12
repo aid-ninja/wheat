@@ -1,7 +1,7 @@
 {
-  "generated": "2026-03-12T10:30:59.245Z",
+  "generated": "2026-03-12T10:34:10.264Z",
   "generator": "generate-manifest.js",
-  "claims_hash": "6d6eaa7",
+  "claims_hash": "deca61e",
   "topics": {
     "multi-session": {
       "claims": [
@@ -25,7 +25,8 @@
         "x014",
         "x015",
         "x016",
-        "p012"
+        "p012",
+        "p014"
       ],
       "files": [
         "docs/dashboard.html",
@@ -178,12 +179,12 @@
     "how-should-we-scale": {
       "question": "How should we scale Remote Farmer for multi-session and multi-sprint support, and what repo cartography system keeps AI model interactions fast as the Wheat codebase and git history grow?",
       "phase": "research",
-      "claims_count": 77,
-      "active_claims": 67,
+      "claims_count": 78,
+      "active_claims": 63,
       "path": ".",
       "status": "active",
-      "last_git_activity": "2026-03-12T05:23:14-05:00",
-      "git_commit_count": 73
+      "last_git_activity": "2026-03-12T05:31:16-05:00",
+      "git_commit_count": 74
     },
     "remote-farmer-sprint": {
       "question": "How should we build a remote permission and monitoring dashboard for Claude Code — a web UI that receives permission requests, shows live activity, and lets users approve/deny tool calls remotely over tunneled connections?",

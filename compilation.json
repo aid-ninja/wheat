@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T10:30:59.033Z",
-  "claims_hash": "6d6eaa7",
+  "compiled_at": "2026-03-12T10:34:10.037Z",
+  "claims_hash": "deca61e",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -1551,6 +1551,132 @@
       ]
     },
     {
+      "id": "x012",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Session ID spoofing allows session hijacking. Any localhost process can send a hook with an arbitrary session_id and getSession() will return the existing SessionState for that ID. There is no proof-of-ownership: a second process can inject activity, trigger permission decisions, or change trust levels for a session it didn't create. Fix: assign a per-session secret on session_start and require it on subsequent hooks, or bind sessions to a source identifier (PID, socket).",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:190-201 — getSession() trusts caller-provided session_id without verification"
+      },
+      "evidence": "documented",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p003"
+      ],
+      "resolved_by": "p014",
+      "tags": [
+        "multi-session",
+        "security",
+        "spoofing",
+        "session-hijack"
+      ]
+    },
+    {
+      "id": "x013",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Hooks without session_id silently conflate into 'default' session. When a Claude Code instance sends hooks with no session_id field, getSession(undefined) falls back to 'default'. If multiple session-less sources exist (older Claude Code versions, custom scripts), their activity merges into a single bucket with no way to distinguish origin. This makes the 'default' session's activity feed misleading and its trust level changes affect all session-less traffic. Fix: log a warning when session_id is missing and consider assigning synthetic IDs based on source IP+port or rejecting sessionless hooks when multi-session is active.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:190 — getSession(sessionId) where sessionId is undefined/null/empty triggers 'default' fallback"
+      },
+      "evidence": "documented",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p003"
+      ],
+      "resolved_by": "p014",
+      "tags": [
+        "multi-session",
+        "backwards-compat",
+        "data-integrity",
+        "default-session"
+      ]
+    },
+    {
+      "id": "x014",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Out-of-order lifecycle events cause silent data loss. handleLifecycle 'session_end' does sessions.get(session_id) and silently no-ops if the session doesn't exist. If session_end arrives before session_start (due to network reordering or server restart), the end event is lost — pending permissions are never denied, and the session later appears as 'active' when the delayed start arrives. Fix: if session_end arrives for an unknown session, create a tombstone entry that prevents a subsequent session_start from treating it as new, or queue out-of-order events.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:1190-1202 — session_end silently ignores unknown session_id"
+      },
+      "evidence": "documented",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p003"
+      ],
+      "resolved_by": "p014",
+      "tags": [
+        "multi-session",
+        "lifecycle",
+        "ordering",
+        "data-loss"
+      ]
+    },
+    {
+      "id": "x015",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "State persistence races under concurrent mutation. saveState() serializes the sessions Map by iterating it, but hook handlers concurrently mutate session properties (activity, pending, trustLevel) on the same tick via HTTP handlers. Node is single-threaded so there's no data corruption, but the periodic 30s saveState timer can fire mid-handler between two related mutations, producing a snapshot with inconsistent cross-session state. More critically, if saveState() is called explicitly from handleTrustLevel/handleRules at nearly the same time as the periodic timer, two writes race on the tmp/rename sequence. Fix: debounce saveState() calls so only one runs per tick, or use a dirty flag checked by a single timer.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:94-111,609,1130,1173 — saveState() called from multiple paths without coordination"
+      },
+      "evidence": "documented",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p003"
+      ],
+      "resolved_by": "p014",
+      "tags": [
+        "multi-session",
+        "persistence",
+        "race-condition",
+        "state"
+      ]
+    },
+    {
+      "id": "x016",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Dashboard UX degrades with many concurrent sessions. allPending(), allActivity(), allMessages(), allAgents() aggregate across all sessions with O(n*m) iteration on every SSE init and /api/state request. The init payload grows linearly with session count. The dashboard has no pagination, virtual scrolling, or session filtering — at 10+ sessions the permission queue becomes unusable, and at 20+ the SSE init payload may exceed mobile proxy buffer limits. Fix: add server-side session filtering (?session_id=X query param), paginate activity, and cap the init payload size.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:244-292 — allPending/allActivity/allMessages/allAgents iterate all sessions; SSE init sends everything"
+      },
+      "evidence": "documented",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p003"
+      ],
+      "resolved_by": "p014",
+      "tags": [
+        "multi-session",
+        "ux",
+        "scalability",
+        "dashboard",
+        "performance"
+      ]
+    },
+    {
       "id": "p011",
       "type": "factual",
       "topic": "websocket-hardening",
@@ -1623,6 +1749,32 @@
       ]
     },
     {
+      "id": "p014",
+      "type": "factual",
+      "topic": "multi-session",
+      "content": "Session hardening: fixed 5 multi-session risks (x012-x016). (1) Session binding via source fingerprint prevents session ID spoofing — subsequent requests from a different source are rejected (x012). (2) Missing session_id generates a unique derived ID instead of merging into default (x013). (3) Out-of-order lifecycle events are buffered — session_end before session_start is queued and replayed when start arrives, with 30s TTL cleanup (x014). (4) State persistence uses dirty flag + 2s debounce to prevent write races; force-save on shutdown (x015). (5) Dashboard session bar shows max 5 sessions with expand/collapse toggle, priority sorting (pending first), and session count indicator (x016).",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "server.mjs — sourceFingerprint(), deriveSessionId(), lifecycleBuffer, markDirty()/saveState(force), dashboard renderSessionBar() pagination"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "multi-session",
+        "session-hardening",
+        "security",
+        "lifecycle",
+        "persistence",
+        "ux",
+        "prototype"
+      ]
+    },
+    {
       "id": "p015",
       "type": "factual",
       "topic": "cartography",
@@ -1648,33 +1800,7 @@
     }
   ],
   "conflict_graph": {
-    "resolved": [
-      {
-        "winner": "p003",
-        "loser": "x012",
-        "reason": "evidence_tier: tested (4) > documented (3)"
-      },
-      {
-        "winner": "p003",
-        "loser": "x013",
-        "reason": "evidence_tier: tested (4) > documented (3)"
-      },
-      {
-        "winner": "p003",
-        "loser": "x014",
-        "reason": "evidence_tier: tested (4) > documented (3)"
-      },
-      {
-        "winner": "p003",
-        "loser": "x015",
-        "reason": "evidence_tier: tested (4) > documented (3)"
-      },
-      {
-        "winner": "p003",
-        "loser": "x016",
-        "reason": "evidence_tier: tested (4) > documented (3)"
-      }
-    ],
+    "resolved": [],
     "unresolved": []
   },
   "coverage": {
@@ -1744,7 +1870,7 @@
       ]
     },
     "multi-session": {
-      "claims": 16,
+      "claims": 22,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -1770,7 +1896,13 @@
         "p003",
         "x010",
         "x011",
-        "p012"
+        "x012",
+        "x013",
+        "x014",
+        "x015",
+        "x016",
+        "p012",
+        "p014"
       ],
       "constraint_count": 1,
       "source_origins": [
@@ -2044,9 +2176,15 @@
     "x009": 0,
     "x010": 0,
     "x011": 0,
+    "x012": 0,
+    "x013": 0,
+    "x014": 0,
+    "x015": 0,
+    "x016": 0,
     "p011": 0,
     "p012": 0,
     "p013": 0,
+    "p014": 0,
     "p015": 0
   },
   "phase_summary": {
@@ -2059,7 +2197,7 @@
       "complete": true
     },
     "prototype": {
-      "claims": 14,
+      "claims": 15,
       "complete": true
     },
     "evaluate": {
@@ -2078,10 +2216,10 @@
       "status": "active",
       "phase": "research",
       "question": "How should we scale Remote Farmer for multi-session and multi-sprint support, and what repo cartography system keeps AI model interactions fast as the Wheat codebase and git history grow?",
-      "claims_count": 77,
-      "active_claims": 67,
-      "last_git_activity": "2026-03-12T05:23:14-05:00",
-      "git_commit_count": 73
+      "claims_count": 78,
+      "active_claims": 63,
+      "last_git_activity": "2026-03-12T05:31:16-05:00",
+      "git_commit_count": 74
     },
     {
       "name": "remote-farmer-sprint",
@@ -2114,14 +2252,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 77,
-    "active_claims": 62,
+    "total_claims": 78,
+    "active_claims": 63,
     "conflicted_claims": 0,
-    "superseded_claims": 7,
+    "superseded_claims": 2,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:6d6eaa7fb5d950841a783cfa6e8bad3d7ca691e6bf3f5e4f519fdfec5525572c",
+    "input_hash": "sha256:deca61e6d78d0beb8e5aabe69183a789b7777d9678abf9780ec4784cc187740d",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

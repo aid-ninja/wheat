@@ -43,6 +43,18 @@ const ENDED_TTL   = 5  * 60 * 1000;  // 5 min — remove ended sessions after th
 const STALE_TTL   = 30 * 60 * 1000;  // 30 min — remove stale sessions after this
 const REAPER_INTERVAL = 60_000;       // run reaper every 60s
 
+// --- Session binding registry (x012 — anti-spoofing) ---
+const sessionBindings = new Map(); // session_id -> sourceFingerprint
+
+// --- Lifecycle event buffer (x014 — out-of-order protection) ---
+const lifecycleBuffer = new Map(); // session_id -> [{ data, res, receivedAt }]
+const LIFECYCLE_BUFFER_TTL = 30_000; // discard buffered events after 30s
+
+// --- State persistence debounce (x015 — race protection) ---
+let stateDirty = false;
+let saveDebounceTimer = null;
+const SAVE_DEBOUNCE_MS = 2000;
+
 // --- CSRF tokens (per-browser-session) ---
 const csrfTokens = new Map(); // csrfToken -> { createdAt }
 const CSRF_TOKEN_TTL = 24 * 60 * 60 * 1000; // 24h
@@ -96,8 +108,9 @@ if (TOKEN_ROTATION_INTERVAL > 0) {
   console.log(`  [rotate] Auto-rotation every ${TOKEN_ROTATION_INTERVAL}s`);
 }
 
-// --- State persistence (JSON snapshots) ---
-function saveState() {
+// --- State persistence (JSON snapshots, x015 — debounced) ---
+function saveStateImmediate() {
+  stateDirty = false;
   const state = {
     savedAt: Date.now(),
     sessions: [...sessions.entries()].map(([id, s]) => ({
@@ -113,6 +126,26 @@ function saveState() {
     renameSync(tmp, STATE_PATH);
   } catch (err) {
     console.error('[persist] save failed:', err.message);
+  }
+}
+
+function markDirty() {
+  stateDirty = true;
+  if (!saveDebounceTimer) {
+    saveDebounceTimer = setTimeout(() => {
+      saveDebounceTimer = null;
+      if (stateDirty) saveStateImmediate();
+    }, SAVE_DEBOUNCE_MS);
+  }
+}
+
+/** saveState() — debounced unless force=true (shutdown, explicit save) */
+function saveState(force = false) {
+  if (force) {
+    if (saveDebounceTimer) { clearTimeout(saveDebounceTimer); saveDebounceTimer = null; }
+    saveStateImmediate();
+  } else {
+    markDirty();
   }
 }
 
@@ -143,7 +176,7 @@ function gracefulShutdown(signal) {
       entry.resolve({ allow: false, reason: `Server shutting down (${signal})` });
     }
   }
-  saveState();
+  saveState(true); // force immediate save on shutdown
   broadcast({ type: 'server_shutdown', data: { signal } });
   server.close(() => process.exit(0));
   setTimeout(() => process.exit(1), 3000);
@@ -204,12 +237,33 @@ function evictSession(id) {
     entry.resolve({ allow: false, reason: 'session evicted' });
   }
   sessions.delete(id);
+  sessionBindings.delete(id); // x012: clean up binding
+  lifecycleBuffer.delete(id); // x014: clean up buffered events
   broadcast({ type: 'session_removed', session_id: id, data: { reason: 'evicted' } });
   console.log(`[gc] evicted session ${id} (was ${session.status})`);
   return true;
 }
 
-function getSession(sessionId, cwd) {
+/** x013: generate a unique session ID when none provided, instead of merging into "default" */
+function deriveSessionId(context) {
+  const parts = [
+    context?.pid || '',
+    context?.cwd || '',
+    Date.now().toString(36),
+    randomBytes(4).toString('hex'),
+  ];
+  return 'auto-' + createHash('sha256').update(parts.join(':')).digest('hex').slice(0, 12);
+}
+
+/** x012: compute a source fingerprint from request metadata for session binding */
+function sourceFingerprint(req) {
+  if (!req) return null;
+  const addr = req.socket?.remoteAddress || 'unknown';
+  const pid = req._hookPid || '';  // set by hook handler if available
+  return createHash('sha256').update(`${addr}:${pid}`).digest('hex').slice(0, 16);
+}
+
+function getSession(sessionId, cwd, req) {
   const id = sessionId || 'default';
   if (!sessions.has(id)) {
     // --- MAX_SESSIONS guard (x011 / p012) ---
@@ -239,7 +293,18 @@ function getSession(sessionId, cwd) {
     }
     const session = new SessionState(id, cwd);
     sessions.set(id, session);
+    // x012: bind session to its source on first creation
+    const fp = sourceFingerprint(req);
+    if (fp) sessionBindings.set(id, fp);
     broadcast({ type: 'session_new', session_id: id, data: sessionSummary(session) });
+  } else if (req) {
+    // x012: verify source binding on subsequent requests
+    const fp = sourceFingerprint(req);
+    const bound = sessionBindings.get(id);
+    if (bound && fp && bound !== fp) {
+      console.warn(`[x012] Session binding mismatch for ${id}: expected ${bound}, got ${fp}`);
+      return null; // reject — different source
+    }
   }
   const s = sessions.get(id);
   if (cwd && (!s.cwd || s.cwd !== cwd)) { s.cwd = cwd; s.label = cwd.split('/').pop(); }
@@ -736,7 +801,21 @@ loadState();
 watchFile(CLAIMS_PATH, { interval: 1000 }, loadClaims);
 
 // Periodic state flush (catches activity log updates between explicit saves)
-setInterval(saveState, 30_000);
+// x015: use markDirty instead of direct saveState to debounce
+setInterval(() => { if (stateDirty) saveState(); }, 30_000);
+
+// x014: clean up stale lifecycle buffer entries
+setInterval(() => {
+  const now = Date.now();
+  for (const [sid, items] of lifecycleBuffer) {
+    const fresh = items.filter(i => now - i.receivedAt < LIFECYCLE_BUFFER_TTL);
+    if (fresh.length === 0) {
+      lifecycleBuffer.delete(sid);
+    } else {
+      lifecycleBuffer.set(sid, fresh);
+    }
+  }
+}, 15_000);
 
 // --- Staleness detection ---
 setInterval(() => {
@@ -869,17 +948,25 @@ const server = createServer(async (req, res) => {
 
     const hookType = url.pathname.split('/hooks/')[1];
 
+    // x012: attach PID to request for session binding fingerprint
+    if (data.pid) req._hookPid = String(data.pid);
+
+    // x013: if no session_id, derive a unique one instead of merging to "default"
+    if (!data.session_id) {
+      data.session_id = deriveSessionId({ pid: data.pid, cwd: data.cwd });
+    }
+
     if (hookType === 'permission') {
-      return handlePermission(data, res);
+      return handlePermission(data, res, req);
     }
     if (hookType === 'activity') {
-      return handleActivity(data, res);
+      return handleActivity(data, res, req);
     }
     if (hookType === 'notification') {
-      return handleNotification(data, res);
+      return handleNotification(data, res, req);
     }
     if (hookType === 'lifecycle') {
-      return handleLifecycle(data, res);
+      return handleLifecycle(data, res, req);
     }
     res.writeHead(404); res.end('Unknown hook');
     return;
@@ -928,7 +1015,7 @@ const server = createServer(async (req, res) => {
     let data;
     try { data = JSON.parse(body); } catch { res.writeHead(400); res.end('Bad JSON'); return; }
 
-    const session = getSession(data.session_id, data.cwd);
+    const session = getSession(data.session_id || deriveSessionId({ cwd: data.cwd }), data.cwd);
     if (!session) { res.writeHead(503); res.end('Max sessions reached'); return; }
     const msg = {
       type: 'message',
@@ -955,7 +1042,7 @@ const server = createServer(async (req, res) => {
     let data;
     try { data = JSON.parse(body); } catch { res.writeHead(400); res.end('Bad JSON'); return; }
 
-    const session = getSession(data.session_id || 'default', data.cwd);
+    const session = getSession(data.session_id || deriveSessionId({ cwd: data.cwd }), data.cwd);
     if (!session) { res.writeHead(503); res.end('Max sessions reached'); return; }
     const requestId = randomBytes(8).toString('hex');
     const event = {
@@ -1092,9 +1179,9 @@ const server = createServer(async (req, res) => {
 });
 
 // --- Permission handling ---
-function handlePermission(data, res) {
-  const session = getSession(data.session_id, data.cwd);
-  if (!session) { res.writeHead(503); res.end(JSON.stringify({ error: 'Max sessions reached' })); return; }
+function handlePermission(data, res, req) {
+  const session = getSession(data.session_id, data.cwd, req);
+  if (!session) { res.writeHead(403); res.end(JSON.stringify({ error: 'Session rejected (capacity or binding mismatch)' })); return; }
   const requestId = data.tool_use_id || randomBytes(8).toString('hex');
   const toolName = data.tool_name;
   const toolInput = data.tool_input;
@@ -1323,28 +1410,40 @@ function handleRules(data, res) {
 }
 
 // --- Lifecycle handling (SessionStart / SessionEnd) ---
-function handleLifecycle(data, res) {
+// x014: buffer out-of-order lifecycle events (e.g. session_end before session_start)
+function handleLifecycle(data, res, req) {
   const { event, session_id, cwd, source, reason } = data;
 
   if (event === 'session_start') {
-    const session = getSession(session_id, cwd);
+    const session = getSession(session_id, cwd, req);
     if (!session) { res.writeHead(503); res.end(JSON.stringify({ error: 'Max sessions reached' })); return; }
     session.source = source;  // 'startup', 'resume', 'clear', 'compact'
     session.status = 'active';
     broadcast({ type: 'session_start', session_id, data: sessionSummary(session) });
+
+    // x014: replay any buffered events for this session
+    const buffered = lifecycleBuffer.get(session_id);
+    if (buffered && buffered.length > 0) {
+      lifecycleBuffer.delete(session_id);
+      for (const item of buffered) {
+        processSessionEnd(item.data, session);
+      }
+    }
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end('{}');
+    return;
   }
 
   if (event === 'session_end') {
     const session = sessions.get(session_id);
     if (session) {
-      session.status = 'ended';
-      session.endedAt = Date.now();
-      session.endReason = reason;
-      // Auto-deny any pending permissions for this session
-      for (const [reqId, entry] of session.pending) {
-        entry.resolve({ allow: false, reason: 'session ended' });
-      }
-      broadcast({ type: 'session_end', session_id, data: { reason } });
+      processSessionEnd(data, session);
+    } else {
+      // x014: session_end arrived before session_start — buffer it
+      console.log(`[x014] Buffering session_end for unknown session ${session_id}`);
+      if (!lifecycleBuffer.has(session_id)) lifecycleBuffer.set(session_id, []);
+      lifecycleBuffer.get(session_id).push({ data, receivedAt: Date.now() });
     }
   }
 
@@ -1352,9 +1451,23 @@ function handleLifecycle(data, res) {
   res.end('{}');
 }
 
+function processSessionEnd(data, session) {
+  const { session_id, reason } = data;
+  session.status = 'ended';
+  session.endedAt = Date.now();
+  session.endReason = reason;
+  // Auto-deny any pending permissions for this session
+  for (const [reqId, entry] of session.pending) {
+    entry.resolve({ allow: false, reason: 'session ended' });
+  }
+  // x012: clean up session binding
+  sessionBindings.delete(session_id);
+  broadcast({ type: 'session_end', session_id, data: { reason } });
+}
+
 // --- Notification handling (AskUserQuestion / elicitation / agents) ---
-function handleNotification(data, res) {
-  const session = getSession(data.session_id, data.cwd);
+function handleNotification(data, res, req) {
+  const session = getSession(data.session_id, data.cwd, req);
   if (!session) { res.writeHead(503); res.end(JSON.stringify({ error: 'Max sessions reached' })); return; }
   const hookEvent = data.hook_event_name || '';
 
@@ -1430,8 +1543,8 @@ function handleNotification(data, res) {
 }
 
 // --- Activity feed ---
-function handleActivity(data, res) {
-  const session = getSession(data.session_id, data.cwd);
+function handleActivity(data, res, req) {
+  const session = getSession(data.session_id, data.cwd, req);
   if (!session) { res.writeHead(503); res.end(JSON.stringify({ error: 'Max sessions reached' })); return; }
   const isAgent = data.tool_name === 'Agent';
 
@@ -1456,6 +1569,7 @@ function handleActivity(data, res) {
 function addActivity(session, event) {
   session.activity.push(event);
   if (session.activity.length > MAX_ACTIVITY) session.activity.shift();
+  markDirty(); // x015: mark state dirty for debounced persistence
   broadcast({ type: 'activity', session_id: session.id, data: event });
 }
 
