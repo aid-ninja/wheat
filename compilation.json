@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T01:57:57.109Z",
-  "claims_hash": "e172a86",
+  "compiled_at": "2026-03-12T02:13:47.814Z",
+  "claims_hash": "a4266dc",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -31,44 +31,6 @@
       "message": "Topic \"prior-art\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
       "claims": [
         "r014"
-      ]
-    },
-    {
-      "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"security\" has only web-level evidence (4 claims)",
-      "claims": [
-        "d003",
-        "r008",
-        "r009",
-        "r010"
-      ]
-    },
-    {
-      "code": "W_CONSTRAINT_ONLY",
-      "message": "Topic \"stack\" is constraint-dominated (1/1 claims are constraints/feedback) — stated-level evidence is expected",
-      "claims": [
-        "d002"
-      ]
-    },
-    {
-      "code": "W_TYPE_MONOCULTURE",
-      "message": "Topic \"stack\" has only 1 claim type(s): constraint. Missing: factual, estimate, risk, recommendation, feedback",
-      "claims": [
-        "d002"
-      ]
-    },
-    {
-      "code": "W_CONSTRAINT_ONLY",
-      "message": "Topic \"ui-features\" is constraint-dominated (1/1 claims are constraints/feedback) — stated-level evidence is expected",
-      "claims": [
-        "d004"
-      ]
-    },
-    {
-      "code": "W_TYPE_MONOCULTURE",
-      "message": "Topic \"ui-features\" has only 1 claim type(s): constraint. Missing: factual, estimate, risk, recommendation, feedback",
-      "claims": [
-        "d004"
       ]
     }
   ],
@@ -448,28 +410,6 @@
       ]
     },
     {
-      "id": "r013",
-      "type": "risk",
-      "topic": "architecture",
-      "content": "The PermissionRequest hook timeout (default 30s) is the window for a human to approve/deny remotely. If the user doesn't respond in time, the hook times out and falls through to local terminal prompt. For mobile/slow connections, may need to extend timeout to 120-300s, but this stalls Claude Code's entire session.",
-      "source": {
-        "origin": "analysis",
-        "artifact": null,
-        "connector": null
-      },
-      "evidence": "documented",
-      "status": "active",
-      "phase_added": "research",
-      "timestamp": "2026-03-11T01:00:00Z",
-      "conflicts_with": [],
-      "resolved_by": null,
-      "tags": [
-        "timeout",
-        "UX",
-        "latency"
-      ]
-    },
-    {
       "id": "r014",
       "type": "factual",
       "topic": "prior-art",
@@ -511,17 +451,157 @@
         "prototype",
         "LOC"
       ]
+    },
+    {
+      "id": "p001",
+      "type": "factual",
+      "topic": "integration",
+      "content": "Working prototype confirms: Node.js HTTP server successfully receives Claude Code hook POSTs, parses tool_name/tool_input/session_id, and returns allow/deny JSON. The hook contract works exactly as documented — zero surprises.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "prototype",
+        "hooks",
+        "verified"
+      ]
+    },
+    {
+      "id": "p002",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Prototype architecture: server.mjs (HTTP server + WebSocket) holds Claude Code's PermissionRequest response open while pushing the request to the browser via WebSocket. Browser clicks approve/deny, server relays the decision back as the HTTP response. Round-trip is synchronous from Claude Code's perspective.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "prototype",
+        "architecture",
+        "WebSocket"
+      ]
+    },
+    {
+      "id": "p003",
+      "type": "factual",
+      "topic": "stack",
+      "content": "Prototype has zero npm dependencies. Uses Node built-in http, fs, crypto modules plus a custom 130-line WebSocket server (ws.mjs) implementing RFC 6455 text frames. Total: ~550 lines across 3 files (server.mjs, ws.mjs, dashboard.html).",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "prototype",
+        "zero-deps",
+        "LOC"
+      ]
+    },
+    {
+      "id": "p004",
+      "type": "factual",
+      "topic": "ui-features",
+      "content": "Dashboard UI has 4 tabs: (1) Permissions — pending approve/deny cards with tool context, browser Notification API for push alerts, (2) Activity — real-time feed of all tool calls via PostToolUse hooks, (3) Claims — filterable by topic with evidence tier bars, (4) Sprint — phase/type/evidence breakdowns with stats.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/dashboard.html",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "prototype",
+        "UI",
+        "dashboard"
+      ]
+    },
+    {
+      "id": "p005",
+      "type": "factual",
+      "topic": "security",
+      "content": "Prototype uses token-based auth: random 16-byte hex token generated on startup, required as query param for dashboard and WebSocket. Hook endpoints are unauthenticated (Claude Code doesn't send custom auth by default), but localhost-only. For remote access, tunnel auth (ngrok --auth or Cloudflare Access) provides the outer layer.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "prototype",
+        "security",
+        "auth"
+      ]
+    },
+    {
+      "id": "p006",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "120-second timeout for held permission requests is a tradeoff: too short and mobile users can't respond in time; too long and Claude Code's session stalls. Fallthrough on timeout sends empty JSON (no decision), which should let Claude Code fall back to local terminal prompt.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [
+        "r013"
+      ],
+      "resolved_by": null,
+      "tags": [
+        "prototype",
+        "timeout",
+        "risk"
+      ]
     }
   ],
   "conflict_graph": {
-    "resolved": [],
+    "resolved": [
+      {
+        "winner": "p006",
+        "loser": "r013",
+        "reason": "evidence_tier: tested (4) > documented (3)"
+      }
+    ],
     "unresolved": []
   },
   "coverage": {
     "architecture": {
-      "claims": 4,
-      "max_evidence": "documented",
-      "status": "moderate",
+      "claims": 5,
+      "max_evidence": "tested",
+      "status": "strong",
       "types": [
         "estimate",
         "factual",
@@ -531,15 +611,17 @@
       "claim_ids": [
         "r011",
         "r012",
-        "r013",
-        "r015"
+        "r015",
+        "p002",
+        "p006"
       ],
       "constraint_count": 0,
       "source_origins": [
         "analysis",
-        "documentation"
+        "documentation",
+        "prototype"
       ],
-      "source_count": 2,
+      "source_count": 3,
       "type_diversity": 4,
       "missing_types": [
         "constraint",
@@ -547,9 +629,9 @@
       ]
     },
     "integration": {
-      "claims": 8,
-      "max_evidence": "documented",
-      "status": "moderate",
+      "claims": 9,
+      "max_evidence": "tested",
+      "status": "strong",
       "types": [
         "constraint",
         "factual",
@@ -563,14 +645,16 @@
         "r004",
         "r005",
         "r006",
-        "r007"
+        "r007",
+        "p001"
       ],
       "constraint_count": 1,
       "source_origins": [
         "documentation",
+        "prototype",
         "stakeholder"
       ],
-      "source_count": 2,
+      "source_count": 3,
       "type_diversity": 3,
       "missing_types": [
         "estimate",
@@ -627,9 +711,9 @@
       ]
     },
     "security": {
-      "claims": 4,
-      "max_evidence": "web",
-      "status": "weak",
+      "claims": 5,
+      "max_evidence": "tested",
+      "status": "strong",
       "types": [
         "constraint",
         "factual",
@@ -640,15 +724,17 @@
         "d003",
         "r008",
         "r009",
-        "r010"
+        "r010",
+        "p005"
       ],
       "constraint_count": 1,
       "source_origins": [
         "analysis",
+        "prototype",
         "stakeholder",
         "web"
       ],
-      "source_count": 3,
+      "source_count": 4,
       "type_diversity": 4,
       "missing_types": [
         "estimate",
@@ -656,23 +742,25 @@
       ]
     },
     "stack": {
-      "claims": 1,
-      "max_evidence": "stated",
-      "status": "weak",
+      "claims": 2,
+      "max_evidence": "tested",
+      "status": "strong",
       "types": [
-        "constraint"
+        "constraint",
+        "factual"
       ],
       "claim_ids": [
-        "d002"
+        "d002",
+        "p003"
       ],
       "constraint_count": 1,
       "source_origins": [
+        "prototype",
         "stakeholder"
       ],
-      "source_count": 1,
-      "type_diversity": 1,
+      "source_count": 2,
+      "type_diversity": 2,
       "missing_types": [
-        "factual",
         "estimate",
         "risk",
         "recommendation",
@@ -680,23 +768,25 @@
       ]
     },
     "ui-features": {
-      "claims": 1,
-      "max_evidence": "stated",
-      "status": "weak",
+      "claims": 2,
+      "max_evidence": "tested",
+      "status": "strong",
       "types": [
-        "constraint"
+        "constraint",
+        "factual"
       ],
       "claim_ids": [
-        "d004"
+        "d004",
+        "p004"
       ],
       "constraint_count": 1,
       "source_origins": [
+        "prototype",
         "stakeholder"
       ],
-      "source_count": 1,
-      "type_diversity": 1,
+      "source_count": 2,
+      "type_diversity": 2,
       "missing_types": [
-        "factual",
         "estimate",
         "risk",
         "recommendation",
@@ -722,9 +812,14 @@
     "r010": 0,
     "r011": 0,
     "r012": 0,
-    "r013": 0,
     "r014": 0,
-    "r015": 0
+    "r015": 0,
+    "p001": 0,
+    "p002": 0,
+    "p003": 0,
+    "p004": 0,
+    "p005": 0,
+    "p006": 0
   },
   "phase_summary": {
     "define": {
@@ -736,8 +831,8 @@
       "complete": true
     },
     "prototype": {
-      "claims": 0,
-      "complete": false
+      "claims": 6,
+      "complete": true
     },
     "evaluate": {
       "claims": 0,
@@ -755,15 +850,15 @@
       "team leads"
     ],
     "initiated": "2026-03-11",
-    "phase": "research",
-    "total_claims": 20,
-    "active_claims": 20,
+    "phase": "prototype",
+    "total_claims": 26,
+    "active_claims": 25,
     "conflicted_claims": 0,
-    "superseded_claims": 0,
+    "superseded_claims": 1,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:e172a866030a84b5351c783855295aeb7c1e8a03a29dccb78e57c83043b0b6f2",
+    "input_hash": "sha256:a4266dca8e4480c156fd32d141ebae40d649d2523cf2c3896740ace49efbd5e5",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

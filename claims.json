@@ -6,7 +6,7 @@
       "solo developer",
       "team leads"
     ],
-    "phase": "research",
+    "phase": "prototype",
     "connectors": []
   },
   "claims": [
@@ -289,6 +289,91 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["estimate", "prototype", "LOC"]
+    },
+    {
+      "id": "p001",
+      "type": "factual",
+      "topic": "integration",
+      "content": "Working prototype confirms: Node.js HTTP server successfully receives Claude Code hook POSTs, parses tool_name/tool_input/session_id, and returns allow/deny JSON. The hook contract works exactly as documented — zero surprises.",
+      "source": { "origin": "prototype", "artifact": "prototypes/remote-dashboard/server.mjs", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["prototype", "hooks", "verified"]
+    },
+    {
+      "id": "p002",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Prototype architecture: server.mjs (HTTP server + WebSocket) holds Claude Code's PermissionRequest response open while pushing the request to the browser via WebSocket. Browser clicks approve/deny, server relays the decision back as the HTTP response. Round-trip is synchronous from Claude Code's perspective.",
+      "source": { "origin": "prototype", "artifact": "prototypes/remote-dashboard/server.mjs", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["prototype", "architecture", "WebSocket"]
+    },
+    {
+      "id": "p003",
+      "type": "factual",
+      "topic": "stack",
+      "content": "Prototype has zero npm dependencies. Uses Node built-in http, fs, crypto modules plus a custom 130-line WebSocket server (ws.mjs) implementing RFC 6455 text frames. Total: ~550 lines across 3 files (server.mjs, ws.mjs, dashboard.html).",
+      "source": { "origin": "prototype", "artifact": "prototypes/remote-dashboard/", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["prototype", "zero-deps", "LOC"]
+    },
+    {
+      "id": "p004",
+      "type": "factual",
+      "topic": "ui-features",
+      "content": "Dashboard UI has 4 tabs: (1) Permissions — pending approve/deny cards with tool context, browser Notification API for push alerts, (2) Activity — real-time feed of all tool calls via PostToolUse hooks, (3) Claims — filterable by topic with evidence tier bars, (4) Sprint — phase/type/evidence breakdowns with stats.",
+      "source": { "origin": "prototype", "artifact": "prototypes/remote-dashboard/dashboard.html", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["prototype", "UI", "dashboard"]
+    },
+    {
+      "id": "p005",
+      "type": "factual",
+      "topic": "security",
+      "content": "Prototype uses token-based auth: random 16-byte hex token generated on startup, required as query param for dashboard and WebSocket. Hook endpoints are unauthenticated (Claude Code doesn't send custom auth by default), but localhost-only. For remote access, tunnel auth (ngrok --auth or Cloudflare Access) provides the outer layer.",
+      "source": { "origin": "prototype", "artifact": "prototypes/remote-dashboard/server.mjs", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["prototype", "security", "auth"]
+    },
+    {
+      "id": "p006",
+      "type": "risk",
+      "topic": "architecture",
+      "content": "120-second timeout for held permission requests is a tradeoff: too short and mobile users can't respond in time; too long and Claude Code's session stalls. Fallthrough on timeout sends empty JSON (no decision), which should let Claude Code fall back to local terminal prompt.",
+      "source": { "origin": "prototype", "artifact": "prototypes/remote-dashboard/server.mjs", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-11T02:00:00Z",
+      "conflicts_with": ["r013"],
+      "resolved_by": null,
+      "tags": ["prototype", "timeout", "risk"]
     }
   ]
 }
+
