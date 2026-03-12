@@ -37,6 +37,12 @@ const CLAIMS_PATH = resolve(arg('claims', './claims.json'));
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const STATE_PATH = join(__dirname, '.farmer-state.json');
 
+// --- Session GC config (p012) ---
+const MAX_SESSIONS = parseInt(arg('max-sessions', '50'), 10);
+const ENDED_TTL   = 5  * 60 * 1000;  // 5 min — remove ended sessions after this
+const STALE_TTL   = 30 * 60 * 1000;  // 30 min — remove stale sessions after this
+const REAPER_INTERVAL = 60_000;       // run reaper every 60s
+
 // --- CSRF tokens (per-browser-session) ---
 const csrfTokens = new Map(); // csrfToken -> { createdAt }
 const CSRF_TOKEN_TTL = 24 * 60 * 60 * 1000; // 24h
@@ -187,9 +193,50 @@ class SessionState {
 // --- Session management ---
 const sessions = new Map();  // session_id -> SessionState
 
+/**
+ * Evict a single session: clean up pending, remove from map, broadcast removal.
+ */
+function evictSession(id) {
+  const session = sessions.get(id);
+  if (!session) return false;
+  // Auto-deny any pending permissions
+  for (const [reqId, entry] of session.pending) {
+    entry.resolve({ allow: false, reason: 'session evicted' });
+  }
+  sessions.delete(id);
+  broadcast({ type: 'session_removed', session_id: id, data: { reason: 'evicted' } });
+  console.log(`[gc] evicted session ${id} (was ${session.status})`);
+  return true;
+}
+
 function getSession(sessionId, cwd) {
   const id = sessionId || 'default';
   if (!sessions.has(id)) {
+    // --- MAX_SESSIONS guard (x011 / p012) ---
+    if (sessions.size >= MAX_SESSIONS) {
+      // Try to evict oldest ended session first, then oldest stale
+      let victim = null;
+      let victimAge = Infinity;
+      for (const [vid, vs] of sessions) {
+        if (vs.status === 'ended' && vs.lastActivity < victimAge) {
+          victim = vid; victimAge = vs.lastActivity;
+        }
+      }
+      if (!victim) {
+        for (const [vid, vs] of sessions) {
+          if (vs.status === 'stale' && vs.lastActivity < victimAge) {
+            victim = vid; victimAge = vs.lastActivity;
+          }
+        }
+      }
+      if (victim) {
+        evictSession(victim);
+      } else {
+        // All sessions active — reject
+        console.warn(`[gc] MAX_SESSIONS (${MAX_SESSIONS}) reached, all active — rejecting ${id}`);
+        return null;
+      }
+    }
     const session = new SessionState(id, cwd);
     sessions.set(id, session);
     broadcast({ type: 'session_new', session_id: id, data: sessionSummary(session) });
@@ -701,6 +748,19 @@ setInterval(() => {
   }
 }, 60_000);
 
+// --- Session reaper (p012 — fixes x010 memory leak) ---
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, session] of sessions) {
+    const age = now - session.lastActivity;
+    if (session.status === 'ended' && age > ENDED_TTL) {
+      evictSession(id);
+    } else if (session.status === 'stale' && age > STALE_TTL) {
+      evictSession(id);
+    }
+  }
+}, REAPER_INTERVAL);
+
 // --- HTTP Server ---
 const server = createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
@@ -869,6 +929,7 @@ const server = createServer(async (req, res) => {
     try { data = JSON.parse(body); } catch { res.writeHead(400); res.end('Bad JSON'); return; }
 
     const session = getSession(data.session_id, data.cwd);
+    if (!session) { res.writeHead(503); res.end('Max sessions reached'); return; }
     const msg = {
       type: 'message',
       content: data.content || data.message || '',
@@ -895,6 +956,7 @@ const server = createServer(async (req, res) => {
     try { data = JSON.parse(body); } catch { res.writeHead(400); res.end('Bad JSON'); return; }
 
     const session = getSession(data.session_id || 'default', data.cwd);
+    if (!session) { res.writeHead(503); res.end('Max sessions reached'); return; }
     const requestId = randomBytes(8).toString('hex');
     const event = {
       requestId,
@@ -1032,6 +1094,7 @@ const server = createServer(async (req, res) => {
 // --- Permission handling ---
 function handlePermission(data, res) {
   const session = getSession(data.session_id, data.cwd);
+  if (!session) { res.writeHead(503); res.end(JSON.stringify({ error: 'Max sessions reached' })); return; }
   const requestId = data.tool_use_id || randomBytes(8).toString('hex');
   const toolName = data.tool_name;
   const toolInput = data.tool_input;
@@ -1265,6 +1328,7 @@ function handleLifecycle(data, res) {
 
   if (event === 'session_start') {
     const session = getSession(session_id, cwd);
+    if (!session) { res.writeHead(503); res.end(JSON.stringify({ error: 'Max sessions reached' })); return; }
     session.source = source;  // 'startup', 'resume', 'clear', 'compact'
     session.status = 'active';
     broadcast({ type: 'session_start', session_id, data: sessionSummary(session) });
@@ -1291,6 +1355,7 @@ function handleLifecycle(data, res) {
 // --- Notification handling (AskUserQuestion / elicitation / agents) ---
 function handleNotification(data, res) {
   const session = getSession(data.session_id, data.cwd);
+  if (!session) { res.writeHead(503); res.end(JSON.stringify({ error: 'Max sessions reached' })); return; }
   const hookEvent = data.hook_event_name || '';
 
   // Detect subagent lifecycle events from Agent tool notifications
@@ -1367,6 +1432,7 @@ function handleNotification(data, res) {
 // --- Activity feed ---
 function handleActivity(data, res) {
   const session = getSession(data.session_id, data.cwd);
+  if (!session) { res.writeHead(503); res.end(JSON.stringify({ error: 'Max sessions reached' })); return; }
   const isAgent = data.tool_name === 'Agent';
 
   // Track agent completion via PostToolUse/PostToolUseFailure

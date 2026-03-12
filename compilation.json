@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T10:17:38.552Z",
-  "claims_hash": "ddef041",
+  "compiled_at": "2026-03-12T10:22:50.662Z",
+  "claims_hash": "959247f",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -1502,6 +1502,55 @@
       ]
     },
     {
+      "id": "x010",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Abandoned sessions are never garbage-collected. The staleness detector (setInterval every 60s) marks sessions as 'stale' but never removes them from the sessions Map. Over hours/days of use, dead sessions accumulate unboundedly — each carrying up to 200 activity entries, 50 messages, and an agents array. This is a slow memory leak proportional to session churn. Fix: add a reaper that deletes sessions in 'stale' or 'ended' status after a configurable TTL (e.g. 1 hour), persisting them to disk first if needed.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:612-619 — staleness detector sets status but never prunes; sessions Map grows monotonically"
+      },
+      "evidence": "documented",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p003"
+      ],
+      "resolved_by": "p012",
+      "tags": [
+        "multi-session",
+        "memory-leak",
+        "gc",
+        "sessions"
+      ]
+    },
+    {
+      "id": "x011",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "No cap on session count. getSession() lazily creates a new SessionState for any session_id it hasn't seen. A buggy or malicious localhost process sending hooks with randomized session_ids can create thousands of sessions, exhausting server memory. Fix: enforce a MAX_SESSIONS limit (e.g. 50) and reject new session creation once the cap is reached, or evict the oldest stale session.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:190-201 — getSession() has no size guard on sessions Map"
+      },
+      "evidence": "documented",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p003"
+      ],
+      "resolved_by": "p012",
+      "tags": [
+        "multi-session",
+        "denial-of-service",
+        "resource-exhaustion"
+      ]
+    },
+    {
       "id": "p011",
       "type": "factual",
       "topic": "websocket-hardening",
@@ -1524,20 +1573,34 @@
         "rfc6455",
         "prototype"
       ]
+    },
+    {
+      "id": "p012",
+      "type": "factual",
+      "topic": "multi-session",
+      "content": "Implemented session garbage collection in server.mjs: (1) MAX_SESSIONS guard (default 50) on getSession() — evicts oldest ended/stale session when cap reached, rejects with 503 if all active. (2) Periodic reaper (every 60s) prunes ended sessions after 5 min TTL and stale sessions after 30 min TTL. (3) Broadcasts 'session_removed' event so dashboard UI stays in sync. All null-guard call sites return 503. Fixes x010 (memory leak from monotonically growing sessions Map) and x011 (no cap on session count). Zero npm deps maintained.",
+      "source": {
+        "type": "code-review",
+        "origin": "prototype",
+        "detail": "server.mjs — evictSession(), getSession() MAX_SESSIONS guard, reaper setInterval, null guards at 6 call sites"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "multi-session",
+        "gc",
+        "memory-leak",
+        "resource-exhaustion",
+        "prototype"
+      ]
     }
   ],
   "conflict_graph": {
     "resolved": [
-      {
-        "winner": "p003",
-        "loser": "x010",
-        "reason": "evidence_tier: tested (4) > documented (3)"
-      },
-      {
-        "winner": "p003",
-        "loser": "x011",
-        "reason": "evidence_tier: tested (4) > documented (3)"
-      },
       {
         "winner": "p003",
         "loser": "x012",
@@ -1632,7 +1695,7 @@
       ]
     },
     "multi-session": {
-      "claims": 13,
+      "claims": 16,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -1655,16 +1718,20 @@
         "w001",
         "w002",
         "p002",
-        "p003"
+        "p003",
+        "x010",
+        "x011",
+        "p012"
       ],
       "constraint_count": 1,
       "source_origins": [
         "analysis",
+        "challenge",
         "documentation",
         "prototype",
         "stakeholder"
       ],
-      "source_count": 4,
+      "source_count": 5,
       "type_diversity": 5,
       "missing_types": [
         "feedback"
@@ -1925,7 +1992,10 @@
     "x007": 0,
     "x008": 0,
     "x009": 0,
-    "p011": 0
+    "x010": 0,
+    "x011": 0,
+    "p011": 0,
+    "p012": 0
   },
   "phase_summary": {
     "define": {
@@ -1937,7 +2007,7 @@
       "complete": true
     },
     "prototype": {
-      "claims": 11,
+      "claims": 12,
       "complete": true
     },
     "evaluate": {
@@ -1957,14 +2027,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 74,
-    "active_claims": 59,
+    "total_claims": 75,
+    "active_claims": 60,
     "conflicted_claims": 0,
-    "superseded_claims": 9,
+    "superseded_claims": 7,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:ddef041129e765f62cfaa16d01a4811f27ce65f1d61aad5bcb523c5a0a0794bc",
+    "input_hash": "sha256:959247fa741ec8f4db792aef8308e17036101ba1bd3eb5ceb0ef4d8399888f25",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

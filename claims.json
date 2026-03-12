@@ -1360,11 +1360,11 @@
         "detail": "server.mjs:612-619 — staleness detector sets status but never prunes; sessions Map grows monotonically"
       },
       "evidence": "documented",
-      "status": "active",
+      "status": "resolved",
       "phase_added": "challenge",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": ["p003"],
-      "resolved_by": null,
+      "resolved_by": "p012",
       "tags": ["multi-session", "memory-leak", "gc", "sessions"]
     },
     {
@@ -1378,11 +1378,11 @@
         "detail": "server.mjs:190-201 — getSession() has no size guard on sessions Map"
       },
       "evidence": "documented",
-      "status": "active",
+      "status": "resolved",
       "phase_added": "challenge",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": ["p003"],
-      "resolved_by": null,
+      "resolved_by": "p012",
       "tags": ["multi-session", "denial-of-service", "resource-exhaustion"]
     },
     {
@@ -1492,6 +1492,24 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["websocket", "security", "reliability", "rfc6455", "prototype"]
+    },
+    {
+      "id": "p012",
+      "type": "factual",
+      "topic": "multi-session",
+      "content": "Implemented session garbage collection in server.mjs: (1) MAX_SESSIONS guard (default 50) on getSession() — evicts oldest ended/stale session when cap reached, rejects with 503 if all active. (2) Periodic reaper (every 60s) prunes ended sessions after 5 min TTL and stale sessions after 30 min TTL. (3) Broadcasts 'session_removed' event so dashboard UI stays in sync. All null-guard call sites return 503. Fixes x010 (memory leak from monotonically growing sessions Map) and x011 (no cap on session count). Zero npm deps maintained.",
+      "source": {
+        "type": "code-review",
+        "origin": "prototype",
+        "detail": "server.mjs — evictSession(), getSession() MAX_SESSIONS guard, reaper setInterval, null guards at 6 call sites"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["multi-session", "gc", "memory-leak", "resource-exhaustion", "prototype"]
     }
   ]
 }

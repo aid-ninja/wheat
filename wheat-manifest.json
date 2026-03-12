@@ -1,7 +1,7 @@
 {
-  "generated": "2026-03-12T10:17:38.588Z",
+  "generated": "2026-03-12T10:22:50.699Z",
   "generator": "generate-manifest.js",
-  "claims_hash": "ddef041",
+  "claims_hash": "959247f",
   "topics": {
     "multi-session": {
       "claims": [
@@ -24,7 +24,8 @@
         "x013",
         "x014",
         "x015",
-        "x016"
+        "x016",
+        "p012"
       ],
       "files": [
         "docs/dashboard.html",
@@ -54,6 +55,7 @@
         "f001"
       ],
       "files": [
+        "detect-sprints.js",
         "evidence/sprint-evaluation.html",
         "prototypes/remote-dashboard/dashboard.html",
         "prototypes/remote-dashboard/server.mjs",
@@ -174,7 +176,7 @@
     "current": {
       "question": "How should we scale Remote Farmer for multi-session and multi-sprint support, and what repo cartography system keeps AI model interactions fast as the Wheat codebase and git history grow?",
       "phase": "research",
-      "claims_count": 74,
+      "claims_count": 75,
       "path": "."
     },
     "remote-farmer-sprint": {
@@ -279,6 +281,12 @@
         "cartography"
       ],
       "type": "docs"
+    },
+    "detect-sprints.js": {
+      "topics": [
+        "multi-sprint"
+      ],
+      "type": "script"
     },
     "generate-manifest.js": {
       "topics": [
