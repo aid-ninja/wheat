@@ -4,7 +4,18 @@
 
 ## Sprint
 
-_No active sprint. Run `/init` to start one._
+**Question:** How should we build a remote permission and monitoring dashboard for Claude Code — a web UI that receives permission requests, shows live activity, and lets users approve/deny tool calls remotely over tunneled connections?
+
+**Audience:** Solo developer (self), potentially extensible to team leads supervising multiple sessions
+
+**Constraints:**
+- Must integrate with Claude Code's existing hook/permission system (no patching Claude Code itself)
+- Self-contained Node.js server (minimal dependencies)
+- Browser-based UI (mobile-friendly is a plus)
+- Secure short-term tunneled access (ngrok, Cloudflare Tunnel, or Tailscale)
+- Dashboard should also surface Wheat sprint state (claim tree, status)
+
+**Done looks like:** Working prototype + architecture recommendation for production use
 
 ## Connectors
 
