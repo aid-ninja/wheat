@@ -39,6 +39,7 @@
   .num { font-size: 24px; font-weight: 800; }
   .label { font-size: 11px; color: var(--dim); }
   .superseded { text-decoration: line-through; opacity: 0.5; }
+  .unmitigated { color: var(--red); font-weight: 600; }
   @media (max-width: 640px) { .slide { padding: 40px 20px; } h1 { font-size: 22px; } .grid-3 { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -46,41 +47,45 @@
 
 <div class="slide">
   <h1>Scaling Remote Farmer</h1>
-  <p class="meta">Decision Brief | 2026-03-12 | 60 claims (58 active) | 7 topics | 10 prototypes | 9 DONE</p>
+  <p class="meta">Decision Brief | 2026-03-12 | 74 claims (59 active, 9 superseded, 6 resolved) | 9 topics | 11 prototypes | 10 DONE</p>
   <p>Three core workstreams to scale Remote Farmer -- all <strong>prototyped and validated</strong>: multi-session via session-keyed Maps <span class="claim-ref">p003</span>, multi-sprint via sprints/ directory <span class="claim-ref">p004</span>, and repo cartography via compiler-generated topic-map manifest in &lt;10ms <span class="claim-ref">p001</span>.</p>
-  <p>Security hardening is <strong>implemented</strong> <span class="claim-ref">p005</span>, backwards compatibility <strong>verified</strong> (10/10 tests) <span class="claim-ref">p006</span>. Four additional prototypes since initial brief: <strong>compiler manifest integration</strong> <span class="claim-ref">p007</span>, <strong>JSON state persistence</strong> <span class="claim-ref">p008</span>, <strong>WebSocket transport</strong> <span class="claim-ref">p009</span>, and <strong>CSRF + token rotation</strong> <span class="claim-ref">p010</span>.</p>
+  <p>Security hardening is <strong>implemented</strong> <span class="claim-ref">p005</span>, backwards compatibility <strong>verified</strong> (10/10 tests) <span class="claim-ref">p006</span>. Five additional prototypes: <strong>compiler manifest integration</strong> <span class="claim-ref">p007</span>, <strong>JSON state persistence</strong> <span class="claim-ref">p008</span>, <strong>WebSocket transport</strong> <span class="claim-ref">p009</span>, <strong>CSRF + token rotation</strong> <span class="claim-ref">p010</span>, and <strong>WebSocket hardening</strong> <span class="claim-ref">p011</span>.</p>
+  <p style="color:var(--orange)"><strong>New:</strong> Adversarial session challenges <span class="claim-ref">x010</span>--<span class="claim-ref">x016</span> exposed 7 unmitigated multi-session risks. These should be addressed before production.</p>
   <div class="grid-3">
-    <div style="background:rgba(52,211,153,0.1);"><div class="num" style="color:var(--green);">60</div><div class="label">CLAIMS</div></div>
-    <div style="background:rgba(96,165,250,0.1);"><div class="num" style="color:var(--accent);">7</div><div class="label">TOPICS</div></div>
-    <div style="background:rgba(251,191,36,0.1);"><div class="num" style="color:var(--orange);">0</div><div class="label">CONFLICTS</div></div>
+    <div style="background:rgba(52,211,153,0.1);"><div class="num" style="color:var(--green);">74</div><div class="label">CLAIMS</div></div>
+    <div style="background:rgba(96,165,250,0.1);"><div class="num" style="color:var(--accent);">9</div><div class="label">TOPICS</div></div>
+    <div style="background:rgba(248,113,113,0.1);"><div class="num" style="color:var(--red);">7</div><div class="label">UNMITIGATED RISKS</div></div>
   </div>
   <div style="margin-top: 24px; display: flex; gap: 8px; flex-wrap: wrap;">
-    <span class="tag tested">multi-session: tested</span>
-    <span class="tag tested">multi-sprint: tested</span>
-    <span class="tag tested">cartography: tested</span>
-    <span class="tag tested">security: tested</span>
-    <span class="tag tested">compatibility: tested</span>
-    <span class="tag tested">performance: tested</span>
-    <span class="tag tested">state-persistence: tested</span>
+    <span class="tag tested">multi-session: tested (20)</span>
+    <span class="tag tested">security: tested (16)</span>
+    <span class="tag tested">cartography: tested (9)</span>
+    <span class="tag tested">multi-sprint: tested (8)</span>
+    <span class="tag tested">performance: tested (6)</span>
+    <span class="tag tested">state-persistence: tested (6)</span>
+    <span class="tag tested">compatibility: tested (4)</span>
+    <span class="tag tested">reliability: tested (2)</span>
+    <span class="tag tested">websocket-hardening: tested (1)</span>
   </div>
 </div>
 
 <div class="slide">
   <h2>Recommendation</h2>
-  <div class="card card-green">
-    <h3>Continue to Production Integration</h3>
-    <p>Nine of eleven roadmap items are DONE. Ten prototypes validated. Remaining work:</p>
+  <div class="card card-orange">
+    <h3>Address Multi-Session Hardening Before Production</h3>
+    <p>Nine of eleven original roadmap items are DONE. Ten prototypes validated. However, <strong>/challenge exposed 7 new multi-session risks</strong> <span class="claim-ref">x010</span>--<span class="claim-ref">x016</span> that represent real operational hazards at scale. Remaining work:</p>
     <ul>
-      <li><strong>Named Cloudflare tunnel</strong> -- stable subdomain + native SSE. WebSocket fallback <span class="claim-ref">p009</span> reduces urgency <span class="claim-ref">r027</span> <span class="claim-ref">r036</span></li>
-      <li><strong>Sprint pointer resolution</strong> -- resolve f001: git-derived vs config pointer <span class="claim-ref">f001</span></li>
+      <li><strong>Multi-session hardening</strong> -- GC stale sessions <span class="claim-ref">x010</span>, cap session count <span class="claim-ref">x011</span>, mitigate ID spoofing <span class="claim-ref">x012</span>, handle sessionless hooks <span class="claim-ref">x013</span>, tolerate out-of-order lifecycle <span class="claim-ref">x014</span>, debounce persistence <span class="claim-ref">x015</span>, paginate dashboard <span class="claim-ref">x016</span>. Est. 3--4h.</li>
+      <li><strong>Named Cloudflare tunnel</strong> -- stable subdomain + native SSE. WebSocket fallback <span class="claim-ref">p009</span> reduces urgency <span class="claim-ref">r027</span> <span class="claim-ref">r036</span>. Est. 2h.</li>
+      <li><strong>Sprint pointer resolution</strong> -- resolve f001: git-derived vs config pointer <span class="claim-ref">f001</span>. Est. 0.5h.</li>
     </ul>
-    <p>Total estimated remaining effort: <strong>2--2.5 hours</strong></p>
+    <p>Total estimated remaining effort: <strong>5.5--7 hours</strong></p>
   </div>
 </div>
 
 <div class="slide">
   <h2>Multi-Session</h2>
-  <p class="meta">13 claims | tested evidence | 4 sources | prototype working</p>
+  <p class="meta">20 claims | tested evidence | 4 sources | prototype working | 7 new risks</p>
   <div class="card card-green">
     <h3>Prototype Validated</h3>
     <p>SessionState class, session-keyed Maps, <code>getSession(id)</code> lazy init, SSE tagged with session_id, dashboard session pills with hue-from-hash. Backwards compatible with single-session via 'default' fallback <span class="claim-ref">p003</span>.</p>
@@ -90,13 +95,21 @@
     <p>Single server, <code>Map&lt;session_id, SessionState&gt;</code> with lazy initializer <span class="claim-ref">r003</span> <span class="claim-ref">r004</span>. Hook payloads include stable UUID <code>session_id</code> <span class="claim-ref">r001</span>. SessionStart/SessionEnd hooks provide explicit boundaries <span class="claim-ref">r002</span> <span class="claim-ref">w001</span>. Heartbeat timeout (5min) for crashed sessions <span class="claim-ref">r007</span>.</p>
     <p style="color:var(--orange)"><strong>Constraint:</strong> Lifecycle hooks are command-only, not HTTP <span class="claim-ref">w002</span> -- curl wrapper required.</p>
   </div>
+  <div class="card card-red">
+    <h3>Challenge Findings: 7 Unmitigated Risks</h3>
+    <ul>
+      <li><strong>No garbage collection</strong> -- stale sessions accumulate unboundedly, slow memory leak <span class="claim-ref">x010</span></li>
+      <li><strong>No session cap</strong> -- getSession() creates for any ID, enabling memory exhaustion <span class="claim-ref">x011</span></li>
+      <li><strong>ID spoofing</strong> -- any localhost process can hijack sessions via arbitrary session_id <span class="claim-ref">x012</span></li>
+      <li><strong>Sessionless conflation</strong> -- missing session_id merges into 'default' bucket <span class="claim-ref">x013</span></li>
+      <li><strong>Out-of-order lifecycle</strong> -- session_end before session_start causes silent data loss <span class="claim-ref">x014</span></li>
+      <li><strong>Persistence races</strong> -- concurrent saveState() calls race on tmp/rename <span class="claim-ref">x015</span></li>
+      <li><strong>Dashboard at scale</strong> -- O(n*m) aggregation, no pagination at 10+ sessions <span class="claim-ref">x016</span></li>
+    </ul>
+  </div>
   <div class="card card-accent">
     <h3>Dashboard UX</h3>
     <p>Unified feed with session color-coding (hue from hash). Pill-bar session switcher. No split views on mobile <span class="claim-ref">r005</span> <span class="claim-ref">p002</span>. Estimated 2--4 hours effort <span class="claim-ref">r008</span>.</p>
-  </div>
-  <div class="card card-red">
-    <h3>Risk: Approval Confusion</h3>
-    <p>Two sessions needing approval simultaneously -- user could approve wrong one. Mitigated with prominent session labels + colors <span class="claim-ref">r006</span>.</p>
   </div>
 </div>
 
@@ -113,7 +126,7 @@
   </div>
   <div class="card card-orange">
     <h3>Feedback: Config Drift Risk</h3>
-    <p>Stakeholder feedback: config should not duplicate git-derivable state <span class="claim-ref">f001</span>. Active sprint can be inferred from fs scanning or git recency. This supersedes r020 (sprints/ directory proposal) and r025 (config pointer over symlinks). Resolution pending.</p>
+    <p>Stakeholder feedback: config should not duplicate git-derivable state <span class="claim-ref">f001</span>. Active sprint can be inferred from fs scanning or git recency. This supersedes r020 and r025. Resolution pending.</p>
   </div>
 </div>
 
@@ -136,23 +149,19 @@
 
 <div class="slide">
   <h2>Security</h2>
-  <p class="meta">14 claims | tested evidence | 5 sources | hardening + WebSocket + CSRF implemented</p>
+  <p class="meta">16 claims | tested evidence | 6 sources | hardening + WebSocket + CSRF + WS hardening</p>
   <div class="card card-green">
     <h3>Mitigations Implemented</h3>
     <p>Cookie-based auth (HttpOnly, SameSite=Strict) with 302-redirect to clean URL. CORS restricted to request origin. Referrer-Policy: no-referrer. X-Content-Type-Options: nosniff <span class="claim-ref">p005</span>.</p>
   </div>
   <div class="card card-green">
-    <h3>WebSocket Transport</h3>
-    <p>RFC 6455 handshake + frame encoding/decoding (~120 LOC, zero deps, Node 20 compatible). Dashboard cascade fallback: WebSocket first (works through CF quick tunnels), SSE second (works local/direct), 2s polling baseline <span class="claim-ref">p009</span>. 30s ping/pong heartbeat. Auth via timing-safe token comparison. SSE preserved for backwards compat.</p>
+    <h3>WebSocket Transport + Hardening</h3>
+    <p>RFC 6455 handshake + frame encoding/decoding (~120 LOC, zero deps). Cascade fallback: WebSocket first (CF tunnels), SSE second (local), 2s polling baseline <span class="claim-ref">p009</span>.</p>
+    <p><strong>Hardened</strong> <span class="claim-ref">p011</span>: Origin validation <span class="claim-ref">x004</span>, token as first WS message <span class="claim-ref">x005</span>, 1MB buffer cap <span class="claim-ref">x006</span>, FIN bit + continuation frames <span class="claim-ref">x007</span>, RFC 6455 close opcode <span class="claim-ref">x008</span>, exponential backoff reconnect <span class="claim-ref">x009</span>. All 6 risks resolved.</p>
   </div>
   <div class="card card-green">
-    <h3>CSRF Protection + Token Rotation (NEW)</h3>
-    <p>Per-session CSRF tokens (crypto.randomBytes, 24h TTL) delivered via init payloads and /api/state polling. All mutating dashboard endpoints validate <code>X-CSRF-Token</code> header, returning 403 on mismatch. Hook endpoints (localhost-only) exempt <span class="claim-ref">p010</span>.</p>
-    <p>Configurable auto-rotation (<code>--token-rotation-interval</code>) and on-demand rotation via <code>POST /api/admin/rotate-token</code>. Retired tokens have configurable grace period (<code>--token-grace-period</code>, default 60s) with timing-safe comparison. Dashboard auto-updates cookie on rotation broadcast. Zero deps, ~80 LOC.</p>
-  </div>
-  <div class="card card-red">
-    <h3>Token Compromise Blast Radius</h3>
-    <p>If token leaks: approve arbitrary tool executions, set autonomous mode, inject /api/ask responses, read all data <span class="claim-ref">r031</span>. <strong>Now mitigated</strong>: token rotation + CSRF tokens reduce blast radius and enable recovery without restart <span class="claim-ref">p010</span>.</p>
+    <h3>CSRF Protection + Token Rotation</h3>
+    <p>Per-session CSRF tokens (crypto.randomBytes, 24h TTL). All mutating dashboard endpoints validate <code>X-CSRF-Token</code> header. Configurable auto-rotation + on-demand rotation via <code>POST /api/admin/rotate-token</code>. Retired tokens have grace period with timing-safe comparison <span class="claim-ref">p010</span>.</p>
   </div>
   <div class="card card-orange">
     <h3>Remaining Gaps</h3>
@@ -174,18 +183,22 @@
     <h3>Graceful Shutdown</h3>
     <p>SIGTERM/SIGINT handlers: flush state, deny pending permissions with 'server shutting down', broadcast shutdown event <span class="claim-ref">r041</span> <span class="claim-ref">p008</span>.</p>
   </div>
-  <div class="card card-accent">
-    <h3>Design Decisions</h3>
-    <p>State classified into must-persist vs ephemeral <span class="claim-ref">r040</span>. Pending permissions, SSE connections correctly excluded. Event sourcing over-engineered at this scale <span class="claim-ref">r042</span>. JSON snapshots are sufficient <span class="claim-ref">r039</span>.</p>
+  <div class="card card-orange">
+    <h3>Persistence Race Risk</h3>
+    <p>saveState() and periodic timer can race on tmp/rename. Node is single-threaded so no corruption, but inconsistent snapshots possible. Fix: debounce to one write per tick <span class="claim-ref">x015</span>.</p>
   </div>
 </div>
 
 <div class="slide">
-  <h2>Compatibility</h2>
-  <p class="meta">2 claims | tested evidence | 2 sources</p>
+  <h2>Compatibility + Reliability</h2>
+  <p class="meta">Compatibility: 4 claims | Reliability: 2 claims (resolved) | WebSocket Hardening: 1 claim</p>
   <div class="card card-green">
     <h3>10/10 Tests Pass</h3>
     <p>Automated test suite confirms single-session workflow survives all refactors: token auth, cookie auth, /api/state, hook fallback to 'default' session, SSE stream, login page, auth rejection <span class="claim-ref">p006</span>. Zero npm dependencies maintained <span class="claim-ref">d004</span>.</p>
+  </div>
+  <div class="card card-green">
+    <h3>WebSocket Reliability (Resolved)</h3>
+    <p>Buffer overflow risk eliminated (1MB cap) <span class="claim-ref">x006</span>. Client reconnection with exponential backoff (1s--16s, 5 attempts) before SSE fallback <span class="claim-ref">x009</span>. FIN bit and continuation frames handled per RFC 6455 <span class="claim-ref">x007</span> <span class="claim-ref">x008</span>. All resolved by <span class="claim-ref">p011</span>.</p>
   </div>
 </div>
 
@@ -193,6 +206,13 @@
   <h2>Risks and Tradeoffs</h2>
   <table>
     <tr><th>Risk</th><th>Severity</th><th>Evidence</th><th>Mitigation</th></tr>
+    <tr><td>Session GC missing <span class="claim-ref">x010</span></td><td style="color:var(--red);">HIGH</td><td>documented</td><td class="unmitigated">UNMITIGATED</td></tr>
+    <tr><td>Session count uncapped <span class="claim-ref">x011</span></td><td style="color:var(--red);">HIGH</td><td>documented</td><td class="unmitigated">UNMITIGATED</td></tr>
+    <tr><td>Session ID spoofing <span class="claim-ref">x012</span></td><td style="color:var(--orange);">MED</td><td>documented</td><td class="unmitigated">UNMITIGATED</td></tr>
+    <tr><td>Sessionless conflation <span class="claim-ref">x013</span></td><td style="color:var(--orange);">MED</td><td>documented</td><td class="unmitigated">UNMITIGATED</td></tr>
+    <tr><td>Out-of-order lifecycle <span class="claim-ref">x014</span></td><td style="color:var(--orange);">MED</td><td>documented</td><td class="unmitigated">UNMITIGATED</td></tr>
+    <tr><td>Dashboard UX at scale <span class="claim-ref">x016</span></td><td style="color:var(--orange);">MED</td><td>documented</td><td class="unmitigated">UNMITIGATED</td></tr>
+    <tr><td>Persistence races <span class="claim-ref">x015</span></td><td style="color:var(--dim);">LOW</td><td>documented</td><td class="unmitigated">UNMITIGATED</td></tr>
     <tr><td>SSE broken via quick tunnels <span class="claim-ref">r027</span></td><td style="color:var(--red);">HIGH</td><td>documented</td><td style="color:var(--green);">WebSocket fallback done [p009]</td></tr>
     <tr><td>Token-in-URL leakage <span class="claim-ref">r029</span></td><td style="color:var(--red);">HIGH</td><td>web</td><td style="color:var(--green);">Cookie auth done [p005]</td></tr>
     <tr><td>CORS wildcard <span class="claim-ref">r030</span></td><td style="color:var(--red);">HIGH</td><td>documented</td><td style="color:var(--green);">Restricted done [p005]</td></tr>
@@ -202,8 +222,20 @@
     <tr><td>No token rotation <span class="claim-ref">r034</span></td><td style="color:var(--orange);">MED</td><td>documented</td><td style="color:var(--green);">Rotation done [p010]</td></tr>
     <tr><td>All state in-memory <span class="claim-ref">r038</span></td><td style="color:var(--orange);">MED</td><td>documented</td><td style="color:var(--green);">JSON snapshots done [p008]</td></tr>
     <tr><td>Stale manifest <span class="claim-ref">r014</span></td><td style="color:var(--dim);">LOW</td><td>documented</td><td style="color:var(--green);">Compiler-generated [p007]</td></tr>
-    <tr><td>Config duplicates derivable state <span class="claim-ref">f001</span></td><td style="color:var(--dim);">LOW</td><td>stated</td><td>Under review</td></tr>
+    <tr><td>Config duplicates state <span class="claim-ref">f001</span></td><td style="color:var(--dim);">LOW</td><td>stated</td><td>Under review</td></tr>
   </table>
+</div>
+
+<div class="slide">
+  <h2>Resolved Conflicts</h2>
+  <div class="card card-purple">
+    <h3>f001 vs r020/r025 (Pending)</h3>
+    <p>Stakeholder feedback argues config should not duplicate git-derivable state. Original recommendations (r020: sprints/ directory, r025: config pointer over symlinks) are superseded. Resolution pending: fs scanning, git recency, or explicit pointer.</p>
+  </div>
+  <div class="card card-green">
+    <h3>x004--x009: WebSocket Risks (Resolved)</h3>
+    <p>All 6 WebSocket risks identified by <code>/challenge p009</code> resolved by <span class="claim-ref">p011</span>: Origin validation, token transmission, buffer limits, FIN bit handling, close frame compliance, reconnection with exponential backoff.</p>
+  </div>
 </div>
 
 <div class="slide">
@@ -219,24 +251,28 @@
     <tr><td>7</td><td style="color:var(--green)">State persistence</td><td>1h</td><td style="color:var(--green)">DONE (p008)</td></tr>
     <tr><td>8</td><td style="color:var(--green)">WebSocket transport</td><td>--</td><td style="color:var(--green)">DONE (p009)</td></tr>
     <tr><td>9</td><td style="color:var(--green)">Token rotation + CSRF</td><td>1h</td><td style="color:var(--green)">DONE (p010)</td></tr>
-    <tr><td>10</td><td>Named tunnel / stable subdomain</td><td>2h</td><td style="color:var(--orange)">TODO</td></tr>
-    <tr><td>11</td><td>Sprint pointer resolution (f001)</td><td>0.5h</td><td style="color:var(--orange)">TODO</td></tr>
+    <tr><td>10</td><td style="color:var(--green)">WebSocket hardening</td><td>--</td><td style="color:var(--green)">DONE (p011)</td></tr>
+    <tr><td>11</td><td style="color:var(--orange)">Multi-session hardening (x010--x016)</td><td>3-4h</td><td style="color:var(--orange)">TODO</td></tr>
+    <tr><td>12</td><td>Named tunnel / stable subdomain</td><td>2h</td><td style="color:var(--orange)">TODO</td></tr>
+    <tr><td>13</td><td>Sprint pointer resolution (f001)</td><td>0.5h</td><td style="color:var(--orange)">TODO</td></tr>
   </table>
 
   <h3 style="margin-top: 32px;">Evidence Coverage</h3>
   <table>
     <tr><th>Topic</th><th>Claims</th><th>Evidence</th><th>Sources</th><th>Types</th></tr>
-    <tr><td>security</td><td>14</td><td><span class="tag tested">tested</span></td><td>5</td><td>3/6</td></tr>
-    <tr><td>multi-session</td><td>13</td><td><span class="tag tested">tested</span></td><td>4</td><td>5/6</td></tr>
+    <tr><td>multi-session</td><td>20</td><td><span class="tag tested">tested</span></td><td>4</td><td>5/6</td></tr>
+    <tr><td>security</td><td>16</td><td><span class="tag tested">tested</span></td><td>6</td><td>3/6</td></tr>
     <tr><td>cartography</td><td>9</td><td><span class="tag tested">tested</span></td><td>4</td><td>4/6</td></tr>
     <tr><td>multi-sprint</td><td>8</td><td><span class="tag tested">tested</span></td><td>3</td><td>5/6</td></tr>
     <tr><td>performance</td><td>6</td><td><span class="tag tested">tested</span></td><td>4</td><td>4/6</td></tr>
     <tr><td>state-persistence</td><td>6</td><td><span class="tag tested">tested</span></td><td>3</td><td>4/6</td></tr>
-    <tr><td>compatibility</td><td>2</td><td><span class="tag tested">tested</span></td><td>2</td><td>2/6</td></tr>
+    <tr><td>compatibility</td><td>4</td><td><span class="tag tested">tested</span></td><td>3</td><td>3/6</td></tr>
+    <tr><td>reliability</td><td>2</td><td><span class="tag tested">tested</span></td><td>1</td><td>1/6</td></tr>
+    <tr><td>websocket-hardening</td><td>1</td><td><span class="tag tested">tested</span></td><td>1</td><td>1/6</td></tr>
   </table>
 
   <div class="cert">
-    Compilation certificate: sha256:d66705c3eac8e0bfc97ea56789f9460403a4e74be07671a63069fe5f7ad81fb0 | Compiler: wheat v0.2.0 | Claims: 60 (58 active, 2 superseded) | Compiled: 2026-03-12T10:07:56.692Z
+    Compilation certificate: sha256:ddef041129e765f62cfaa16d01a4811f27ce65f1d61aad5bcb523c5a0a0794bc | Compiler: wheat v0.2.0 | Claims: 74 (59 active, 9 superseded, 6 resolved) | Compiled: 2026-03-12T10:19:41.200Z
   </div>
 </div>
 
