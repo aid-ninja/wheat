@@ -2,615 +2,909 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Scaling Remote Farmer — Presentation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scaling Remote Farmer — Wheat Sprint Presentation</title>
 <style>
   :root {
-    --bg: #0f172a;
-    --bg2: #1e293b;
-    --bg-hover: #263548;
-    --text: #f1f5f9;
-    --muted: #94a3b8;
-    --dim: #64748b;
-    --accent: #60a5fa;
-    --green: #34d399;
-    --orange: #fbbf24;
-    --red: #f87171;
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263548;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
     --purple: #a78bfa;
-    --border: rgba(255,255,255,0.08);
-    --gold: linear-gradient(135deg, #f0a030, #fbbf24, #f59e0b);
+    --purple-dim: rgba(167,139,250,0.12);
+    --pink: #f472b6;
+    --pink-dim: rgba(244,114,182,0.12);
+    --cyan: #22d3ee;
+    --cyan-dim: rgba(34,211,238,0.12);
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  html {
-    scroll-snap-type: y mandatory;
+  html, body {
+    height: 100%;
+    margin: 0;
     scroll-behavior: smooth;
+  }
+
+  html {
     overflow-y: scroll;
+    scroll-snap-type: y mandatory;
   }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
-    background: var(--bg);
+    background: var(--bg-dark);
     color: var(--text);
-    font-size: 15px;
-    line-height: 1.6;
+    font-size: 11pt;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
   }
 
   .slide {
+    width: 100%;
     min-height: 100vh;
-    min-height: 100dvh;
-    scroll-snap-align: start;
-    padding: 60px 32px;
-    padding: max(env(safe-area-inset-top, 0px) + 40px, 60px) max(env(safe-area-inset-right, 0px) + 20px, 32px) max(env(safe-area-inset-bottom, 0px) + 24px, 40px) max(env(safe-area-inset-left, 0px) + 20px, 32px);
+    padding: 60px 80px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    max-width: 860px;
-    margin: 0 auto;
     position: relative;
+    overflow: hidden;
+    scroll-snap-align: start;
   }
 
-  .slide + .slide { border-top: 1px solid var(--border); }
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40%;
+    height: 100%;
+    background: radial-gradient(ellipse at top right, rgba(59,130,246,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
 
   h1 {
-    font-size: clamp(28px, 6vw, 42px);
+    font-size: 42pt;
     font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 1.1;
-    background: var(--gold);
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    margin-bottom: 12px;
   }
 
   h2 {
-    font-size: clamp(22px, 4.5vw, 32px);
+    font-size: 30pt;
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.15;
+    margin-bottom: 24px;
     color: #fff;
-    margin-bottom: 20px;
   }
 
   h3 {
-    font-size: 14px;
+    font-size: 14pt;
     font-weight: 600;
-    color: var(--accent);
-    margin-bottom: 10px;
+    color: var(--accent-light);
+    margin-bottom: 12px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
   }
 
   h4 {
-    font-size: 15px;
+    font-size: 13pt;
     font-weight: 600;
     color: var(--text);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
 
-  p, li { color: var(--muted); margin-bottom: 10px; line-height: 1.6; }
-  strong { color: var(--text); }
+  p {
+    font-size: 14pt;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+    text-align: left;
+    font-weight: 400;
+    max-width: 85%;
+  }
 
-  .meta { font-size: 13px; color: var(--dim); margin-bottom: 20px; }
-  .subtitle { font-size: clamp(16px, 3vw, 20px); color: var(--muted); font-weight: 300; }
+  .subtitle {
+    font-size: 18pt;
+    color: var(--text-muted);
+    font-weight: 300;
+    max-width: 70%;
+  }
 
   .label {
     display: inline-block;
-    font-size: 10px;
+    font-size: 9pt;
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--accent);
-    background: rgba(96,165,250,0.12);
+    color: var(--accent-light);
+    background: rgba(59,130,246,0.12);
     padding: 4px 12px;
     border-radius: 4px;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
-  .label.green { color: var(--green); background: rgba(52,211,153,0.12); }
-  .label.orange { color: var(--orange); background: rgba(251,191,36,0.12); }
-  .label.red { color: var(--red); background: rgba(248,113,113,0.12); }
 
-  .divider { width: 60px; height: 3px; background: var(--accent); border-radius: 2px; margin: 14px 0 20px; }
+  .label.green { color: var(--green); background: var(--green-dim); }
+  .label.orange { color: var(--orange); background: var(--orange-dim); }
+  .label.red { color: var(--red); background: var(--red-dim); }
+  .label.purple { color: var(--purple); background: var(--purple-dim); }
+  .label.pink { color: var(--pink); background: var(--pink-dim); }
 
-  .claim-ref {
-    font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
-    font-size: 11px;
-    color: var(--accent);
-    background: rgba(96,165,250,0.1);
-    padding: 1px 6px;
-    border-radius: 3px;
+  .divider {
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin: 16px 0 24px 0;
   }
+
+  .two-col {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+  }
+
+  .two-col > div { flex: 1; }
+
+  .three-col {
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .three-col > div { flex: 1; }
 
   .card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px 24px;
-    margin-bottom: 12px;
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 28px;
+    border: 1px solid rgba(255,255,255,0.06);
     position: relative;
     overflow: hidden;
   }
-  .card::after { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent); border-radius: 4px 0 0 4px; }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px 0 0 4px;
+  }
+
   .card.green::after { background: var(--green); }
   .card.orange::after { background: var(--orange); }
   .card.red::after { background: var(--red); }
   .card.purple::after { background: var(--purple); }
+  .card.pink::after { background: var(--pink); }
+  .card.cyan::after { background: var(--cyan); }
 
-  .card-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 6px; }
+  .card-label {
+    font-size: 9pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent-light);
+    margin-bottom: 8px;
+  }
+
   .card.green .card-label { color: var(--green); }
   .card.orange .card-label { color: var(--orange); }
   .card.red .card-label { color: var(--red); }
+  .card.purple .card-label { color: var(--purple); }
+  .card.cyan .card-label { color: var(--cyan); }
 
-  .card-text { font-size: 16px; color: var(--text); line-height: 1.4; font-weight: 500; }
-  .card-detail { font-size: 13px; color: var(--muted); line-height: 1.5; margin-top: 8px; }
-
-  .two-col { display: flex; gap: 16px; }
-  .two-col > div { flex: 1; min-width: 0; }
-
-  .three-col { display: flex; gap: 12px; }
-  .three-col > div { flex: 1; min-width: 0; }
-
-  .stat-row { display: flex; gap: 32px; flex-wrap: wrap; margin-top: 20px; }
-  .stat-item { text-align: center; }
-  .stat-num { font-size: clamp(28px, 5vw, 40px); font-weight: 800; line-height: 1; }
-  .stat-desc { font-size: 12px; color: var(--muted); margin-top: 4px; }
-
-  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
-  th { text-align: left; padding: 8px 10px; background: var(--bg2); color: var(--dim); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
-  td { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--muted); }
-  td:first-child { color: var(--text); font-weight: 500; }
-
-  .tag { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
-  .tag.tested { background: rgba(52,211,153,0.15); color: var(--green); }
-  .tag.documented { background: rgba(96,165,250,0.15); color: var(--accent); }
-  .tag.done { background: rgba(52,211,153,0.15); color: var(--green); }
-
-  .arch-box {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
-    font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
-    font-size: clamp(11px, 2.5vw, 13px);
-    line-height: 1.7;
-    color: var(--muted);
-    white-space: pre;
-    overflow-x: auto;
-    margin: 14px 0;
+  .card-text {
+    font-size: 16pt;
+    color: var(--text);
+    line-height: 1.5;
+    font-weight: 500;
   }
-  .arch-box strong { color: var(--accent); }
-  .arch-box em { color: var(--green); font-style: normal; }
-  .arch-box .hi { color: var(--orange); }
+
+  .card-detail {
+    font-size: 11pt;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-top: 10px;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+  }
+
+  .stat-box {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-size: 36pt;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-number.green { color: var(--green); }
+  .stat-number.orange { color: var(--orange); }
+  .stat-number.accent { color: var(--accent-light); }
+  .stat-number.purple { color: var(--purple); }
+  .stat-number.cyan { color: var(--cyan); }
+  .stat-number.pink { color: var(--pink); }
+
+  .stat-label {
+    font-size: 10pt;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+  }
+
+  .progress-fill.green { background: var(--green); }
+  .progress-fill.accent { background: var(--accent); }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10pt;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
 
   .risk-row {
     display: flex;
+    align-items: center;
     gap: 12px;
-    align-items: flex-start;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
   }
+
   .risk-row:last-child { border-bottom: none; }
-  .risk-num {
-    width: 28px; height: 28px; border-radius: 50%; background: var(--red);
-    color: #fff; display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 13px; flex-shrink: 0;
+
+  .risk-severity {
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    min-width: 60px;
+    text-align: center;
   }
-  .risk-content { flex: 1; min-width: 0; }
-  .risk-content h4 { font-size: 14px; margin-bottom: 4px; }
-  .risk-content p { font-size: 12px; margin-bottom: 0; }
+
+  .risk-severity.high { background: var(--red-dim); color: var(--red); }
+  .risk-severity.medium { background: var(--orange-dim); color: var(--orange); }
+  .risk-severity.low { background: var(--green-dim); color: var(--green); }
+
+  .risk-text {
+    flex: 1;
+    font-size: 11pt;
+    color: var(--text-muted);
+  }
+
+  .risk-status {
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--green);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .evidence-bar {
+    display: flex;
+    gap: 3px;
+    margin: 6px 0;
+  }
+
+  .evidence-segment {
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8pt;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 0.04em;
+    min-width: 40px;
+  }
+
+  .claim-ref {
+    font-size: 8pt;
+    color: var(--text-dim);
+    font-family: monospace;
+  }
+
+  .slide-nav {
+    position: fixed;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+  }
+
+  .slide-nav a {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    display: block;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .slide-nav a:hover,
+  .slide-nav a.active {
+    background: var(--accent);
+    transform: scale(1.5);
+  }
+
+  .arch-layer {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 16px 24px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .arch-icon {
+    font-size: 14pt;
+    font-weight: 800;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59,130,246,0.1);
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+
+  .arch-title {
+    font-size: 12pt;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .arch-desc {
+    font-size: 10pt;
+    color: var(--text-dim);
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 8pt;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-dim);
+    margin-right: 4px;
+    font-weight: 500;
+  }
 
   .wheat-footer {
-    position: absolute; bottom: 16px; right: 24px;
-    font-size: 9px; color: var(--dim); letter-spacing: 0.05em;
+    position: absolute;
+    bottom: 24px;
+    right: 40px;
+    font-size: 8pt;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
   }
+
   .slide-number {
-    position: absolute; bottom: 16px; left: 24px;
-    font-size: 9px; color: var(--dim);
+    position: absolute;
+    bottom: 24px;
+    left: 40px;
+    font-size: 8pt;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
   }
 
-  /* Nav dots */
-  .slide-nav {
-    position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
-    display: flex; flex-direction: column; gap: 8px; z-index: 100;
-  }
-  .slide-nav a {
-    width: 7px; height: 7px; border-radius: 50%; background: var(--dim);
-    display: block; transition: all 0.2s; text-decoration: none;
-  }
-  .slide-nav a:hover, .slide-nav a.active {
-    background: var(--accent); transform: scale(1.5);
-  }
-
-  @media (max-width: 700px) {
-    .slide { padding: 40px 20px; padding: max(env(safe-area-inset-top, 0px) + 24px, 40px) max(env(safe-area-inset-right, 0px) + 16px, 20px) max(env(safe-area-inset-bottom, 0px) + 16px, 24px) max(env(safe-area-inset-left, 0px) + 16px, 20px); }
-    .two-col, .three-col { flex-direction: column; gap: 10px; }
-    .stat-row { gap: 20px; }
-    .arch-box { font-size: 10px; padding: 14px; }
-    .slide-nav { right: 6px; gap: 6px; }
-    .slide-nav a { width: 5px; height: 5px; }
-    table { font-size: 11px; }
-    th, td { padding: 6px 6px; }
+  @media (max-width: 768px) {
+    .slide { padding: 32px 24px; }
+    h1 { font-size: 28pt; }
+    h2 { font-size: 22pt; }
+    .subtitle { font-size: 14pt; max-width: 100%; }
+    p { max-width: 100%; font-size: 12pt; }
+    .two-col, .three-col { flex-direction: column; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .stat-number { font-size: 28pt; }
+    .slide-nav { display: none; }
+    .arch-layer { flex-direction: column; text-align: center; }
   }
 </style>
 </head>
 <body>
 
-<!-- Nav dots -->
-<nav class="slide-nav" aria-label="Slide navigation">
-  <a href="#slide-1" title="Title"></a>
-  <a href="#slide-2" title="The Problem"></a>
-  <a href="#slide-3" title="Multi-Session"></a>
-  <a href="#slide-4" title="Multi-Sprint"></a>
-  <a href="#slide-5" title="Repo Cartography"></a>
-  <a href="#slide-6" title="Risks"></a>
-  <a href="#slide-7" title="Roadmap"></a>
-  <a href="#slide-8" title="Next Steps"></a>
+<!-- Slide navigation dots -->
+<nav class="slide-nav">
+  <a href="#title" title="Title"></a>
+  <a href="#summary" title="Summary"></a>
+  <a href="#built" title="What We Built"></a>
+  <a href="#evidence" title="Evidence"></a>
+  <a href="#risks" title="Risks"></a>
+  <a href="#architecture" title="Architecture"></a>
+  <a href="#remaining" title="Remaining"></a>
+  <a href="#recommendation" title="Recommendation"></a>
 </nav>
 
-<!-- ====== SLIDE 1: Title ====== -->
-<div class="slide" id="slide-1">
-  <span class="label">Wheat Research Sprint</span>
+<!-- ====== SLIDE 1: TITLE ====== -->
+<div class="slide" id="title">
+  <span class="label green">Feature-Complete</span>
   <h1>Scaling Remote Farmer</h1>
-  <p class="subtitle">Multi-session, multi-sprint, and repo cartography for AI-native development workflows.</p>
-  <div class="stat-row" style="margin-top: 32px;">
-    <div class="stat-item">
-      <div class="stat-num" style="color: var(--accent);">35</div>
-      <div class="stat-desc">Claims</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num" style="color: var(--green);">5</div>
-      <div class="stat-desc">Topics</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num" style="color: var(--orange);">3</div>
-      <div class="stat-desc">Workstreams</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num" style="color: var(--text);">5-9h</div>
-      <div class="stat-desc">Total Effort</div>
-    </div>
+  <p class="subtitle">Multi-session, multi-sprint support and repo cartography for fast AI model interactions</p>
+  <div style="margin-top: 32px; display: flex; gap: 16px; flex-wrap: wrap;">
+    <span class="tag">78 claims compiled</span>
+    <span class="tag">15 prototypes</span>
+    <span class="tag">13 risks resolved</span>
+    <span class="tag">0 conflicts</span>
+    <span class="tag">zero npm deps</span>
   </div>
-  <div style="margin-top: 24px; display: flex; gap: 8px; flex-wrap: wrap;">
-    <span class="tag tested">cartography: tested</span>
-    <span class="tag documented">multi-session: documented</span>
-    <span class="tag documented">multi-sprint: documented</span>
-  </div>
-  <div style="margin-top: 20px; font-size: 11px; color: var(--dim);">2026-03-12 &middot; Research phase &middot; Certificate: sha256:1f6f8ee</div>
-  <div class="wheat-footer">Compiled by Wheat v0.2.0</div>
   <div class="slide-number">1 / 8</div>
+  <div class="wheat-footer">Wheat Sprint &middot; 2026-03-12 &middot; sha256:deca61e</div>
 </div>
 
-<!-- ====== SLIDE 2: The Problem ====== -->
-<div class="slide" id="slide-2">
-  <span class="label red">Why Scale?</span>
-  <h2>The Problem</h2>
-  <p class="subtitle" style="margin-bottom: 24px;">Remote Farmer works for one session, one sprint. That is not enough.</p>
+<!-- ====== SLIDE 2: EXECUTIVE SUMMARY ====== -->
+<div class="slide" id="summary">
+  <span class="label">Executive Summary</span>
+  <h2>Three validated workstreams, one sprint</h2>
   <div class="divider"></div>
   <div class="three-col">
-    <div class="card red">
-      <div class="card-label">Context Pollution</div>
-      <div class="card-text">157 files</div>
-      <div class="card-detail">Repo already at 157 files (not 80 as estimated). Grep for "claims.json" returns 71 matches. The examples/ dir creates 62 duplicate-named files. <span class="claim-ref">x001</span> <span class="claim-ref">x002</span></div>
+    <div class="card green">
+      <div class="card-label">Multi-Session</div>
+      <div class="card-text">Session-keyed Maps</div>
+      <div class="card-detail">UUID routing, GC with MAX_SESSIONS=50, source fingerprinting, lifecycle buffering. 22 claims, all risks resolved.</div>
+    </div>
+    <div class="card purple">
+      <div class="card-label">Multi-Sprint</div>
+      <div class="card-text">Git-derived detection</div>
+      <div class="card-detail">sprints/ directory, hot-reload, compiler integration. No config duplication -- active sprint inferred from git. 9 claims.</div>
+    </div>
+    <div class="card cyan">
+      <div class="card-label">Repo Cartography</div>
+      <div class="card-text">Topic-map manifest</div>
+      <div class="card-detail">Compiler-generated in &lt;10ms. Single Read call replaces 3-5 Glob/Grep calls. 30% context window reduction. 10 claims.</div>
+    </div>
+  </div>
+  <p style="margin-top: 24px; font-size: 13pt;">The sprint is substantially complete. 13 of 15 roadmap items DONE. All challenge-identified risks resolved. Remaining: ~2.5 hours operational work.</p>
+  <div class="slide-number">2 / 8</div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<!-- ====== SLIDE 3: WHAT WE BUILT ====== -->
+<div class="slide" id="built">
+  <span class="label orange">Prototypes</span>
+  <h2>15 prototypes landed</h2>
+  <div class="divider"></div>
+  <div class="stat-grid">
+    <div class="stat-box">
+      <div class="stat-number green">15</div>
+      <div class="stat-label">Prototypes</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number accent">78</div>
+      <div class="stat-label">Total Claims</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number purple">10/10</div>
+      <div class="stat-label">Compat Tests</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number cyan" style="color: var(--cyan);">6.7ms</div>
+      <div class="stat-label">Manifest Gen</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number orange">~150ms</div>
+      <div class="stat-label">Sprint Detect</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number pink" style="color: var(--pink);">0</div>
+      <div class="stat-label">NPM Deps</div>
+    </div>
+  </div>
+  <div class="two-col" style="margin-top: 16px;">
+    <div>
+      <h4 style="color: var(--green); margin-bottom: 12px;">Core Infrastructure</h4>
+      <div style="font-size: 10pt; color: var(--text-muted); line-height: 2;">
+        <span class="tag">p001</span> Manifest generator<br>
+        <span class="tag">p003</span> Multi-session refactor<br>
+        <span class="tag">p004</span> Multi-sprint support<br>
+        <span class="tag">p007</span> Compiler manifest integration<br>
+        <span class="tag">p008</span> JSON state persistence<br>
+        <span class="tag">p013</span> Git-derived sprint detection<br>
+        <span class="tag">p015</span> Compiler sprint integration
+      </div>
+    </div>
+    <div>
+      <h4 style="color: var(--red); margin-bottom: 12px;">Security &amp; Hardening</h4>
+      <div style="font-size: 10pt; color: var(--text-muted); line-height: 2;">
+        <span class="tag">p005</span> Cookie auth, CORS, Referrer-Policy<br>
+        <span class="tag">p006</span> Backwards compat test suite<br>
+        <span class="tag">p009</span> WebSocket transport + cascade<br>
+        <span class="tag">p010</span> CSRF protection + token rotation<br>
+        <span class="tag">p011</span> WebSocket hardening (6 fixes)<br>
+        <span class="tag">p012</span> Session GC + caps<br>
+        <span class="tag">p014</span> Session hardening (5 fixes)
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">3 / 8</div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<!-- ====== SLIDE 4: EVIDENCE MAP ====== -->
+<div class="slide" id="evidence">
+  <span class="label purple">Evidence Map</span>
+  <h2>Coverage by topic and evidence tier</h2>
+  <div class="divider"></div>
+
+  <div style="display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;">
+    <div style="display:flex;align-items:center;gap:6px;"><div style="width:14px;height:14px;border-radius:3px;background:#64748b;"></div><span style="font-size:9pt;color:var(--text-dim);">Stated</span></div>
+    <div style="display:flex;align-items:center;gap:6px;"><div style="width:14px;height:14px;border-radius:3px;background:#a78bfa;"></div><span style="font-size:9pt;color:var(--text-dim);">Web</span></div>
+    <div style="display:flex;align-items:center;gap:6px;"><div style="width:14px;height:14px;border-radius:3px;background:#3b82f6;"></div><span style="font-size:9pt;color:var(--text-dim);">Documented</span></div>
+    <div style="display:flex;align-items:center;gap:6px;"><div style="width:14px;height:14px;border-radius:3px;background:#22c55e;"></div><span style="font-size:9pt;color:var(--text-dim);">Tested</span></div>
+  </div>
+
+  <div style="max-width: 900px;">
+    <div class="progress-label"><span>Multi-Session</span><span>22 claims</span></div>
+    <div class="evidence-bar">
+      <div class="evidence-segment" style="flex:2;background:#64748b;">2</div>
+      <div class="evidence-segment" style="flex:12;background:#3b82f6;">12</div>
+      <div class="evidence-segment" style="flex:8;background:#22c55e;">8</div>
+    </div>
+
+    <div class="progress-label" style="margin-top:12px;"><span>Security</span><span>16 claims</span></div>
+    <div class="evidence-bar">
+      <div class="evidence-segment" style="flex:3;background:#a78bfa;">3</div>
+      <div class="evidence-segment" style="flex:7;background:#3b82f6;">7</div>
+      <div class="evidence-segment" style="flex:6;background:#22c55e;">6</div>
+    </div>
+
+    <div class="progress-label" style="margin-top:12px;"><span>Repo Cartography</span><span>10 claims</span></div>
+    <div class="evidence-bar">
+      <div class="evidence-segment" style="flex:6;background:#3b82f6;">6</div>
+      <div class="evidence-segment" style="flex:4;background:#22c55e;">4</div>
+    </div>
+
+    <div class="progress-label" style="margin-top:12px;"><span>Multi-Sprint</span><span>9 claims</span></div>
+    <div class="evidence-bar">
+      <div class="evidence-segment" style="flex:1;background:#64748b;">1</div>
+      <div class="evidence-segment" style="flex:5;background:#3b82f6;">5</div>
+      <div class="evidence-segment" style="flex:3;background:#22c55e;">3</div>
+    </div>
+
+    <div class="progress-label" style="margin-top:12px;"><span>State Persistence</span><span>6 claims</span></div>
+    <div class="evidence-bar">
+      <div class="evidence-segment" style="flex:4;background:#3b82f6;">4</div>
+      <div class="evidence-segment" style="flex:2;background:#22c55e;">2</div>
+    </div>
+
+    <div class="progress-label" style="margin-top:12px;"><span>Performance</span><span>6 claims</span></div>
+    <div class="evidence-bar">
+      <div class="evidence-segment" style="flex:1;background:#64748b;">1</div>
+      <div class="evidence-segment" style="flex:2;background:#3b82f6;">2</div>
+      <div class="evidence-segment" style="flex:3;background:#22c55e;">3</div>
+    </div>
+
+    <div class="progress-label" style="margin-top:12px;"><span>Compatibility</span><span>4 claims</span></div>
+    <div class="evidence-bar">
+      <div class="evidence-segment" style="flex:1;background:#64748b;">1</div>
+      <div class="evidence-segment" style="flex:3;background:#22c55e;">3</div>
+    </div>
+  </div>
+
+  <div class="slide-number">4 / 8</div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<!-- ====== SLIDE 5: RISK LANDSCAPE ====== -->
+<div class="slide" id="risks">
+  <span class="label red">Risk Landscape</span>
+  <h2>13 risks identified, all resolved</h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 16px 20px; background: rgba(239,68,68,0.06); border-bottom: 1px solid rgba(255,255,255,0.04);">
+          <h4 style="margin: 0; font-size: 10pt; color: var(--red); text-transform: uppercase; letter-spacing: 0.08em;">Security Risks</h4>
+        </div>
+        <div class="risk-row">
+          <span class="risk-severity high">High</span>
+          <span class="risk-text">Token-in-URL leakage</span>
+          <span class="risk-status">Fixed p005</span>
+        </div>
+        <div class="risk-row">
+          <span class="risk-severity high">High</span>
+          <span class="risk-text">CORS wildcard</span>
+          <span class="risk-status">Fixed p005</span>
+        </div>
+        <div class="risk-row">
+          <span class="risk-severity high">High</span>
+          <span class="risk-text">Full compromise on leak</span>
+          <span class="risk-status">Fixed p005+p010</span>
+        </div>
+        <div class="risk-row">
+          <span class="risk-severity high">High</span>
+          <span class="risk-text">SSE broken via CF tunnels</span>
+          <span class="risk-status">Fixed p009</span>
+        </div>
+        <div class="risk-row">
+          <span class="risk-severity medium">Med</span>
+          <span class="risk-text">/api/ask injection</span>
+          <span class="risk-status">Fixed p010</span>
+        </div>
+        <div class="risk-row">
+          <span class="risk-severity medium">Med</span>
+          <span class="risk-text">No token rotation</span>
+          <span class="risk-status">Fixed p010</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 16px 20px; background: rgba(245,158,11,0.06); border-bottom: 1px solid rgba(255,255,255,0.04);">
+          <h4 style="margin: 0; font-size: 10pt; color: var(--orange); text-transform: uppercase; letter-spacing: 0.08em;">Session &amp; Infra Risks</h4>
+        </div>
+        <div class="risk-row">
+          <span class="risk-severity high">High</span>
+          <span class="risk-text">Session memory leak (no GC)</span>
+          <span class="risk-status">Fixed p012</span>
+        </div>
+        <div class="risk-row">
+          <span class="risk-severity high">High</span>
+          <span class="risk-text">Uncapped session count</span>
+          <span class="risk-status">Fixed p012</span>
+        </div>
+        <div class="risk-row">
+          <span class="risk-severity medium">Med</span>
+          <span class="risk-text">Session ID spoofing</span>
+          <span class="risk-status">Fixed p014</span>
+        </div>
+        <div class="risk-row">
+          <span class="risk-severity medium">Med</span>
+          <span class="risk-text">Lifecycle out-of-order</span>
+          <span class="risk-status">Fixed p014</span>
+        </div>
+        <div class="risk-row">
+          <span class="risk-severity medium">Med</span>
+          <span class="risk-text">Dashboard UX at scale</span>
+          <span class="risk-status">Fixed p014</span>
+        </div>
+        <div class="risk-row">
+          <span class="risk-severity medium">Med</span>
+          <span class="risk-text">All state in-memory</span>
+          <span class="risk-status">Fixed p008</span>
+        </div>
+        <div class="risk-row">
+          <span class="risk-severity low">Low</span>
+          <span class="risk-text">State persistence races</span>
+          <span class="risk-status">Fixed p014</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">5 / 8</div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<!-- ====== SLIDE 6: ARCHITECTURE ====== -->
+<div class="slide" id="architecture">
+  <span class="label" style="color: var(--cyan); background: var(--cyan-dim);">Architecture</span>
+  <h2>Server stack overview</h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <div class="arch-layer">
+        <div class="arch-icon" style="background: var(--cyan-dim); color: var(--cyan);">UI</div>
+        <div>
+          <div class="arch-title">Dashboard (Single-page HTML)</div>
+          <div class="arch-desc">Session pill-bar, sprint cards, hue-from-hash color coding, expand/collapse at 5+ sessions</div>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-icon" style="background: var(--green-dim); color: var(--green);">WS</div>
+        <div>
+          <div class="arch-title">Transport Cascade</div>
+          <div class="arch-desc">WebSocket (CF-compatible) &rarr; SSE (local/direct) &rarr; 2s polling baseline. Auto-fallback with exponential backoff.</div>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-icon" style="background: var(--orange-dim); color: var(--orange);">S</div>
+        <div>
+          <div class="arch-title">Node.js Server (zero deps)</div>
+          <div class="arch-desc">Session-keyed Map, CSRF, cookie auth, token rotation, CORS restriction, session GC (MAX=50)</div>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-icon" style="background: var(--purple-dim); color: var(--purple);">P</div>
+        <div>
+          <div class="arch-title">State Persistence</div>
+          <div class="arch-desc">JSON snapshots, atomic write (tmp+rename), dirty flag + 2s debounce, graceful shutdown flush</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="arch-layer">
+        <div class="arch-icon" style="background: var(--pink-dim); color: var(--pink);">H</div>
+        <div>
+          <div class="arch-title">Claude Code Hooks</div>
+          <div class="arch-desc">SessionStart/End lifecycle, tool permissions, session_id UUID routing, command-only (curl wrapper)</div>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-icon" style="background: rgba(59,130,246,0.1); color: var(--accent-light);">C</div>
+        <div>
+          <div class="arch-title">Wheat Compiler</div>
+          <div class="arch-desc">Claims &rarr; compilation.json, manifest generation (&lt;10ms), sprint detection (~150ms), conflict resolution</div>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-icon" style="background: var(--green-dim); color: var(--green);">M</div>
+        <div>
+          <div class="arch-title">Repo Cartography</div>
+          <div class="arch-desc">wheat-manifest.json: topic map (not file tree), auto-generated, one Read replaces 3-5 Glob/Grep</div>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-icon" style="background: var(--orange-dim); color: var(--orange);">G</div>
+        <div>
+          <div class="arch-title">Git-Derived Sprint Detection</div>
+          <div class="arch-desc">detect-sprints.js: filesystem + git log, no config pointers, ranks by recency</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">6 / 8</div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<!-- ====== SLIDE 7: REMAINING WORK ====== -->
+<div class="slide" id="remaining">
+  <span class="label orange">Remaining Work</span>
+  <h2>2.5 hours to finish</h2>
+  <div class="divider"></div>
+
+  <div style="max-width: 700px;">
+    <div class="progress-label"><span>Overall Roadmap</span><span>13 / 15 done</span></div>
+    <div class="progress-bar" style="height: 12px;">
+      <div class="progress-fill green" style="width: 87%;"></div>
+    </div>
+    <p style="font-size: 11pt; margin-top: 4px; margin-bottom: 32px;"><span class="claim-ref">87% complete</span></p>
+
+    <div class="two-col" style="gap: 32px;">
+      <div class="card orange">
+        <div class="card-label">Named Cloudflare Tunnel</div>
+        <div class="card-text" style="font-size: 14pt;">Stable subdomain + native SSE</div>
+        <div class="card-detail">
+          Replace quick tunnel for production use. WebSocket fallback [p009] reduces urgency, but named tunnel enables native SSE and OAuth.
+          <br><br>
+          <strong style="color: var(--orange);">Est: 2 hours</strong>
+          <br><span class="claim-ref">[r027] [r036]</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Sprint Detection Wiring</div>
+        <div class="card-text" style="font-size: 14pt;">Server canonical resolver</div>
+        <div class="card-detail">
+          Integrate detect-sprints.js as the server's sprint resolver. Replace --sprints-dir hot-reload with git-aware detection.
+          <br><br>
+          <strong style="color: var(--accent-light);">Est: 0.5 hours</strong>
+          <br><span class="claim-ref">[p013] [p015]</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-number">7 / 8</div>
+  <div class="wheat-footer">Compiled by Wheat</div>
+</div>
+
+<!-- ====== SLIDE 8: RECOMMENDATION ====== -->
+<div class="slide" id="recommendation">
+  <span class="label green">Recommendation</span>
+  <h2>Ship it</h2>
+  <div class="divider"></div>
+  <div class="three-col">
+    <div class="card green">
+      <div class="card-label">Verdict</div>
+      <div class="card-text">Sprint is feature-complete</div>
+      <div class="card-detail">All three workstreams prototyped and validated. 13/15 roadmap items done. All 13 challenge-identified risks resolved. Zero conflicts remaining.</div>
     </div>
     <div class="card orange">
-      <div class="card-label">Single-Session Lock</div>
-      <div class="card-text">One session at a time</div>
-      <div class="card-detail">Global singletons (pending, activity, trustLevel) mean only one Claude Code session can use the dashboard. Two sessions = state corruption. <span class="claim-ref">r004</span></div>
+      <div class="card-label">Remaining</div>
+      <div class="card-text">2.5 hours operational</div>
+      <div class="card-detail">Named CF tunnel (2h) for stable subdomain. Sprint detection wiring (0.5h) to replace manual config. Neither blocks current usage.</div>
     </div>
-    <div class="card">
-      <div class="card-label">No Sprint Switching</div>
-      <div class="card-text">Flat file structure</div>
-      <div class="card-detail">Archived sprints live in examples/ with no dashboard access. No way to view, compare, or reference across sprints. <span class="claim-ref">d002</span></div>
+    <div class="card purple">
+      <div class="card-label">Constraints Met</div>
+      <div class="card-text">All 5 satisfied</div>
+      <div class="card-detail">Zero npm deps. Backwards compatible (10/10 tests). Single-session workflow preserved. Self-describing repo. Measurably faster search.</div>
     </div>
   </div>
-  <div class="card" style="margin-top: 16px; border-left: 3px solid var(--red); padding: 16px 20px;">
-    <div class="card-detail" style="margin-top: 0;"><strong>The hidden cost:</strong> Context window pollution -- not I/O latency -- is the real bottleneck. Noisy tool results waste 10-40K tokens per research session, 5-20% of the context budget. <span class="claim-ref">x003</span></div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
-  <div class="slide-number">2 / 8</div>
-</div>
 
-<!-- ====== SLIDE 3: Multi-Session ====== -->
-<div class="slide" id="slide-3">
-  <span class="label">Workstream 1</span>
-  <h2>Multi-Session Architecture</h2>
-  <p class="meta">12 claims | documented evidence | 4 sources</p>
-  <div class="arch-box"><strong>Claude Code</strong>                    <strong>Farmer Server</strong>                 <strong>Dashboard</strong>
- Session A ─── hooks ──────┐
-                           │    ┌─────────────────────┐
- Session B ─── hooks ──────┼───>│  <em>Map&lt;session_id,</em>    │    ┌──────────────┐
-                           │    │  <em>  SessionState&gt;</em>     │───>│ SSE broadcast│
- Session C ─── hooks ──────┘    │                     │    │ tagged with  │
-                                │  <em>getSession(id)</em>      │    │ session_id   │
- SessionStart ── curl ─────────>│  lazy initializer   │    └──────┬───────┘
- SessionEnd ─── curl ──────────>│                     │           │
-                                └─────────────────────┘    <span class="hi">Pill-bar switcher</span>
-                                                           <span class="hi">Hue-from-hash colors</span>
-                                                           <span class="hi">Unified feed + filter</span></div>
-  <div class="two-col">
-    <div class="card">
-      <div class="card-label">Session Identity</div>
-      <div class="card-detail" style="margin-top: 0;">Hook payloads include stable <code>session_id</code> UUID. Natural routing key, no custom identification needed. <span class="claim-ref">r001</span></div>
-    </div>
-    <div class="card">
-      <div class="card-label">Lifecycle</div>
-      <div class="card-detail" style="margin-top: 0;">SessionStart/SessionEnd hooks provide explicit boundaries. 5-min heartbeat timeout for crashes. <span class="claim-ref">r002</span> <span class="claim-ref">r007</span></div>
+  <div style="margin-top: 32px; padding: 28px; background: var(--bg-card); border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
+    <h4 style="color: var(--accent-light); margin-bottom: 12px;">Next Steps</h4>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 11pt; color: var(--text-muted);">
+      <div><strong style="color: var(--text);">1.</strong> Deploy named Cloudflare tunnel for stable subdomain</div>
+      <div><strong style="color: var(--text);">2.</strong> Wire detect-sprints.js into server as canonical resolver</div>
+      <div><strong style="color: var(--text);">3.</strong> Begin team onboarding with multi-session support</div>
+      <div><strong style="color: var(--text);">4.</strong> Monitor session GC and manifest freshness in production</div>
     </div>
   </div>
-  <div class="card orange" style="margin-top: 4px; padding: 14px 20px;">
-    <div class="card-detail" style="margin-top: 0;"><strong>Constraint:</strong> Lifecycle hooks are command-only, not HTTP -- curl wrapper required to notify the server. <span class="claim-ref">w002</span></div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
-  <div class="slide-number">3 / 8</div>
-</div>
 
-<!-- ====== SLIDE 4: Multi-Sprint ====== -->
-<div class="slide" id="slide-4">
-  <span class="label">Workstream 2</span>
-  <h2>Multi-Sprint Support</h2>
-  <p class="meta">8 claims | documented evidence | 2 sources</p>
-  <div class="three-col">
-    <div class="card">
-      <div class="card-label">Data Model</div>
-      <div class="card-text">sprints/&lt;slug&gt;/</div>
-      <div class="card-detail">Each sprint self-contained with own claims.json. Current sprint pointer in <code>wheat.config.json</code> (not symlinks) for portability. <span class="claim-ref">r020</span> <span class="claim-ref">r025</span></div>
-    </div>
-    <div class="card">
-      <div class="card-label">Dashboard</div>
-      <div class="card-text">Collapsible card list</div>
-      <div class="card-detail">Shows question, phase badge, claim count. Server adds <code>--sprints-dir</code> with hot-reload via fs.watchFile. <span class="claim-ref">r021</span> <span class="claim-ref">r022</span></div>
-    </div>
-    <div class="card green">
-      <div class="card-label">Cross-Sprint Refs</div>
-      <div class="card-text">sprint-slug:claim-id</div>
-      <div class="card-detail">Format: <code>remote-farmer:r003</code>. No schema changes needed. Compiler resolves on demand. <span class="claim-ref">r024</span></div>
-    </div>
+  <div style="margin-top: 24px; font-size: 9pt; color: var(--text-dim);">
+    Compilation: sha256:deca61e6d78d &middot; 78 claims (63 active, 2 superseded, 13 resolved) &middot; Compiler: wheat v0.2.0 &middot; 2026-03-12
   </div>
-  <div class="arch-box" style="margin-top: 16px;">wheat/
-  wheat.config.json         <span class="hi">&lt;-- { "currentSprint": "scaling-farmer" }</span>
-  sprints/
-    scaling-farmer/         <em>&lt;-- active</em>
-      claims.json
-      compilation.json
-      research/
-      output/
-    remote-farmer/          <em>&lt;-- archived (phase: "archived")</em>
-      claims.json
-      ...
-    next-sprint/            <em>&lt;-- future</em>
-      ...</div>
-  <div class="card orange" style="padding: 14px 20px;">
-    <div class="card-detail" style="margin-top: 0;"><strong>Resolved conflict:</strong> <span class="claim-ref">r020</span> proposed symlinks, <span class="claim-ref">r025</span> flagged Windows portability. Resolution: config file is canonical, symlinks are optional convenience only.</div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
-  <div class="slide-number">4 / 8</div>
-</div>
-
-<!-- ====== SLIDE 5: Repo Cartography ====== -->
-<div class="slide" id="slide-5">
-  <span class="label green">Workstream 3</span>
-  <h2>Repo Cartography</h2>
-  <p class="meta">8 claims | tested evidence | 4 sources</p>
-  <div class="two-col">
-    <div>
-      <div class="card green" style="margin-bottom: 12px;">
-        <div class="card-label">Manifest Generator -- DONE</div>
-        <div class="card-text">&lt;10ms, ~5KB</div>
-        <div class="card-detail"><code>wheat-manifest.json</code> -- topic map generated from claims.json + directory scan. Single Read replaces 3-5 Glob/Grep calls. <span class="claim-ref">p001</span> <span class="claim-ref">r012</span></div>
-      </div>
-      <div class="card">
-        <div class="card-label">Design Principle</div>
-        <div class="card-text">Topic map, not file tree</div>
-        <div class="card-detail">AI searches by concept, not directory path. Maps topic to claims, files, and sprints. <span class="claim-ref">r017</span></div>
-      </div>
-    </div>
-    <div>
-      <div class="card" style="margin-bottom: 12px;">
-        <div class="card-label">Auto-Generated</div>
-        <div class="card-text">Compiler integration</div>
-        <div class="card-detail">Manifest regenerated on every compilation so it never drifts. CLAUDE.md stays behavioral, manifest is structural. <span class="claim-ref">r011</span> <span class="claim-ref">r015</span></div>
-      </div>
-      <div class="card red">
-        <div class="card-label">Urgency</div>
-        <div class="card-text">Already past the crossover point</div>
-        <div class="card-detail">157 files, 62 duplicates in examples/. "dashboard.html" matches 10 files. Noise is acute NOW. <span class="claim-ref">x001</span> <span class="claim-ref">x002</span></div>
-      </div>
-    </div>
-  </div>
-  <div class="card green" style="margin-top: 12px; padding: 16px 20px; text-align: center;">
-    <div style="display: flex; gap: 32px; justify-content: center; flex-wrap: wrap;">
-      <div><div class="stat-num" style="font-size: 28px; color: var(--green);">&lt;10ms</div><div class="stat-desc">Generation time</div></div>
-      <div><div class="stat-num" style="font-size: 28px; color: var(--text);">~5KB</div><div class="stat-desc">Manifest size</div></div>
-      <div><div class="stat-num" style="font-size: 28px; color: var(--accent);">1 Read</div><div class="stat-desc">vs 3-5 Glob/Grep</div></div>
-    </div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
-  <div class="slide-number">5 / 8</div>
-</div>
-
-<!-- ====== SLIDE 6: Risks & Mitigations ====== -->
-<div class="slide" id="slide-6">
-  <span class="label red">Risk Register</span>
-  <h2>Risks &amp; Mitigations</h2>
-  <p>Top 5 identified risks across all three workstreams.</p>
-  <div class="divider"></div>
-  <div class="risk-row">
-    <div class="risk-num">1</div>
-    <div class="risk-content">
-      <h4>Approval Confusion (Multi-Session)</h4>
-      <p>Two sessions needing approval simultaneously -- user could approve the wrong one. <strong>Mitigate:</strong> prominent session labels + distinct colors + audio/haptic differentiation. <span class="claim-ref">r006</span></p>
-    </div>
-  </div>
-  <div class="risk-row">
-    <div class="risk-num">2</div>
-    <div class="risk-content">
-      <h4>Symlink Portability (Multi-Sprint)</h4>
-      <p>Git symlinks break on Windows without admin privileges. <strong>Mitigate:</strong> wheat.config.json is canonical pointer; symlinks are optional local convenience. <span class="claim-ref">r025</span></p>
-    </div>
-  </div>
-  <div class="risk-row">
-    <div class="risk-num">3</div>
-    <div class="risk-content">
-      <h4>CLAUDE.md Staleness (Cartography)</h4>
-      <p>Per-directory CLAUDE.md files claiming contents that have moved actively mislead AI. <strong>Mitigate:</strong> CLAUDE.md for behavior only; manifest (auto-generated) for structure. <span class="claim-ref">r015</span></p>
-    </div>
-  </div>
-  <div class="risk-row">
-    <div class="risk-num" style="background: var(--orange);">4</div>
-    <div class="risk-content">
-      <h4>Context Window Pollution (Performance)</h4>
-      <p>Noisy Glob/Grep results waste 10-40K tokens per session (5-20% of context budget). <strong>Mitigate:</strong> manifest eliminates iterative search; already past crossover point. <span class="claim-ref">x003</span></p>
-    </div>
-  </div>
-  <div class="risk-row">
-    <div class="risk-num" style="background: var(--orange);">5</div>
-    <div class="risk-content">
-      <h4>Lifecycle Hook Limitation (Multi-Session)</h4>
-      <p>SessionStart/SessionEnd are command-only -- cannot POST directly to Farmer. <strong>Mitigate:</strong> curl wrapper shell script; trivial but must be documented. <span class="claim-ref">w002</span></p>
-    </div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
-  <div class="slide-number">6 / 8</div>
-</div>
-
-<!-- ====== SLIDE 7: Roadmap ====== -->
-<div class="slide" id="slide-7">
-  <span class="label">Roadmap</span>
-  <h2>Implementation Plan</h2>
-  <p>Four phases, additive. Each phase is independently shippable.</p>
-  <div class="divider"></div>
-  <table>
-    <tr><th>Phase</th><th>Workstream</th><th>Effort</th><th>Key Files</th><th>Status</th></tr>
-    <tr>
-      <td>1</td>
-      <td>Manifest generator</td>
-      <td style="color: var(--green);">--</td>
-      <td style="font-family: monospace; font-size: 12px;">generate-manifest.js</td>
-      <td><span class="tag done">DONE</span></td>
-    </tr>
-    <tr>
-      <td>2</td>
-      <td>Multi-session server refactor</td>
-      <td>2-4h</td>
-      <td style="font-family: monospace; font-size: 12px;">server.mjs, dashboard.html</td>
-      <td style="color: var(--muted);">Planned</td>
-    </tr>
-    <tr>
-      <td>3</td>
-      <td>Multi-sprint support</td>
-      <td>3-5h</td>
-      <td style="font-family: monospace; font-size: 12px;">server.mjs, dashboard.html, wheat-init.js, wheat-compiler.js</td>
-      <td style="color: var(--muted);">Planned</td>
-    </tr>
-    <tr>
-      <td>4</td>
-      <td>Compiler manifest integration</td>
-      <td>1h</td>
-      <td style="font-family: monospace; font-size: 12px;">wheat-compiler.js</td>
-      <td style="color: var(--muted);">Planned</td>
-    </tr>
-  </table>
-  <div class="two-col" style="margin-top: 20px;">
-    <div class="card">
-      <div class="card-label">Evidence Coverage</div>
-      <table style="margin: 8px 0 0;">
-        <tr><th>Topic</th><th>Claims</th><th>Evidence</th><th>Types</th></tr>
-        <tr><td>multi-session</td><td>12</td><td><span class="tag documented">documented</span></td><td>5/6</td></tr>
-        <tr><td>cartography</td><td>8</td><td><span class="tag tested">tested</span></td><td>4/6</td></tr>
-        <tr><td>multi-sprint</td><td>8</td><td><span class="tag documented">documented</span></td><td>4/6</td></tr>
-        <tr><td>performance</td><td>6</td><td><span class="tag tested">tested</span></td><td>4/6</td></tr>
-        <tr><td>compatibility</td><td>1</td><td style="color: var(--dim);">stated</td><td>1/6</td></tr>
-      </table>
-    </div>
-    <div class="card green">
-      <div class="card-label">Key Numbers</div>
-      <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px;">
-        <div><strong style="font-size: 20px; color: var(--green);">~300</strong> <span style="font-size: 12px;">lines for multi-session</span> <span class="claim-ref">p002</span></div>
-        <div><strong style="font-size: 20px; color: var(--accent);">~250</strong> <span style="font-size: 12px;">lines for multi-sprint</span> <span class="claim-ref">r026</span></div>
-        <div><strong style="font-size: 20px; color: var(--text);">0</strong> <span style="font-size: 12px;">npm dependencies</span> <span class="claim-ref">d004</span></div>
-      </div>
-    </div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
-  <div class="slide-number">7 / 8</div>
-</div>
-
-<!-- ====== SLIDE 8: Next Steps ====== -->
-<div class="slide" id="slide-8">
-  <span class="label green">Next Steps</span>
-  <h2>What To Build Next</h2>
-  <div class="divider"></div>
-  <div class="two-col">
-    <div>
-      <h3>Immediate</h3>
-      <div class="card green" style="margin-bottom: 12px;">
-        <div class="card-text">Multi-session prototype</div>
-        <div class="card-detail">SessionState class, getSession() lazy init, SSE session tagging, pill-bar switcher with hue-from-hash colors. 2-4 hours. <span class="claim-ref">p002</span> <span class="claim-ref">r008</span></div>
-      </div>
-      <div class="card" style="margin-bottom: 12px;">
-        <div class="card-text">Compiler manifest integration</div>
-        <div class="card-detail">Wire generate-manifest.js into wheat-compiler.js so the topic map auto-updates on every compilation. 1 hour. <span class="claim-ref">r011</span></div>
-      </div>
-      <div class="card">
-        <div class="card-text">Lifecycle hook scripts</div>
-        <div class="card-detail">curl-based SessionStart/SessionEnd hooks to notify Farmer server. Required for multi-session. <span class="claim-ref">w002</span></div>
-      </div>
-    </div>
-    <div>
-      <h3>Next Sprint</h3>
-      <div class="card" style="margin-bottom: 12px;">
-        <div class="card-text">Multi-sprint server + dashboard</div>
-        <div class="card-detail">--sprints-dir flag, per-sprint state map, collapsible sprint switcher cards. 3-5 hours. <span class="claim-ref">r021</span> <span class="claim-ref">r026</span></div>
-      </div>
-      <div class="card" style="margin-bottom: 12px;">
-        <div class="card-text">Sprint index in compilation</div>
-        <div class="card-detail">sprints-index.json listing all sprints with question, phase, claim count, date range. <span class="claim-ref">r013</span></div>
-      </div>
-      <div class="card">
-        <div class="card-text">Cross-sprint reference resolution</div>
-        <div class="card-detail">Compiler resolves sprint-slug:claim-id format. Enables /merge and /challenge across sprints. <span class="claim-ref">r024</span></div>
-      </div>
-    </div>
-  </div>
-  <div style="margin-top: 28px; text-align: center; color: var(--dim); font-size: 11px;">
-    Wheat Research Sprint &middot; 35 claims &middot; 2026-03-12 &middot; Certificate: sha256:1f6f8eea32516
-  </div>
-  <div class="wheat-footer">Compiled by Wheat v0.2.0</div>
   <div class="slide-number">8 / 8</div>
+  <div class="wheat-footer">Compiled by Wheat</div>
 </div>
 
+<!-- Navigation highlight script -->
 <script>
-  // Active nav dot tracking
-  const dots = document.querySelectorAll('.slide-nav a');
-  const slides = document.querySelectorAll('.slide');
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
+(function() {
+  var nav = document.querySelector('.slide-nav');
+  var dots = nav.querySelectorAll('a');
+  var slides = document.querySelectorAll('.slide');
+
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
       if (entry.isIntersecting) {
-        const idx = Array.from(slides).indexOf(entry.target);
-        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+        var id = entry.target.id;
+        dots.forEach(function(d) { d.classList.remove('active'); });
+        var active = nav.querySelector('a[href="#' + id + '"]');
+        if (active) active.classList.add('active');
       }
     });
   }, { threshold: 0.5 });
-  slides.forEach(s => observer.observe(s));
 
-  // Keyboard navigation
-  document.addEventListener('keydown', e => {
-    const current = Array.from(slides).findIndex(s => {
-      const rect = s.getBoundingClientRect();
-      return rect.top >= -100 && rect.top < window.innerHeight / 2;
-    });
-    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
-      e.preventDefault();
-      const next = Math.min(current + 1, slides.length - 1);
-      slides[next].scrollIntoView({ behavior: 'smooth' });
-    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-      e.preventDefault();
-      const prev = Math.max(current - 1, 0);
-      slides[prev].scrollIntoView({ behavior: 'smooth' });
-    }
-  });
+  slides.forEach(function(s) { observer.observe(s); });
+})();
 </script>
 
 </body>
