@@ -126,7 +126,7 @@ writeIfMissing(path.join(claudeDir, 'settings.local.json'), JSON.stringify({
   hooks: {
     PreToolUse: [{
       matcher: 'Write|Edit',
-      hooks: [{ type: 'command', command: 'node wheat-guard.js "$TOOL_INPUT"' }],
+      hooks: [{ type: 'command', command: 'echo "$TOOL_INPUT" | node wheat-guard.js' }],
     }],
   },
 }, null, 2) + '\n');

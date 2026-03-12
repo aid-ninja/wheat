@@ -52,7 +52,19 @@ function loadConfig() {
 
 const config = loadConfig();
 
-const toolInput = process.argv[2] || '{}';
+// Read tool input from stdin (Claude Code pipes $TOOL_INPUT there).
+// Falls back to argv[2] for manual testing: node wheat-guard.js '{"file_path":"..."}'
+let toolInput;
+if (process.argv[2]) {
+  toolInput = process.argv[2];
+} else {
+  try {
+    toolInput = fs.readFileSync('/dev/stdin', 'utf8');
+  } catch {
+    toolInput = '{}';
+  }
+}
+
 let input;
 try {
   input = JSON.parse(toolInput);
