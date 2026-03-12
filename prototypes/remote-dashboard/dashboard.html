@@ -1086,7 +1086,7 @@ function renderRequests() {
   return reqs.map(p => {
     const ti = p.tool_input || {};
     const prompt = ti.prompt || p.prompt || (ti.questions && ti.questions[0] && ti.questions[0].question) || '';
-    const options = (ti.questions && ti.questions[0] && ti.questions[0].options) || [];
+    const options = p.options || (ti.questions && ti.questions[0] && ti.questions[0].options) || [];
     const isNew = !seenCardIds.has(p.requestId);
     const elapsed = Math.floor((Date.now() - (p.timestamp || Date.now())) / 1000);
     const remaining = Math.max(0, 120 - elapsed);

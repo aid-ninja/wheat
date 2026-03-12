@@ -418,6 +418,55 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  // --- Ask endpoint: POST a question from Claude, hold until user responds via dashboard ---
+  if (req.method === 'POST' && url.pathname === '/api/ask') {
+    const remoteAddr = req.socket.remoteAddress;
+    if (remoteAddr !== '127.0.0.1' && remoteAddr !== '::1' && remoteAddr !== '::ffff:127.0.0.1') {
+      res.writeHead(403); res.end('Localhost only'); return;
+    }
+    let body;
+    try { body = await readBody(req); } catch { res.writeHead(413); res.end('Too large'); return; }
+    let data;
+    try { data = JSON.parse(body); } catch { res.writeHead(400); res.end('Bad JSON'); return; }
+
+    const session = getSession(data.session_id || 'default', data.cwd);
+    const requestId = randomBytes(8).toString('hex');
+    const event = {
+      requestId,
+      tool_name: 'Request',
+      tool_input: { prompt: data.question || data.prompt || '' },
+      session_id: session.id,
+      session_label: session.label,
+      session_color: session.color,
+      options: data.options || [],
+      timestamp: Date.now(),
+    };
+
+    broadcast({ type: 'permission_request', session_id: session.id, data: event });
+
+    const timeout = setTimeout(() => {
+      if (session.pending.has(requestId)) {
+        session.pending.delete(requestId);
+        broadcast({ type: 'permission_expired', session_id: session.id, data: { requestId } });
+        res.writeHead(408, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'timeout', response: '' }));
+      }
+    }, 120_000);
+
+    session.pending.set(requestId, {
+      resolve: (decision) => {
+        clearTimeout(timeout);
+        session.pending.delete(requestId);
+        broadcast({ type: 'permission_resolved', session_id: session.id, data: { requestId, decision: 'answered' } });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, response: decision.reason || decision.response || '' }));
+      },
+      data: event,
+      timestamp: Date.now(),
+    });
+    return;
+  }
+
   if (req.method === 'GET' && url.pathname === '/api/state') {
     if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
     const defaultSession = sessions.has('default') ? sessions.get('default') : null;
