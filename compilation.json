@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T10:06:04.823Z",
-  "claims_hash": "d66705c",
+  "compiled_at": "2026-03-12T10:10:54.239Z",
+  "claims_hash": "38f4552",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -1335,7 +1335,38 @@
     }
   ],
   "conflict_graph": {
-    "resolved": [],
+    "resolved": [
+      {
+        "winner": "p009",
+        "loser": "x004",
+        "reason": "evidence_tier: tested (4) > documented (3)"
+      },
+      {
+        "winner": "p009",
+        "loser": "x005",
+        "reason": "evidence_tier: tested (4) > documented (3)"
+      },
+      {
+        "winner": "p009",
+        "loser": "x006",
+        "reason": "evidence_tier: tested (4) > documented (3)"
+      },
+      {
+        "winner": "p009",
+        "loser": "x007",
+        "reason": "evidence_tier: tested (4) > documented (3)"
+      },
+      {
+        "winner": "p009",
+        "loser": "x008",
+        "reason": "evidence_tier: tested (4) > documented (3)"
+      },
+      {
+        "winner": "p009",
+        "loser": "x009",
+        "reason": "evidence_tier: tested (4) > documented (3)"
+      }
+    ],
     "unresolved": []
   },
   "coverage": {
@@ -1667,14 +1698,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 60,
+    "total_claims": 66,
     "active_claims": 58,
     "conflicted_claims": 0,
-    "superseded_claims": 2,
+    "superseded_claims": 8,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:d66705c3eac8e0bfc97ea56789f9460403a4e74be07671a63069fe5f7ad81fb0",
+    "input_hash": "sha256:38f4552bf0bc00321f23f8c45a9e7f97a6227a7ea4df2d4f7239b014d96483f9",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

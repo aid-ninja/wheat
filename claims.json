@@ -1240,6 +1240,114 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["csrf", "token-rotation", "security", "auth", "prototype"]
+    },
+    {
+      "id": "x004",
+      "type": "risk",
+      "topic": "security",
+      "content": "WebSocket upgrade handler (handleWsUpgrade) performs no Origin header validation. HTTP routes apply CORS origin reflection, but the upgrade path skips it entirely. A malicious page that knows the token can open a WebSocket cross-origin. Mitigated partially by token secrecy, but weakened by x005 (token in URL). Fix: validate req.headers.origin against an allowlist or reject if origin doesn't match the served dashboard origin.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:419-467 — handleWsUpgrade() checks token but not Origin header"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": ["p009"],
+      "resolved_by": null,
+      "tags": ["websocket", "security", "origin-validation", "cross-origin"]
+    },
+    {
+      "id": "x005",
+      "type": "risk",
+      "topic": "security",
+      "content": "Auth token is transmitted in the WebSocket URL query string (?token=...). Query strings are logged by proxies, CDNs (Cloudflare tunnel logs), browser history, and server access logs. This is a credential leakage vector that undermines the timing-safe comparison and token rotation features. RFC 6455 Section 10.5 warns against sensitive data in URLs. Fix: send token in the first WebSocket message after upgrade, or use a short-lived upgrade ticket obtained via an authenticated POST.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:428-441 (token from query), dashboard.html:740 (token in wsUrl)"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": ["p009"],
+      "resolved_by": null,
+      "tags": ["websocket", "security", "token-exposure", "cloudflare-tunnel"]
+    },
+    {
+      "id": "x006",
+      "type": "risk",
+      "topic": "reliability",
+      "content": "WebSocket receive buffer (client.buffer) grows without bound. Buffer.concat appends every incoming chunk, but nothing enforces a maximum size. A slow-drip attacker (or a buggy client sending oversized frames) can grow the buffer until the Node process runs out of memory. Fix: enforce a MAX_WS_BUFFER_SIZE (e.g., 1MB) and destroy the socket if exceeded.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:496 — client.buffer = Buffer.concat([client.buffer, chunk]) with no size check"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": ["p009"],
+      "resolved_by": null,
+      "tags": ["websocket", "reliability", "memory-leak", "dos"]
+    },
+    {
+      "id": "x007",
+      "type": "risk",
+      "topic": "compatibility",
+      "content": "WebSocket frame decoder ignores the FIN bit — it reads opcode from firstByte but never checks (firstByte & 0x80). RFC 6455 allows fragmented messages (FIN=0 on non-final frames, opcode=0x00 for continuation frames). While browsers rarely fragment small JSON payloads, proxies and WebSocket intermediaries (including Cloudflare) may re-fragment frames. Fragmented messages will be silently misinterpreted or dropped. Fix: accumulate continuation frames until FIN=1, or reject fragmented frames explicitly with a close frame.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:385-416 — wsDecodeFrame() reads opcode but ignores FIN bit and continuation frames"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": ["p009"],
+      "resolved_by": null,
+      "tags": ["websocket", "compatibility", "rfc6455", "fragmentation", "cloudflare-tunnel"]
+    },
+    {
+      "id": "x008",
+      "type": "risk",
+      "topic": "compatibility",
+      "content": "Close frame handling violates RFC 6455: when the server receives opcode 0x08 (close), it responds with wsEncodeFrame('') which sends a text frame (opcode 0x81) instead of a close frame (opcode 0x88). RFC 6455 Section 5.5.1 requires responding with a close frame. Some browsers or proxies may flag this as a protocol violation and report errors. Fix: send a proper close frame (first byte 0x88, then length 0x00) before destroying the socket.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:502-507 — close frame handler sends text frame via wsEncodeFrame('')"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": ["p009"],
+      "resolved_by": null,
+      "tags": ["websocket", "compatibility", "rfc6455", "close-frame"]
+    },
+    {
+      "id": "x009",
+      "type": "risk",
+      "topic": "reliability",
+      "content": "Client-side WebSocket has no reconnection logic. When the WebSocket closes (ws.onclose), the client falls through to SSE and never retries WebSocket. A transient network blip permanently degrades the session to the inferior SSE transport for the lifetime of the page. This contradicts the 'WebSocket preferred' design. Fix: implement exponential backoff reconnection for WebSocket before falling back to SSE, or periodically attempt WebSocket upgrade while on SSE.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "dashboard.html:758-764 — ws.onclose calls trySSE() without scheduling WebSocket retry"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": ["p009"],
+      "resolved_by": null,
+      "tags": ["websocket", "reliability", "reconnection", "fallback", "client"]
     }
   ]
 }
