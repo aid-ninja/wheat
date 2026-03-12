@@ -259,6 +259,28 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  // --- Serve output artifacts ---
+  if (req.method === 'GET' && url.pathname.startsWith('/output/')) {
+    if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
+    const fileName = url.pathname.replace('/output/', '');
+    // Sanitize: only allow simple filenames, no path traversal
+    if (fileName.includes('..') || fileName.includes('/') || !fileName.match(/^[\w.-]+$/)) {
+      res.writeHead(400); res.end('Invalid filename'); return;
+    }
+    const outputDir = resolve(CLAIMS_PATH, '..', 'output');
+    const filePath = join(outputDir, fileName);
+    try {
+      const content = readFileSync(filePath, 'utf8');
+      const ext = fileName.split('.').pop();
+      const mime = { html: 'text/html', md: 'text/plain', json: 'application/json', pdf: 'application/pdf' }[ext] || 'text/plain';
+      res.writeHead(200, { 'Content-Type': mime });
+      res.end(content);
+    } catch {
+      res.writeHead(404); res.end('Not found');
+    }
+    return;
+  }
+
   res.writeHead(404); res.end('Not found');
 });
 
