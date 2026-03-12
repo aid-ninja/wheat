@@ -1,0 +1,214 @@
+{
+  "generated": "2026-03-12T06:49:49.349Z",
+  "generator": "generate-manifest.js",
+  "claims_hash": "f5aac5c",
+  "topics": {
+    "multi-session": {
+      "claims": [
+        "d001",
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "w001",
+        "w002",
+        "p002"
+      ],
+      "files": [
+        "docs/dashboard.html",
+        "output/dashboard.html",
+        "prototypes/live-dashboard/dashboard.html",
+        "prototypes/remote-dashboard/MULTI-SESSION-PLAN.md",
+        "prototypes/remote-dashboard/dashboard.html",
+        "prototypes/remote-dashboard/hooks-config.json",
+        "prototypes/remote-dashboard/server.mjs",
+        "prototypes/remote-dashboard/ws.mjs",
+        "templates/dashboard.html"
+      ],
+      "sprint": "current",
+      "evidence_level": "documented"
+    },
+    "multi-sprint": {
+      "claims": [
+        "d002",
+        "r020",
+        "r021",
+        "r022",
+        "r023",
+        "r024",
+        "r025",
+        "r026"
+      ],
+      "files": [
+        "evidence/sprint-evaluation.html",
+        "prototypes/remote-dashboard/dashboard.html",
+        "prototypes/remote-dashboard/server.mjs",
+        "wheat-compiler.js"
+      ],
+      "sprint": "current",
+      "evidence_level": "documented"
+    },
+    "cartography": {
+      "claims": [
+        "d003",
+        "r010",
+        "r011",
+        "r013",
+        "r014",
+        "r015",
+        "r017",
+        "p001"
+      ],
+      "files": [
+        "docs/index.html",
+        "generate-manifest.js",
+        "wheat-manifest.json"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "compatibility": {
+      "claims": [
+        "d004"
+      ],
+      "files": [],
+      "sprint": "current",
+      "evidence_level": "stated"
+    },
+    "performance": {
+      "claims": [
+        "d005",
+        "r012",
+        "r016",
+        "x001",
+        "x002",
+        "x003"
+      ],
+      "files": [
+        "docs/evidence-evaluation.html",
+        "evidence/sprint-evaluation.html"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    }
+  },
+  "sprints": {
+    "current": {
+      "question": "How should we scale Remote Farmer for multi-session and multi-sprint support, and what repo cartography system keeps AI model interactions fast as the Wheat codebase and git history grow?",
+      "phase": "research",
+      "claims_count": 35,
+      "path": "."
+    },
+    "remote-farmer-sprint": {
+      "question": "How should we build a remote permission and monitoring dashboard for Claude Code — a web UI that receives permission requests, shows live activity, and lets users approve/deny tool calls remotely over tunneled connections?",
+      "phase": "prototype",
+      "claims_count": 56,
+      "path": "examples/remote-farmer-sprint"
+    },
+    "self-referential-sprint": {
+      "question": "How can we build a live visualization of Wheat that teaches the framework by showing itself in action?",
+      "phase": "evaluate",
+      "claims_count": 165,
+      "path": "examples/self-referential-sprint"
+    }
+  },
+  "files": {
+    "prototypes/live-dashboard/dashboard.html": {
+      "topics": [
+        "multi-session"
+      ],
+      "type": "prototype"
+    },
+    "prototypes/remote-dashboard/MULTI-SESSION-PLAN.md": {
+      "topics": [
+        "multi-session"
+      ],
+      "type": "prototype"
+    },
+    "prototypes/remote-dashboard/dashboard.html": {
+      "topics": [
+        "multi-session",
+        "multi-sprint"
+      ],
+      "type": "prototype"
+    },
+    "prototypes/remote-dashboard/hooks-config.json": {
+      "topics": [
+        "multi-session"
+      ],
+      "type": "prototype"
+    },
+    "prototypes/remote-dashboard/server.mjs": {
+      "topics": [
+        "multi-session",
+        "multi-sprint"
+      ],
+      "type": "prototype"
+    },
+    "prototypes/remote-dashboard/ws.mjs": {
+      "topics": [
+        "multi-session"
+      ],
+      "type": "prototype"
+    },
+    "output/dashboard.html": {
+      "topics": [
+        "multi-session"
+      ],
+      "type": "output"
+    },
+    "evidence/sprint-evaluation.html": {
+      "topics": [
+        "multi-sprint",
+        "performance"
+      ],
+      "type": "evidence"
+    },
+    "templates/dashboard.html": {
+      "topics": [
+        "multi-session"
+      ],
+      "type": "template"
+    },
+    "docs/dashboard.html": {
+      "topics": [
+        "multi-session"
+      ],
+      "type": "docs"
+    },
+    "docs/evidence-evaluation.html": {
+      "topics": [
+        "performance"
+      ],
+      "type": "docs"
+    },
+    "docs/index.html": {
+      "topics": [
+        "cartography"
+      ],
+      "type": "docs"
+    },
+    "generate-manifest.js": {
+      "topics": [
+        "cartography"
+      ],
+      "type": "script"
+    },
+    "wheat-compiler.js": {
+      "topics": [
+        "multi-sprint"
+      ],
+      "type": "script"
+    },
+    "wheat-manifest.json": {
+      "topics": [
+        "cartography"
+      ],
+      "type": "config"
+    }
+  }
+}

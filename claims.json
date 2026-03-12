@@ -14,7 +14,7 @@
       "id": "d001",
       "type": "constraint",
       "topic": "multi-session",
-      "content": "Must support multiple concurrent Claude Code sessions in a single Farmer dashboard \u2014 each session identifiable, filterable, and independently approvable.",
+      "content": "Must support multiple concurrent Claude Code sessions in a single Farmer dashboard — each session identifiable, filterable, and independently approvable.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -35,7 +35,7 @@
       "id": "d002",
       "type": "constraint",
       "topic": "multi-sprint",
-      "content": "Dashboard must support viewing and switching between multiple Wheat sprints \u2014 each sprint's claims, compilation status, and output artifacts accessible from the remote UI.",
+      "content": "Dashboard must support viewing and switching between multiple Wheat sprints — each sprint's claims, compilation status, and output artifacts accessible from the remote UI.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -56,7 +56,7 @@
       "id": "d003",
       "type": "constraint",
       "topic": "cartography",
-      "content": "Repo must be self-describing \u2014 new Claude Code sessions should understand the repo structure without full-tree Glob/Grep scans. A manifest or index system must point AI models to the right files quickly.",
+      "content": "Repo must be self-describing — new Claude Code sessions should understand the repo structure without full-tree Glob/Grep scans. A manifest or index system must point AI models to the right files quickly.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -131,7 +131,11 @@
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["session_id", "hooks", "routing"]
+      "tags": [
+        "session_id",
+        "hooks",
+        "routing"
+      ]
     },
     {
       "id": "r002",
@@ -149,7 +153,11 @@
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["lifecycle", "SessionStart", "SessionEnd"]
+      "tags": [
+        "lifecycle",
+        "SessionStart",
+        "SessionEnd"
+      ]
     },
     {
       "id": "r003",
@@ -167,7 +175,11 @@
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["architecture", "state-management", "Map"]
+      "tags": [
+        "architecture",
+        "state-management",
+        "Map"
+      ]
     },
     {
       "id": "r004",
@@ -185,7 +197,11 @@
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["refactor", "state", "SSE"]
+      "tags": [
+        "refactor",
+        "state",
+        "SSE"
+      ]
     },
     {
       "id": "r005",
@@ -203,7 +219,11 @@
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["UX", "dashboard", "mobile"]
+      "tags": [
+        "UX",
+        "dashboard",
+        "mobile"
+      ]
     },
     {
       "id": "r006",
@@ -221,7 +241,12 @@
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["risk", "UX", "permissions", "concurrent"]
+      "tags": [
+        "risk",
+        "UX",
+        "permissions",
+        "concurrent"
+      ]
     },
     {
       "id": "r007",
@@ -239,7 +264,11 @@
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["lifecycle", "heartbeat", "cleanup"]
+      "tags": [
+        "lifecycle",
+        "heartbeat",
+        "cleanup"
+      ]
     },
     {
       "id": "r008",
@@ -257,126 +286,198 @@
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["effort", "estimate", "prototype"]
+      "tags": [
+        "effort",
+        "estimate",
+        "prototype"
+      ]
     },
     {
       "id": "r010",
       "type": "factual",
       "topic": "cartography",
       "content": "Claude Code automatically loads CLAUDE.md from the project root and from any subdirectory the user is working in. This makes CLAUDE.md files the highest-bandwidth zero-cost channel for repo cartography — anything in CLAUDE.md is in context before the first tool call. Per-directory CLAUDE.md files enable layered discovery without a central mega-file.",
-      "source": { "origin": "documentation", "artifact": null, "connector": null },
+      "source": {
+        "origin": "documentation",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["claude-md", "context-loading", "discovery"]
+      "tags": [
+        "claude-md",
+        "context-loading",
+        "discovery"
+      ]
     },
     {
       "id": "r011",
       "type": "recommendation",
       "topic": "cartography",
       "content": "Maintain a single machine-readable manifest file (wheat-manifest.json) at the repo root that maps topics to file paths, claim ID ranges to sprints, and prototype names to directories. Claude Code can Read this one file (~1-2KB) to know where everything is, replacing multi-step Glob+Grep discovery. The manifest should be auto-regenerated by the wheat compiler on every compilation so it never drifts.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["manifest", "index", "compiler-integration"]
+      "tags": [
+        "manifest",
+        "index",
+        "compiler-integration"
+      ]
     },
     {
       "id": "r012",
       "type": "factual",
       "topic": "performance",
       "content": "Claude Code's Read tool costs one tool call regardless of file size (up to 2000 lines). Glob and Grep each cost one call but may require multiple rounds. A pre-computed index consumed in a single Read eliminates the iterative Glob->Read->Grep->Read pattern that costs 3-5 tool calls per lookup. At 10+ sprints (~300-500 files) the difference becomes significant.",
-      "source": { "origin": "documentation", "artifact": null, "connector": null },
+      "source": {
+        "origin": "documentation",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["tool-calls", "search-cost", "scaling"]
+      "tags": [
+        "tool-calls",
+        "search-cost",
+        "scaling"
+      ]
     },
     {
       "id": "r013",
       "type": "recommendation",
       "topic": "cartography",
       "content": "Add a sprint-index section to compilation.json (or separate sprints-index.json) listing all sprints — current and archived in examples/ — with question, phase, claim count, date range, and file paths. Lets Claude Code answer 'which sprint dealt with X?' with a single Read instead of scanning examples/*/claims.json.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["sprint-index", "multi-sprint", "compiler"]
+      "tags": [
+        "sprint-index",
+        "multi-sprint",
+        "compiler"
+      ]
     },
     {
       "id": "r014",
       "type": "recommendation",
       "topic": "cartography",
       "content": "Extend commit message conventions with topic tags in brackets: 'wheat: /research [cartography] summary — r010-r012'. Makes git log --grep='[cartography]' instant. Combined with existing 'git log --oneline claims.json' pattern, gives two fast search axes: by topic and by file.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["git-history", "commit-conventions", "search"]
+      "tags": [
+        "git-history",
+        "commit-conventions",
+        "search"
+      ]
     },
     {
       "id": "r015",
       "type": "risk",
       "topic": "cartography",
       "content": "Per-directory CLAUDE.md files create maintenance burden: they must stay synchronized with actual directory contents. If a CLAUDE.md claims 'this directory contains X' but X was moved, it actively misleads the AI — worse than no index. Mitigation: generate per-directory CLAUDE.md content from the manifest automatically, or use manifest as single source of truth and keep CLAUDE.md for behavioral instructions only.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["maintenance", "staleness", "claude-md"]
+      "tags": [
+        "maintenance",
+        "staleness",
+        "claude-md"
+      ]
     },
     {
       "id": "r016",
       "type": "estimate",
       "topic": "performance",
       "content": "At current scale (80 files, 5 claims, 1 sprint), cartography adds overhead without measurable benefit — Glob/Grep return results in <1s. Crossover point where a manifest saves net time: ~150-200 files or 3+ sprints, when Glob results become noisy enough to require follow-up filtering.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["scaling-threshold", "cost-benefit", "timing"]
+      "tags": [
+        "scaling-threshold",
+        "cost-benefit",
+        "timing"
+      ]
     },
     {
       "id": "r017",
       "type": "recommendation",
       "topic": "cartography",
       "content": "Structure the manifest as a topic map rather than a file tree. AI agents search by concept ('where is the SSE prototype?', 'what claims about security?'), not by directory path. Map topic -> {claims: [id range], files: [paths], sprint: name} so a Read of the manifest directly answers conceptual queries.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["topic-map", "semantic-index", "ai-friendly"]
+      "tags": [
+        "topic-map",
+        "semantic-index",
+        "ai-friendly"
+      ]
     },
     {
       "id": "x001",
       "type": "factual",
       "topic": "performance",
       "content": "r016 states '80 files' but the repo actually contains 157 files (excluding .git). The repo has already crossed into r016's own predicted crossover zone of 150-200 files. The baseline measurement is wrong, which invalidates the 'overhead without measurable benefit' conclusion — the benefit zone is NOW, not future.",
-      "source": { "origin": "measurement", "artifact": "find . -type f -not -path '*/.git/*' | wc -l => 157", "connector": null },
+      "source": {
+        "origin": "measurement",
+        "artifact": "find . -type f -not -path '*/.git/*' | wc -l => 157",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "challenge",
@@ -384,14 +485,22 @@
       "conflicts_with": [],
       "resolved_by": null,
       "challenges": "r016",
-      "tags": ["file-count", "baseline-error", "crossover"]
+      "tags": [
+        "file-count",
+        "baseline-error",
+        "crossover"
+      ]
     },
     {
       "id": "x002",
       "type": "factual",
       "topic": "performance",
       "content": "r016 frames the crossover as file-count-driven, but the real cost driver is result noise from structural duplication. At 157 files, 'dashboard.html' matches 10 files across examples/*/output, prototypes/*, and templates/. Grepping 'claims.json' returns 71 file matches. Grepping 'createServer' returns 5 hits across 3 near-identical copies. The examples/ directory alone holds 62 files that mirror active sprint files. This duplication means the noise problem is already acute — a manifest that says 'the current sprint's server is prototypes/remote-dashboard/server.mjs, ignore examples/' would eliminate 40-60% of false hits TODAY, not at some future scale.",
-      "source": { "origin": "measurement", "artifact": "Grep 'dashboard.html' => 40 files; Grep 'claims.json' => 71 files; examples/ = 62 files", "connector": null },
+      "source": {
+        "origin": "measurement",
+        "artifact": "Grep 'dashboard.html' => 40 files; Grep 'claims.json' => 71 files; examples/ = 62 files",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "challenge",
@@ -399,14 +508,23 @@
       "conflicts_with": [],
       "resolved_by": null,
       "challenges": "r016",
-      "tags": ["duplication", "noise", "examples-dir", "false-positives"]
+      "tags": [
+        "duplication",
+        "noise",
+        "examples-dir",
+        "false-positives"
+      ]
     },
     {
       "id": "x003",
       "type": "risk",
       "topic": "performance",
       "content": "r016 measures cost as wall-clock Glob/Grep time (<1s) but ignores the dominant cost: context window pollution. When Grep returns 71 results for 'claims.json', the AI must process all paths in its context window to determine which is relevant. Each noisy tool result consumes ~500-2000 tokens of context. Over a multi-step research session with 20+ tool calls, noisy results can waste 10-40K tokens — equivalent to 5-20% of the context window. The crossover point for cartography is not about I/O latency, it is about context budget efficiency, and that threshold is much lower than r016 estimates because even one noisy result triggers follow-up tool calls that compound the cost.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "challenge",
@@ -414,7 +532,12 @@
       "conflicts_with": [],
       "resolved_by": null,
       "challenges": "r016",
-      "tags": ["context-window", "token-cost", "hidden-cost", "compounding"]
+      "tags": [
+        "context-window",
+        "token-cost",
+        "hidden-cost",
+        "compounding"
+      ]
     },
     {
       "id": "w001",
@@ -432,7 +555,12 @@
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["SessionStart", "SessionEnd", "lifecycle", "hooks-reference"],
+      "tags": [
+        "SessionStart",
+        "SessionEnd",
+        "lifecycle",
+        "hooks-reference"
+      ],
       "corroborates": "r002"
     },
     {
@@ -451,7 +579,11 @@
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["hook-types", "handler-types", "command-only-limitation"],
+      "tags": [
+        "hook-types",
+        "handler-types",
+        "command-only-limitation"
+      ],
       "corroborates": "r002"
     },
     {
@@ -459,98 +591,215 @@
       "type": "recommendation",
       "topic": "multi-sprint",
       "content": "Use a sprints/ directory with one subdirectory per sprint (e.g., sprints/remote-farmer/, sprints/scaling-cartography/). Each subdirectory is a self-contained sprint with its own claims.json, compilation.json, research/, prototypes/, output/, and evidence/. The current active sprint is symlinked from the repo root: claims.json -> sprints/current-sprint/claims.json. This preserves backwards compatibility (d004) — all existing tools that read ./claims.json continue working unchanged. The examples/ directory becomes unnecessary; archived sprints live in sprints/ alongside active ones, distinguished only by their meta.phase field.",
-      "source": { "origin": "analysis", "artifact": "wheat.config.json, wheat-compiler.js, examples/remote-farmer-sprint/", "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": "wheat.config.json, wheat-compiler.js, examples/remote-farmer-sprint/",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["directory-structure", "symlink", "backwards-compat", "sprint-layout"]
+      "tags": [
+        "directory-structure",
+        "symlink",
+        "backwards-compat",
+        "sprint-layout"
+      ]
     },
     {
       "id": "r021",
       "type": "recommendation",
       "topic": "multi-sprint",
       "content": "Add a --sprints-dir flag to the Farmer server (default: './sprints'). On startup, scan the directory for subdirectories containing claims.json, load each as a named sprint. Use fs.watchFile on each sprint's claims.json and compilation.json for hot-reload. The existing --claims flag becomes shorthand for single-sprint mode (backwards compat with d004). New SSE event type 'sprints_list' broadcasts the available sprints with {slug, question, phase, claimCount, lastModified} on client connect and whenever the list changes.",
-      "source": { "origin": "analysis", "artifact": "prototypes/remote-dashboard/server.mjs", "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["server", "hot-reload", "sprints-dir", "SSE", "backwards-compat"]
+      "tags": [
+        "server",
+        "hot-reload",
+        "sprints-dir",
+        "SSE",
+        "backwards-compat"
+      ]
     },
     {
       "id": "r022",
       "type": "recommendation",
       "topic": "multi-sprint",
       "content": "Dashboard sprint switcher should use a collapsible card list (not tabs, not dropdown). Each card shows: sprint question (truncated), phase badge (define/research/prototype/evaluate), claim count, and last-modified timestamp. Tapping a card loads that sprint's claims and compilation into the existing dashboard views. The card list collapses to a single-line header showing the active sprint name when not switching, preserving mobile screen real estate. This satisfies d002 without requiring UI redesign of the claims/activity views.",
-      "source": { "origin": "analysis", "artifact": "prototypes/remote-dashboard/dashboard.html", "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/dashboard.html",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["UX", "dashboard", "mobile", "sprint-switcher", "card-list"]
+      "tags": [
+        "UX",
+        "dashboard",
+        "mobile",
+        "sprint-switcher",
+        "card-list"
+      ]
     },
     {
       "id": "r023",
       "type": "recommendation",
       "topic": "multi-sprint",
       "content": "Sprint lifecycle: (1) /init creates a new subdirectory under sprints/ with the standard structure, updates the root symlink to point to it, and registers it in wheat-manifest.json. (2) Active sprints have meta.phase in {define, research, prototype, evaluate}. (3) Archiving sets meta.phase to 'archived' — no file moves needed, the sprint stays in sprints/ but the dashboard sorts it below active sprints. (4) The root symlink always points to the most recently active sprint, updated by /init or a new 'wheat switch <slug>' command. This avoids the current pattern of manually copying sprints to examples/ which loses git history.",
-      "source": { "origin": "analysis", "artifact": "wheat-init.js, examples/remote-farmer-sprint/", "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": "wheat-init.js, examples/remote-farmer-sprint/",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["lifecycle", "init", "archive", "symlink", "git-history"]
+      "tags": [
+        "lifecycle",
+        "init",
+        "archive",
+        "symlink",
+        "git-history"
+      ]
     },
     {
       "id": "r024",
       "type": "recommendation",
       "topic": "multi-sprint",
       "content": "Cross-sprint claim references use the format 'sprint-slug:claim-id' (e.g., 'remote-farmer:r003'). The conflicts_with and resolved_by fields already accept string IDs — extending to qualified IDs requires no schema change. The compiler should resolve cross-sprint references by loading the referenced sprint's claims.json on demand. This enables /merge to create cross-sprint dependency links rather than duplicating claims, and lets /challenge reference claims from a different sprint without copying them.",
-      "source": { "origin": "analysis", "artifact": "wheat-compiler.js", "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": "wheat-compiler.js",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["cross-sprint", "claim-references", "merge", "compiler"]
+      "tags": [
+        "cross-sprint",
+        "claim-references",
+        "merge",
+        "compiler"
+      ]
     },
     {
       "id": "r025",
       "type": "risk",
       "topic": "multi-sprint",
       "content": "Symlinks for the 'current sprint' create a git portability issue: symlinks are stored in git but may not resolve correctly on Windows (requires developer mode or admin privileges). For a solo-developer Mac/Linux setup this is fine, but scaling to team use (per sprint question's audience) could hit this. Mitigation: use a wheat.config.json 'currentSprint' field as the canonical pointer, and only create symlinks as a convenience layer that the tooling does not depend on. The compiler and server should read the config field, not follow symlinks.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
-      "conflicts_with": ["r020"],
+      "conflicts_with": [
+        "r020"
+      ],
       "resolved_by": null,
-      "tags": ["symlink", "portability", "windows", "git", "team-use"]
+      "tags": [
+        "symlink",
+        "portability",
+        "windows",
+        "git",
+        "team-use"
+      ]
     },
     {
       "id": "r026",
       "type": "estimate",
       "topic": "multi-sprint",
       "content": "Server changes for multi-sprint support: ~60 lines to add sprint scanning, per-sprint state (Map<slug, {claims, compilation}>), and the sprints_list SSE event. Dashboard changes: ~120 lines for the sprint switcher card list UI. wheat-init.js changes: ~40 lines to create under sprints/ and update config. wheat-compiler.js changes: ~30 lines for cross-sprint reference resolution. Total: ~250 lines across 4 files, estimated 3-5 hours. The bulk of effort is in the dashboard UI, not the data model.",
-      "source": { "origin": "analysis", "artifact": "prototypes/remote-dashboard/server.mjs, wheat-init.js, wheat-compiler.js", "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs, wheat-init.js, wheat-compiler.js",
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["effort", "estimate", "line-count", "prototype"]
+      "tags": [
+        "effort",
+        "estimate",
+        "line-count",
+        "prototype"
+      ]
+    },
+    {
+      "id": "p001",
+      "type": "factual",
+      "topic": "cartography",
+      "content": "wheat-manifest.json generator produces a topic map in <10ms from claims.json + directory scan. File is ~5KB with 33 claims and 15 topic-mapped files across 3 sprints, readable in a single Read tool call. Implements r011 (single manifest) and r017 (topic-map structure).",
+      "source": {
+        "origin": "prototype",
+        "artifact": "generate-manifest.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "manifest",
+        "prototype",
+        "tested",
+        "topic-map",
+        "performance"
+      ]
+    },
+    {
+      "id": "p002",
+      "type": "recommendation",
+      "topic": "multi-session",
+      "content": "Multi-session server refactor plan specifies: SessionState class with per-session pending/activity/messages/trustLevel/sessionRules, getSession(id) lazy initializer with default fallback for backwards compat, SSE broadcasts tagged with session_id, curl-based SessionStart/SessionEnd hooks (w002 command-only constraint), and pill-bar session switcher with hue-from-hash color coding. Estimated ~300 lines across server.mjs and dashboard.html.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/MULTI-SESSION-PLAN.md",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "multi-session",
+        "plan",
+        "architecture",
+        "SessionState",
+        "prototype"
+      ]
     }
   ]
 }

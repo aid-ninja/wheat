@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T06:47:24.360Z",
-  "claims_hash": "1c17f40",
+  "compiled_at": "2026-03-12T06:49:46.070Z",
+  "claims_hash": "f5aac5c",
   "compiler_version": "0.2.0",
   "status": "blocked",
   "errors": [
@@ -723,6 +723,54 @@
         "line-count",
         "prototype"
       ]
+    },
+    {
+      "id": "p001",
+      "type": "factual",
+      "topic": "cartography",
+      "content": "wheat-manifest.json generator produces a topic map in <10ms from claims.json + directory scan. File is ~5KB with 33 claims and 15 topic-mapped files across 3 sprints, readable in a single Read tool call. Implements r011 (single manifest) and r017 (topic-map structure).",
+      "source": {
+        "origin": "prototype",
+        "artifact": "generate-manifest.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "manifest",
+        "prototype",
+        "tested",
+        "topic-map",
+        "performance"
+      ]
+    },
+    {
+      "id": "p002",
+      "type": "recommendation",
+      "topic": "multi-session",
+      "content": "Multi-session server refactor plan specifies: SessionState class with per-session pending/activity/messages/trustLevel/sessionRules, getSession(id) lazy initializer with default fallback for backwards compat, SSE broadcasts tagged with session_id, curl-based SessionStart/SessionEnd hooks (w002 command-only constraint), and pill-bar session switcher with hue-from-hash color coding. Estimated ~300 lines across server.mjs and dashboard.html.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/MULTI-SESSION-PLAN.md",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "multi-session",
+        "plan",
+        "architecture",
+        "SessionState",
+        "prototype"
+      ]
     }
   ],
   "conflict_graph": {
@@ -738,9 +786,9 @@
   },
   "coverage": {
     "cartography": {
-      "claims": 7,
-      "max_evidence": "documented",
-      "status": "moderate",
+      "claims": 8,
+      "max_evidence": "tested",
+      "status": "strong",
       "types": [
         "constraint",
         "factual",
@@ -754,15 +802,17 @@
         "r013",
         "r014",
         "r015",
-        "r017"
+        "r017",
+        "p001"
       ],
       "constraint_count": 1,
       "source_origins": [
         "analysis",
         "documentation",
+        "prototype",
         "stakeholder"
       ],
-      "source_count": 3,
+      "source_count": 4,
       "type_diversity": 4,
       "missing_types": [
         "estimate",
@@ -794,7 +844,7 @@
       ]
     },
     "multi-session": {
-      "claims": 11,
+      "claims": 12,
       "max_evidence": "documented",
       "status": "moderate",
       "types": [
@@ -815,15 +865,17 @@
         "r007",
         "r008",
         "w001",
-        "w002"
+        "w002",
+        "p002"
       ],
       "constraint_count": 1,
       "source_origins": [
         "analysis",
         "documentation",
+        "prototype",
         "stakeholder"
       ],
-      "source_count": 3,
+      "source_count": 4,
       "type_diversity": 5,
       "missing_types": [
         "feedback"
@@ -925,7 +977,9 @@
     "r023": 0,
     "r024": 0,
     "r025": 0,
-    "r026": 0
+    "r026": 0,
+    "p001": 0,
+    "p002": 0
   },
   "phase_summary": {
     "define": {
@@ -937,8 +991,8 @@
       "complete": true
     },
     "prototype": {
-      "claims": 0,
-      "complete": false
+      "claims": 2,
+      "complete": true
     },
     "evaluate": {
       "claims": 0,
@@ -957,14 +1011,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 33,
-    "active_claims": 31,
+    "total_claims": 35,
+    "active_claims": 33,
     "conflicted_claims": 2,
     "superseded_claims": 0,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:1c17f408094ecbd1b4c450a8795ca56c44e80cae5d50ca5b9f177d18efad7a9c",
+    "input_hash": "sha256:f5aac5c578be42e53ddacc0cdc7731adebdd731e99766cff32fdb51de14f6c04",
     "compiler_version": "0.2.0",
     "deterministic": true
   }
