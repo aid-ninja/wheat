@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T09:06:13.314Z",
-  "claims_hash": "b58e96c",
+  "compiled_at": "2026-03-12T10:00:46.995Z",
+  "claims_hash": "18488f7",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -583,31 +583,6 @@
       "corroborates": "r002"
     },
     {
-      "id": "r020",
-      "type": "recommendation",
-      "topic": "multi-sprint",
-      "content": "Use a sprints/ directory with one subdirectory per sprint (e.g., sprints/remote-farmer/, sprints/scaling-cartography/). Each subdirectory is a self-contained sprint with its own claims.json, compilation.json, research/, prototypes/, output/, and evidence/. The current active sprint is symlinked from the repo root: claims.json -> sprints/current-sprint/claims.json. This preserves backwards compatibility (d004) — all existing tools that read ./claims.json continue working unchanged. The examples/ directory becomes unnecessary; archived sprints live in sprints/ alongside active ones, distinguished only by their meta.phase field. Use wheat.config.json currentSprint field as canonical pointer (not symlinks) per r025 portability concern. Symlinks optional as local convenience only, not committed to git.",
-      "source": {
-        "origin": "analysis",
-        "artifact": "wheat.config.json, wheat-compiler.js, examples/remote-farmer-sprint/",
-        "connector": null
-      },
-      "evidence": "documented",
-      "status": "active",
-      "phase_added": "research",
-      "timestamp": "2026-03-12T00:00:00Z",
-      "conflicts_with": [
-        "f001"
-      ],
-      "resolved_by": "r025",
-      "tags": [
-        "directory-structure",
-        "symlink",
-        "backwards-compat",
-        "sprint-layout"
-      ]
-    },
-    {
       "id": "r021",
       "type": "recommendation",
       "topic": "multi-sprint",
@@ -700,32 +675,6 @@
         "claim-references",
         "merge",
         "compiler"
-      ]
-    },
-    {
-      "id": "r025",
-      "type": "risk",
-      "topic": "multi-sprint",
-      "content": "Symlinks for the 'current sprint' create a git portability issue: symlinks are stored in git but may not resolve correctly on Windows (requires developer mode or admin privileges). For a solo-developer Mac/Linux setup this is fine, but scaling to team use (per sprint question's audience) could hit this. Mitigation: use a wheat.config.json 'currentSprint' field as the canonical pointer, and only create symlinks as a convenience layer that the tooling does not depend on. The compiler and server should read the config field, not follow symlinks.",
-      "source": {
-        "origin": "analysis",
-        "artifact": null,
-        "connector": null
-      },
-      "evidence": "documented",
-      "status": "active",
-      "phase_added": "research",
-      "timestamp": "2026-03-12T00:00:00Z",
-      "conflicts_with": [
-        "f001"
-      ],
-      "resolved_by": "r020",
-      "tags": [
-        "symlink",
-        "portability",
-        "windows",
-        "git",
-        "team-use"
       ]
     },
     {
@@ -1263,6 +1212,32 @@
       ]
     },
     {
+      "id": "f001",
+      "type": "feedback",
+      "topic": "multi-sprint",
+      "content": "wheat.config.json should not duplicate data derivable from git history or directory structure. The 'currentSprint' pointer is redundant — the active sprint can be determined by scanning sprints/ for the one with meta.phase !== 'archived', or by git log recency. Config files that mirror derivable state create drift risk (config says sprint-A is active, but sprint-B was actually last edited). Only store truly disjoint state: user preferences, runtime settings, things that have no other source of truth. This conflicts with r020 and r025 which propose config-as-canonical-pointer.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "r020",
+        "r025"
+      ],
+      "resolved_by": null,
+      "tags": [
+        "config",
+        "derivable-state",
+        "single-source-of-truth",
+        "DRY"
+      ]
+    },
+    {
       "id": "p007",
       "type": "factual",
       "topic": "cartography",
@@ -1336,18 +1311,7 @@
     }
   ],
   "conflict_graph": {
-    "resolved": [
-      {
-        "winner": "r020",
-        "loser": "f001",
-        "reason": "evidence_tier: documented (3) > stated (1)"
-      },
-      {
-        "winner": "r025",
-        "loser": "f001",
-        "reason": "evidence_tier: documented (3) > stated (1)"
-      }
-    ],
+    "resolved": [],
     "unresolved": []
   },
   "coverage": {
@@ -1452,28 +1416,27 @@
       ]
     },
     "multi-sprint": {
-      "claims": 9,
+      "claims": 8,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
         "constraint",
         "estimate",
         "factual",
-        "recommendation",
-        "risk"
+        "feedback",
+        "recommendation"
       ],
       "claim_ids": [
         "d002",
-        "r020",
         "r021",
         "r022",
         "r023",
         "r024",
-        "r025",
         "r026",
-        "p004"
+        "p004",
+        "f001"
       ],
-      "constraint_count": 1,
+      "constraint_count": 2,
       "source_origins": [
         "analysis",
         "prototype",
@@ -1482,7 +1445,7 @@
       "source_count": 3,
       "type_diversity": 5,
       "missing_types": [
-        "feedback"
+        "risk"
       ]
     },
     "performance": {
@@ -1616,12 +1579,10 @@
     "x003": 0,
     "w001": 0,
     "w002": 0,
-    "r020": 0,
     "r021": 0,
     "r022": 0,
     "r023": 0,
     "r024": 0,
-    "r025": 0,
     "r026": 0,
     "p001": 0,
     "p002": 0,
@@ -1645,6 +1606,7 @@
     "r042": 0,
     "p005": 0,
     "p006": 0,
+    "f001": 0,
     "p007": 0,
     "p008": 0,
     "p009": 0
@@ -1680,13 +1642,13 @@
     "initiated": "2026-03-12",
     "phase": "research",
     "total_claims": 59,
-    "active_claims": 58,
+    "active_claims": 57,
     "conflicted_claims": 0,
-    "superseded_claims": 1,
+    "superseded_claims": 2,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:b58e96c31337a191625d7d9ff2f01e873f2ef8971ae9ece8459095dbab5670de",
+    "input_hash": "sha256:18488f750cc3d6babff0812536fbe3c806703b596b9b237b439489d372aedf57",
     "compiler_version": "0.2.0",
     "deterministic": true
   }
