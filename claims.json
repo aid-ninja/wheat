@@ -1204,6 +1204,24 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["state-persistence", "json-snapshots", "graceful-shutdown", "prototype"]
+    },
+    {
+      "id": "p009",
+      "type": "factual",
+      "topic": "security",
+      "content": "WebSocket transport added to Remote Farmer server alongside existing SSE. Implements RFC 6455 handshake and frame encoding/decoding using raw HTTP upgrade event (~120 LOC, zero dependencies, Node 20 compatible). Dashboard uses cascade fallback: WebSocket first (works through Cloudflare quick tunnels), SSE second (works on local/direct connections), 2s polling baseline always active. Auth via token query parameter with timing-safe comparison. 30s ping/pong heartbeat detects dead connections. Broadcast function sends to both SSE and WebSocket clients simultaneously. SSE endpoint preserved for backwards compatibility. Verified: 101 upgrade with valid token, 401 rejection with invalid token, SSE still functional alongside WebSocket.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs — handleWsUpgrade(), wsEncodeFrame(), wsDecodeFrame(); dashboard.html — tryWebSocket(), trySSE()"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["websocket", "cloudflare-tunnel", "transport", "realtime", "fallback", "prototype"]
     }
   ]
 }

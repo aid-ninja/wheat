@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T09:04:18.848Z",
-  "claims_hash": "9cb0d44",
+  "compiled_at": "2026-03-12T09:06:13.314Z",
+  "claims_hash": "b58e96c",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -1308,6 +1308,31 @@
         "graceful-shutdown",
         "prototype"
       ]
+    },
+    {
+      "id": "p009",
+      "type": "factual",
+      "topic": "security",
+      "content": "WebSocket transport added to Remote Farmer server alongside existing SSE. Implements RFC 6455 handshake and frame encoding/decoding using raw HTTP upgrade event (~120 LOC, zero dependencies, Node 20 compatible). Dashboard uses cascade fallback: WebSocket first (works through Cloudflare quick tunnels), SSE second (works on local/direct connections), 2s polling baseline always active. Auth via token query parameter with timing-safe comparison. 30s ping/pong heartbeat detects dead connections. Broadcast function sends to both SSE and WebSocket clients simultaneously. SSE endpoint preserved for backwards compatibility. Verified: 101 upgrade with valid token, 401 rejection with invalid token, SSE still functional alongside WebSocket.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs — handleWsUpgrade(), wsEncodeFrame(), wsDecodeFrame(); dashboard.html — tryWebSocket(), trySSE()"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "websocket",
+        "cloudflare-tunnel",
+        "transport",
+        "realtime",
+        "fallback",
+        "prototype"
+      ]
     }
   ],
   "conflict_graph": {
@@ -1493,7 +1518,7 @@
       ]
     },
     "security": {
-      "claims": 12,
+      "claims": 13,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -1513,7 +1538,8 @@
         "r035",
         "r036",
         "r037",
-        "p005"
+        "p005",
+        "p009"
       ],
       "constraint_count": 0,
       "source_origins": [
@@ -1620,7 +1646,8 @@
     "p005": 0,
     "p006": 0,
     "p007": 0,
-    "p008": 0
+    "p008": 0,
+    "p009": 0
   },
   "phase_summary": {
     "define": {
@@ -1632,7 +1659,7 @@
       "complete": true
     },
     "prototype": {
-      "claims": 8,
+      "claims": 9,
       "complete": true
     },
     "evaluate": {
@@ -1652,14 +1679,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 58,
-    "active_claims": 57,
+    "total_claims": 59,
+    "active_claims": 58,
     "conflicted_claims": 0,
     "superseded_claims": 1,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:9cb0d4490dc2a98097b4300bfd108299d65293b8c299b840ef0d7cb7d9c7db14",
+    "input_hash": "sha256:b58e96c31337a191625d7d9ff2f01e873f2ef8971ae9ece8459095dbab5670de",
     "compiler_version": "0.2.0",
     "deterministic": true
   }
