@@ -35,6 +35,18 @@
           }
         ]
       }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://localhost:9090/hooks/notification",
+            "timeout": 120
+          }
+        ]
+      }
     ]
   }
 }

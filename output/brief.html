@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brief: Live Visualization of Wheat</title>
+<title>Remote Farmer — Architecture Recommendation</title>
 <style>
   :root {
     --bg-dark: #0f172a;
@@ -21,12 +21,9 @@
     --purple-dim: rgba(167,139,250,0.12);
     --pink: #f472b6;
     --pink-dim: rgba(244,114,182,0.12);
-    --cyan: #22d3ee;
-    --cyan-dim: rgba(34,211,238,0.12);
-    --amber: #f59e0b;
     --text: #f1f5f9;
     --text-muted: #94a3b8;
-    --text-dim: #7a839a;
+    --text-dim: #64748b;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -55,7 +52,7 @@
 
   .slide {
     width: 100%;
-    min-height: 100vh;
+    height: 100vh;
     padding: 60px 80px;
     display: flex;
     flex-direction: column;
@@ -77,7 +74,7 @@
   }
 
   h1 {
-    font-size: 38pt;
+    font-size: 42pt;
     font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 1.1;
@@ -88,7 +85,7 @@
   }
 
   h2 {
-    font-size: 28pt;
+    font-size: 32pt;
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.15;
@@ -112,21 +109,18 @@
     margin-bottom: 8px;
   }
 
-  p, li {
-    font-size: 12pt;
+  p {
+    font-size: 14pt;
     color: var(--text-muted);
     line-height: 1.6;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     text-align: left;
     font-weight: 400;
+    max-width: 85%;
   }
 
-  ul { list-style: none; padding: 0; }
-  ul li { padding-left: 16px; position: relative; }
-  ul li::before { content: '\2022'; position: absolute; left: 0; color: var(--accent-light); }
-
   .subtitle {
-    font-size: 16pt;
+    font-size: 18pt;
     color: var(--text-muted);
     font-weight: 300;
     max-width: 70%;
@@ -150,7 +144,6 @@
   .label.red { color: var(--red); background: var(--red-dim); }
   .label.purple { color: var(--purple); background: var(--purple-dim); }
   .label.pink { color: var(--pink); background: var(--pink-dim); }
-  .label.cyan { color: var(--cyan); background: var(--cyan-dim); }
 
   .divider {
     width: 60px;
@@ -162,7 +155,7 @@
 
   .two-col {
     display: flex;
-    gap: 40px;
+    gap: 60px;
     align-items: flex-start;
   }
 
@@ -170,7 +163,7 @@
 
   .three-col {
     display: flex;
-    gap: 20px;
+    gap: 24px;
     align-items: stretch;
   }
 
@@ -179,11 +172,10 @@
   .card {
     background: var(--bg-card);
     border-radius: 16px;
-    padding: 24px;
+    padding: 32px;
     border: 1px solid rgba(255,255,255,0.06);
     position: relative;
     overflow: hidden;
-    margin-bottom: 16px;
   }
 
   .card::after {
@@ -202,7 +194,6 @@
   .card.red::after { background: var(--red); }
   .card.purple::after { background: var(--purple); }
   .card.pink::after { background: var(--pink); }
-  .card.cyan::after { background: var(--cyan); }
 
   .card-label {
     font-size: 9pt;
@@ -217,20 +208,19 @@
   .card.orange .card-label { color: var(--orange); }
   .card.red .card-label { color: var(--red); }
   .card.purple .card-label { color: var(--purple); }
-  .card.cyan .card-label { color: var(--cyan); }
 
   .card-text {
-    font-size: 14pt;
+    font-size: 16pt;
     color: var(--text);
     line-height: 1.5;
     font-weight: 500;
   }
 
   .card-detail {
-    font-size: 11pt;
+    font-size: 12pt;
     color: var(--text-muted);
     line-height: 1.5;
-    margin-top: 8px;
+    margin-top: 12px;
   }
 
   table {
@@ -262,131 +252,19 @@
     background: rgba(255,255,255,0.02);
   }
 
+  code {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.9em;
+    background: rgba(255,255,255,0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
   .claim-ref {
     font-size: 8pt;
     color: var(--text-dim);
     font-family: monospace;
   }
-
-  .stat-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin: 20px 0;
-  }
-
-  .stat-box {
-    background: var(--bg-card);
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    border: 1px solid rgba(255,255,255,0.06);
-  }
-
-  .stat-number {
-    font-size: 32pt;
-    font-weight: 800;
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-
-  .stat-label {
-    font-size: 9pt;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text-dim);
-  }
-
-  .coverage-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 6px 0;
-    font-size: 10pt;
-  }
-
-  .coverage-bar .topic-name {
-    width: 120px;
-    text-align: right;
-    color: var(--text-muted);
-    font-weight: 500;
-  }
-
-  .coverage-bar .bar-bg {
-    flex: 1;
-    height: 8px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .coverage-bar .bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.5s ease;
-  }
-
-  .coverage-bar .bar-count {
-    width: 30px;
-    color: var(--text-dim);
-    font-size: 9pt;
-  }
-
-  .evidence-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 8px 0;
-  }
-
-  .evidence-row .tier-name {
-    width: 100px;
-    text-align: right;
-    color: var(--text-muted);
-    font-size: 10pt;
-  }
-
-  .evidence-row .tier-bar {
-    flex: 1;
-    height: 24px;
-    background: rgba(255,255,255,0.04);
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .evidence-row .tier-fill {
-    height: 100%;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    padding-left: 8px;
-    font-size: 9pt;
-    font-weight: 600;
-    color: rgba(255,255,255,0.9);
-  }
-
-  .risk-item {
-    display: flex;
-    gap: 12px;
-    margin: 8px 0;
-    align-items: flex-start;
-  }
-
-  .risk-severity {
-    font-size: 8pt;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border-radius: 3px;
-    white-space: nowrap;
-    margin-top: 2px;
-  }
-
-  .risk-severity.high { color: var(--red); background: var(--red-dim); }
-  .risk-severity.medium { color: var(--orange); background: var(--orange-dim); }
-  .risk-severity.low { color: var(--text-dim); background: rgba(255,255,255,0.06); }
 
   .slide-nav {
     position: fixed;
@@ -415,15 +293,6 @@
     transform: scale(1.5);
   }
 
-  .wheat-footer {
-    position: absolute;
-    bottom: 24px;
-    right: 40px;
-    font-size: 8pt;
-    color: var(--text-dim);
-    letter-spacing: 0.05em;
-  }
-
   @keyframes fadeInUp {
     from { transform: translateY(20px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
@@ -433,525 +302,445 @@
     animation: fadeInUp 0.6s ease-out forwards;
   }
 
-  .warning-box {
-    background: var(--orange-dim);
-    border: 1px solid rgba(245,158,11,0.3);
-    border-radius: 8px;
-    padding: 16px 20px;
-    margin: 16px 0;
+  .wheat-footer {
+    position: absolute;
+    bottom: 24px;
+    right: 40px;
+    font-size: 8pt;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
   }
 
-  .warning-box p {
-    color: var(--orange);
-    font-weight: 500;
-    margin: 0;
+  .stat-row {
+    display: flex;
+    gap: 32px;
+    margin-top: 32px;
   }
 
-  .rec-list {
-    counter-reset: rec-counter;
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-size: 36pt;
+    font-weight: 800;
+    color: var(--accent-light);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 10pt;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 4px;
+  }
+
+  ul.brief-list {
     list-style: none;
     padding: 0;
+    margin: 8px 0;
   }
 
-  .rec-list li {
-    counter-increment: rec-counter;
-    padding-left: 32px;
+  ul.brief-list li {
+    font-size: 13pt;
+    color: var(--text-muted);
+    line-height: 1.7;
+    padding-left: 20px;
     position: relative;
     margin-bottom: 12px;
   }
 
-  .rec-list li::before {
-    content: counter(rec-counter);
+  ul.brief-list li::before {
+    content: '';
     position: absolute;
     left: 0;
-    width: 22px;
-    height: 22px;
-    background: var(--accent);
-    color: #fff;
+    top: 11px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    font-size: 10pt;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
+    background: var(--accent);
   }
 
-  .superseded-row {
-    opacity: 0.6;
-    text-decoration: line-through;
-    text-decoration-color: var(--red);
+  ul.brief-list li.red-dot::before { background: var(--red); }
+  ul.brief-list li.green-dot::before { background: var(--green); }
+  ul.brief-list li.orange-dot::before { background: var(--orange); }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px 0;
+    flex-wrap: wrap;
+  }
+
+  .flow-node {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-size: 11pt;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .flow-node.accent {
+    border-color: var(--accent);
+    background: rgba(59,130,246,0.08);
+  }
+
+  .flow-node.green-border {
+    border-color: var(--green);
+    background: rgba(34,197,94,0.06);
+  }
+
+  .flow-arrow {
+    color: var(--text-dim);
+    font-size: 16pt;
+    font-weight: 300;
+  }
+
+  @media (max-width: 768px) {
+    .slide { padding: 32px 24px; }
+    h1 { font-size: 28pt; }
+    h2 { font-size: 22pt; }
+    p { max-width: 100%; font-size: 12pt; }
+    .subtitle { font-size: 14pt; max-width: 100%; }
+    .two-col, .three-col { flex-direction: column; gap: 16px; }
+    .stat-row { gap: 16px; flex-wrap: wrap; }
+    .stat-num { font-size: 28pt; }
+    .flow-row { gap: 8px; }
+    .flow-node { padding: 10px 14px; font-size: 10pt; }
+    table { font-size: 9pt; }
+    th, td { padding: 6px 8px; }
+    .slide-nav { display: none; }
   }
 </style>
 </head>
 <body>
 
-<nav class="slide-nav" aria-label="Slide navigation">
+<nav class="slide-nav">
   <a href="#title" title="Title"></a>
-  <a href="#stats" title="Sprint Stats"></a>
   <a href="#summary" title="Executive Summary"></a>
-  <a href="#architecture" title="Architecture"></a>
-  <a href="#ux" title="UX Patterns"></a>
-  <a href="#a11y" title="Accessibility"></a>
-  <a href="#output" title="Output Format"></a>
-  <a href="#dogfood" title="Dogfooding"></a>
-  <a href="#pedagogy" title="Pedagogy"></a>
-  <a href="#risks" title="Risks"></a>
-  <a href="#recs" title="Recommendations"></a>
-  <a href="#evidence" title="Evidence"></a>
-  <a href="#superseded" title="Superseded"></a>
+  <a href="#architecture" title="How It Works"></a>
+  <a href="#security" title="Security Model"></a>
+  <a href="#trust" title="Trust Tiers"></a>
+  <a href="#limitations" title="Limitations"></a>
+  <a href="#tunneling" title="Tunneling"></a>
+  <a href="#next" title="Next Steps"></a>
 </nav>
 
-<!-- SLIDE 1: Title -->
+<!-- Slide 1: Title -->
 <div class="slide" id="title">
-  <span class="label">Wheat Decision Brief</span>
-  <h1>How can we build a live visualization of Wheat that teaches the framework by showing itself in action?</h1>
-  <p class="subtitle">156 resolved claims across 9 topics, compiled by Wheat v0.2.0 on 2026-03-11 &mdash; READY (0 unresolved conflicts)</p>
-  <div class="wheat-footer">Compiled by Wheat &mdash; sha256:38b4f2a</div>
+  <span class="label">Wheat Architecture Brief</span>
+  <h1>Remote Farmer</h1>
+  <p class="subtitle">Architecture recommendation for a remote permission dashboard for Claude Code</p>
+  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
 </div>
 
-<!-- SLIDE 2: Sprint Stats -->
-<div class="slide" id="stats">
-  <h3>Sprint at a Glance</h3>
-  <h2>156 Resolved Claims. 0 Conflicts. 5 Phases.</h2>
-  <div class="divider"></div>
-  <div class="stat-grid">
-    <div class="stat-box">
-      <div class="stat-number" style="color: var(--green)">152</div>
-      <div class="stat-label">Active Claims</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-number" style="color: var(--text-dim)">9</div>
-      <div class="stat-label">Superseded</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-number" style="color: var(--accent)">2</div>
-      <div class="stat-label">Resolved</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-number" style="color: var(--green)">0</div>
-      <div class="stat-label">Conflicted</div>
-    </div>
-  </div>
-
-  <div style="margin-top: 24px;">
-    <div class="coverage-bar"><span class="topic-name">architecture</span><div class="bar-bg"><div class="bar-fill" style="width:100%; background: var(--green)"></div></div><span class="bar-count">48</span></div>
-    <div class="coverage-bar"><span class="topic-name">ux-pattern</span><div class="bar-bg"><div class="bar-fill" style="width:54%; background: var(--green)"></div></div><span class="bar-count">26</span></div>
-    <div class="coverage-bar"><span class="topic-name">pedagogy</span><div class="bar-bg"><div class="bar-fill" style="width:48%; background: var(--green)"></div></div><span class="bar-count">23</span></div>
-    <div class="coverage-bar"><span class="topic-name">dogfooding</span><div class="bar-bg"><div class="bar-fill" style="width:33%; background: var(--green)"></div></div><span class="bar-count">16</span></div>
-    <div class="coverage-bar"><span class="topic-name">accessibility</span><div class="bar-bg"><div class="bar-fill" style="width:29%; background: var(--green)"></div></div><span class="bar-count">14</span></div>
-    <div class="coverage-bar"><span class="topic-name">output-format</span><div class="bar-bg"><div class="bar-fill" style="width:25%; background: var(--green)"></div></div><span class="bar-count">12</span></div>
-    <div class="coverage-bar"><span class="topic-name">quality</span><div class="bar-bg"><div class="bar-fill" style="width:23%; background: var(--green)"></div></div><span class="bar-count">11</span></div>
-    <div class="coverage-bar"><span class="topic-name">audience</span><div class="bar-bg"><div class="bar-fill" style="width:6%; background: var(--orange)"></div></div><span class="bar-count">3</span></div>
-    <div class="coverage-bar"><span class="topic-name">scope</span><div class="bar-bg"><div class="bar-fill" style="width:6%; background: var(--orange)"></div></div><span class="bar-count">3</span></div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
-</div>
-
-<!-- SLIDE 3: Executive Summary -->
+<!-- Slide 2: Executive Summary -->
 <div class="slide" id="summary">
-  <h3>Executive Summary</h3>
-  <h2>The answer: yes, and it works.</h2>
+  <span class="label green">Executive Summary</span>
+  <h2>Claude Code's HTTP hooks are the native integration surface for remote permission control</h2>
   <div class="divider"></div>
-  <div class="two-col">
-    <div>
-      <div class="card green">
-        <div class="card-label">What we built</div>
-        <div class="card-text">A zero-dependency Node.js SSE server, a timeline-first dashboard, and a replay viewer that together form a self-referential teaching tool.</div>
-        <div class="card-detail">The visualization demonstrates Wheat by being a product of it. All 5 original constraints satisfied. Compiler scales to 1000+ claims in &lt;60ms.</div>
-      </div>
+  <p>Remote Farmer is a zero-dependency Node.js server that intercepts Claude Code's permission requests via HTTP hooks and relays them to a browser dashboard over SSE. A remote user approves or denies each tool call from their phone or laptop, with the decision relayed back synchronously before Claude Code proceeds. <span class="claim-ref">[r001]</span> <span class="claim-ref">[p001]</span></p>
+  <p>No patching, no forking, no subprocess wrapping. The hook system is the entire integration surface &mdash; and the prototype proves it works exactly as documented. <span class="claim-ref">[d001]</span> <span class="claim-ref">[r014]</span></p>
+  <div class="stat-row">
+    <div class="stat">
+      <div class="stat-num">50</div>
+      <div class="stat-label">Claims</div>
     </div>
-    <div>
-      <div class="card orange">
-        <div class="card-label">What we missed</div>
-        <div class="card-text">Pedagogy was the biggest gap — now addressed with annotations, sandbox, and learning objectives.</div>
-        <div class="card-detail">23 pedagogy claims now at tested tier. Sandbox prototype validates interactive claim creation for teaching. Replay viewer has guided annotations at milestone frames. Audience topic remains thin (3 claims).</div>
-      </div>
+    <div class="stat">
+      <div class="stat-num">10</div>
+      <div class="stat-label">Topics</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">~550</div>
+      <div class="stat-label">LOC Prototype</div>
     </div>
   </div>
-
-  <div class="card green" style="margin-top: 24px;">
-    <div class="card-label">All conflicts resolved</div>
-    <div class="card-detail">0 unresolved conflicts. 2 resolved via evidence tier. 9 claims superseded by stronger evidence. Test suite: 8/8 passing.</div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
+  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
 </div>
 
-<!-- SLIDE 4: Architecture -->
+<!-- Slide 3: How It Works -->
 <div class="slide" id="architecture">
-  <span class="label green">Tested</span>
-  <h2>Architecture</h2>
-  <p style="margin-bottom:20px; max-width:85%">48 claims, 7 sources, 5/6 types. The core technical stack is validated and robust.</p>
-  <div class="three-col">
-    <div class="card green">
-      <div class="card-label">Server</div>
-      <div class="card-text">133 lines, zero deps</div>
-      <div class="card-detail">SSE auto-reconnect, directory-watch (not file-watch) to survive atomic replacements. <span class="claim-ref">[p001, p012, e008]</span></div>
-    </div>
-    <div class="card green">
-      <div class="card-label">Compiler</div>
-      <div class="card-text">700 lines, 5 CLI modes</div>
-      <div class="card-detail">7-pass pipeline. 59ms at 1000 claims. Dual CLI/library interface. Deterministic output. <span class="claim-ref">[r014, e001, f009]</span></div>
-    </div>
-    <div class="card green">
-      <div class="card-label">Commands</div>
-      <div class="card-text">17 commands, 3 tiers</div>
-      <div class="card-detail">Lifecycle (10), QA (4), Operations (3). Three feedback loops: self-correction, validation, meta-learning. <span class="claim-ref">[r013, r016]</span></div>
-    </div>
-  </div>
-  <div style="margin-top:16px">
-    <div class="card">
-      <div class="card-label">Replay Architecture</div>
-      <div class="card-text">Pre-computed frames from git history with hybrid framing</div>
-      <div class="card-detail">35 git commits expanded to ~50-60 frames. Batch commits (&gt;3 claims) auto-split into sub-frames grouped by topic. Stateless render(frame) function. <span class="claim-ref">[r042, p013, p016, e010]</span></div>
-    </div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
-</div>
-
-<!-- SLIDE 5: UX Patterns -->
-<div class="slide" id="ux">
-  <span class="label green">Tested</span>
-  <h2>UX Patterns</h2>
-  <p style="margin-bottom:20px; max-width:85%">26 claims, max evidence: tested. Timeline-first layout with progressive disclosure.</p>
-  <div class="two-col">
-    <div>
-      <div class="card green">
-        <div class="card-label">Dashboard</div>
-        <div class="card-text">Timeline-first, reverse-chronological</div>
-        <div class="card-detail">Claims as expandable nodes grouped by phase. 5-color system (amber/blue/green/purple/cyan). Compact scoreboard. Progressive disclosure via click-to-expand. <span class="claim-ref">[p006, p007, f006]</span></div>
-      </div>
-      <div class="card green">
-        <div class="card-label">Replay Viewer</div>
-        <div class="card-text">Four-panel scrubbing interface</div>
-        <div class="card-detail">Scrubber + claims list + coverage map + stats. Play/pause, 1x/2x/4x speed, keyboard shortcuts, milestone markers, CSS transitions. <span class="claim-ref">[p014, p017]</span></div>
-      </div>
-    </div>
-    <div>
-      <div class="card orange">
-        <div class="card-label">Known Gaps</div>
-        <div class="card-text">Desktop-only, no filtering</div>
-        <div class="card-detail">
-          <ul>
-            <li>No mobile/responsive design <span class="claim-ref">[r052]</span></li>
-            <li>No claim filtering at 50+ claims <span class="claim-ref">[r027]</span></li>
-            <li>No sprint health indicator <span class="claim-ref">[r032]</span></li>
-            <li>Animation timing issues at high speed (partially fixed) <span class="claim-ref">[x016, p019]</span></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
-</div>
-
-<!-- SLIDE 6: Accessibility -->
-<div class="slide" id="a11y">
-  <span class="label green">Tested</span>
-  <h2>Accessibility</h2>
-  <p style="margin-bottom:20px; max-width:85%">14 claims. WCAG 2.2 AA verified on the live dashboard (13/13 checks pass).</p>
-  <div class="two-col">
-    <div>
-      <div class="card green">
-        <div class="card-label">Dashboard: 13/13 WCAG AA</div>
-        <div class="card-text">Five fixes, ~25 lines of code</div>
-        <div class="card-detail">
-          <ul>
-            <li>Contrast ratio raised to 5.08:1</li>
-            <li>Semantic landmarks (header, main, role=status)</li>
-            <li>Keyboard navigation (tabindex, Enter/Space)</li>
-            <li>aria-live announcements for SSE updates</li>
-            <li>:focus-visible outlines on all interactive elements</li>
-          </ul>
-          <span class="claim-ref">[p009, e004, r033]</span>
-        </div>
-      </div>
-    </div>
-    <div>
-      <div class="card red">
-        <div class="card-label">Replay Viewer: Not Audited</div>
-        <div class="card-text">Primary teaching artifact has no WCAG assessment</div>
-        <div class="card-detail">Range slider, play/pause, keyboard shortcuts, dynamic DOM updates all need ARIA roles, labels, and live regions. This is a significant gap given the replay is the main teaching tool. <span class="claim-ref">[r059, x008]</span></div>
-      </div>
-      <div class="card" style="margin-top:16px">
-        <div class="card-label">Templates Fixed</div>
-        <div class="card-detail">Google Fonts @import removed. System font stack only. Zero external requests. <span class="claim-ref">[p010]</span></div>
-      </div>
-    </div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
-</div>
-
-<!-- SLIDE 7: Output Format -->
-<div class="slide" id="output">
-  <span class="label green">Tested</span>
-  <h2>Output Format</h2>
-  <p style="margin-bottom:20px; max-width:85%">12 claims, max evidence: tested. Self-contained HTML constraint fully satisfied across all artifacts.</p>
-  <div class="three-col">
-    <div class="card green">
-      <div class="card-label">Self-Contained</div>
-      <div class="card-text">All HTML artifacts verified</div>
-      <div class="card-detail">Zero external deps. Works via file://. Works offline. Automated --scan guard prevents regressions. <span class="claim-ref">[e003, p008, p011]</span></div>
-    </div>
-    <div class="card">
-      <div class="card-label">Multi-Format</div>
-      <div class="card-text">4 output formats</div>
-      <div class="card-detail">Markdown, PDF, HTML dashboard, HTML presentation. Same compilation.json feeds all renderers. <span class="claim-ref">[r038]</span></div>
-    </div>
-    <div class="card">
-      <div class="card-label">Replay Size</div>
-      <div class="card-text">1.8MB raw, ~180KB gzipped</div>
-      <div class="card-detail">Repetitive JSON compresses well. Delta encoding rejected as premature optimization (adds state complexity). <span class="claim-ref">[x020, x021, x022]</span></div>
-    </div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
-</div>
-
-<!-- SLIDE 8: Dogfooding -->
-<div class="slide" id="dogfood">
-  <span class="label green">Tested</span>
-  <h2>Dogfooding</h2>
-  <p style="margin-bottom:20px; max-width:85%">16 claims. The sprint successfully demonstrates Wheat by being a product of it.</p>
-  <div class="two-col">
-    <div>
-      <div class="card green">
-        <div class="card-label">Self-Referential Loop</div>
-        <div class="card-text">The dashboard visualizes its own sprint in real time</div>
-        <div class="card-detail">As claims are added, the dashboard updates. Git log is machine-parseable as sprint event stream. 5 phases exercised. Constraint d001 satisfied. <span class="claim-ref">[p005, e005, r025]</span></div>
-      </div>
-    </div>
-    <div>
-      <div class="card orange">
-        <div class="card-label">Known Biases</div>
-        <div class="card-text">Selection bias and confirmation bias</div>
-        <div class="card-detail">
-          <ul>
-            <li>Technical claims reach tested tier easily; UX claims stay at stated <span class="claim-ref">[x010]</span></li>
-            <li>All 15 witness claims are confirmatory (partially by design) <span class="claim-ref">[r055, x023-x027]</span></li>
-            <li>Circular dependency: dashboard value depends on sprint being interesting <span class="claim-ref">[x001]</span></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
-</div>
-
-<!-- SLIDE 9: Pedagogy (Blind Spot) -->
-<div class="slide" id="pedagogy">
-  <span class="label green">Tested</span>
-  <h2>Pedagogy</h2>
-  <p style="margin-bottom:20px; max-width:85%">23 claims, max evidence: tested. Originally the sprint's biggest gap &mdash; now addressed with annotations, sandbox, and learning objectives.</p>
-
-  <div class="two-col" style="margin-top:16px">
-    <div>
-      <div class="card green">
-        <div class="card-label">Implemented</div>
-        <div class="card-text">Guided annotations, interactive sandbox, phase-colored timeline</div>
-        <div class="card-detail">
-          <ul>
-            <li>Contextual annotations at milestone frames (phase transitions, conflicts, evidence upgrades) <span class="claim-ref">[r056, r065, p022]</span></li>
-            <li>Interactive sandbox for claim creation &mdash; teaches types, evidence tiers, and conflict detection <span class="claim-ref">[r068, p025]</span></li>
-            <li>Phase-colored timeline over three-act gating &mdash; preserves natural interleaving <span class="claim-ref">[x031, x029]</span></li>
-            <li>5 concrete learning objectives defined <span class="claim-ref">[r064]</span></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div>
-      <div class="card orange">
-        <div class="card-label">Remaining Gaps</div>
-        <div class="card-text">No real user testing of comprehension</div>
-        <div class="card-detail">
-          <ul>
-            <li>Audience topic still thin (3 claims) <span class="claim-ref">[r051]</span></li>
-            <li>Risk of tutorial-feel vs tool-feel <span class="claim-ref">[r067]</span></li>
-            <li>"Self-explanatory" claim unvalidated with actual first-time users <span class="claim-ref">[d003]</span></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
-</div>
-
-<!-- SLIDE 10: Risks -->
-<div class="slide" id="risks">
-  <h3>Active Risks</h3>
-  <h2>39 risk claims, prioritized</h2>
+  <span class="label">Architecture</span>
+  <h2>How It Works</h2>
   <div class="divider"></div>
 
-  <div style="max-height: 65vh; overflow-y: auto;">
-    <h4 style="color: var(--red); margin-bottom:12px">High Severity</h4>
-    <div class="risk-item"><span class="risk-severity high">High</span><p><strong>Pedagogy gap</strong> -- Visualization does not teach. No learning objectives, annotations, or scaffolding. <span class="claim-ref">[r048-r050, r056]</span></p></div>
-    <div class="risk-item"><span class="risk-severity low">Resolved</span><p><strong><s>No automated tests</s></strong> -- 8 tests now covering compiler happy path, edge cases, determinism. <span class="claim-ref">[r053 superseded, r057 superseded]</span></p></div>
-    <div class="risk-item"><span class="risk-severity high">High</span><p><strong>Replay a11y</strong> -- Primary teaching artifact has no WCAG audit. <span class="claim-ref">[r059]</span></p></div>
-
-    <h4 style="color: var(--orange); margin-top:20px; margin-bottom:12px">Medium Severity</h4>
-    <div class="risk-item"><span class="risk-severity medium">Med</span><p><strong>No user testing</strong> -- "Self-explanatory" claim unvalidated. <span class="claim-ref">[r051]</span></p></div>
-    <div class="risk-item"><span class="risk-severity medium">Med</span><p><strong>Confirmation bias</strong> -- All witness claims sought agreement. <span class="claim-ref">[r055, x026]</span></p></div>
-    <div class="risk-item"><span class="risk-severity medium">Med</span><p><strong>Manual conflicts</strong> -- Contradictory claims can coexist undetected. <span class="claim-ref">[x009]</span></p></div>
-    <div class="risk-item"><span class="risk-severity medium">Med</span><p><strong>No responsive design</strong> -- Desktop-only layouts. <span class="claim-ref">[r052]</span></p></div>
-    <div class="risk-item"><span class="risk-severity medium">Med</span><p><strong>JSON ergonomics</strong> -- 3000+ lines unwieldy for manual editing. <span class="claim-ref">[r029]</span></p></div>
-    <div class="risk-item"><span class="risk-severity medium">Med</span><p><strong>Unfalsifiable quality</strong> -- "I'll know it when I see it" can't be tested. <span class="claim-ref">[x007]</span></p></div>
-
-    <h4 style="color: var(--text-dim); margin-top:20px; margin-bottom:12px">Low Severity / Deferred</h4>
-    <div class="risk-item"><span class="risk-severity low">Low</span><p>Compiler runs all passes even on warnings <span class="claim-ref">[x006]</span></p></div>
-    <div class="risk-item"><span class="risk-severity low">Low</span><p>Scalability bottleneck shifts to I/O at 1000+ claims <span class="claim-ref">[x004]</span></p></div>
-    <div class="risk-item"><span class="risk-severity low">Low</span><p>Replay pacing still uneven at batch commits <span class="claim-ref">[p015]</span></p></div>
-    <div class="risk-item"><span class="risk-severity low">Low</span><p>Git dependency for frame extraction <span class="claim-ref">[r047]</span></p></div>
-    <div class="risk-item"><span class="risk-severity low">Low</span><p>build-replay.js error handling undefined <span class="claim-ref">[r054]</span></p></div>
-    <div class="risk-item"><span class="risk-severity low">Low</span><p>Sub-framing increases file size by 40-70% <span class="claim-ref">[p018]</span></p></div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
-</div>
-
-<!-- SLIDE 11: Recommendations -->
-<div class="slide" id="recs">
-  <h3>Recommendations</h3>
-  <h2>Prioritized next steps</h2>
-  <div class="divider"></div>
-  <div class="two-col">
-    <div>
-      <h4 style="color: var(--red); margin-bottom: 12px;">Immediate (ship-blocking)</h4>
-      <ol class="rec-list">
-        <li><p><strong>Define learning objectives</strong> and add contextual annotations to the replay viewer <span class="claim-ref">[r064, r065, r056]</span></p></li>
-        <li><p><s>Add a minimal test suite</s> &mdash; <strong style="color:var(--green)">Done.</strong> 8 tests in test/compiler.test.js <span class="claim-ref">[r057 superseded]</span></p></li>
-        <li><p><strong>WCAG audit the replay viewer</strong> and apply the 5-fix pattern from the dashboard <span class="claim-ref">[r059, r021]</span></p></li>
-      </ol>
-
-      <h4 style="color: var(--orange); margin-top: 20px; margin-bottom: 12px;">Next Sprint</h4>
-      <ol class="rec-list" style="counter-reset: rec-counter 3;">
-        <li><p>Add claim filtering to the dashboard <span class="claim-ref">[r027]</span></p></li>
-        <li><p>Sprint health composite indicator <span class="claim-ref">[r032]</span></p></li>
-        <li><p>Compiler --watch mode <span class="claim-ref">[r024]</span></p></li>
-        <li><p>Constraint-aware coverage analysis <span class="claim-ref">[r012]</span></p></li>
-        <li><p>Cold-start seed claims example <span class="claim-ref">[r041]</span></p></li>
-      </ol>
-    </div>
-    <div>
-      <h4 style="color: var(--text-dim); margin-bottom: 12px;">Future</h4>
-      <ol class="rec-list" style="counter-reset: rec-counter 8;">
-        <li><p>Guided replay with three-act structure and sandbox <span class="claim-ref">[r066, r068]</span></p></li>
-        <li><p>Mobile/responsive CSS <span class="claim-ref">[r052]</span></p></li>
-        <li><p>Compiler --json-events for IDE integration <span class="claim-ref">[r035]</span></p></li>
-        <li><p>Incremental/diff-aware briefs <span class="claim-ref">[r030]</span></p></li>
-      </ol>
-    </div>
-  </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
-</div>
-
-<!-- SLIDE 12: Evidence Summary -->
-<div class="slide" id="evidence">
-  <h3>Evidence Distribution</h3>
-  <h2>152 active claims by tier</h2>
-  <div class="divider"></div>
-
-  <div style="max-width: 700px;">
-    <div class="evidence-row">
-      <span class="tier-name">production</span>
-      <div class="tier-bar"><div class="tier-fill" style="width: 0%; background: var(--purple)"></div></div>
-      <span style="color:var(--text-dim); font-size:10pt; width:60px">0 (0%)</span>
-    </div>
-    <div class="evidence-row">
-      <span class="tier-name">tested</span>
-      <div class="tier-bar"><div class="tier-fill" style="width: 23.1%; background: var(--green)">34</div></div>
-      <span style="color:var(--text-dim); font-size:10pt; width:60px">23.1%</span>
-    </div>
-    <div class="evidence-row">
-      <span class="tier-name">documented</span>
-      <div class="tier-bar"><div class="tier-fill" style="width: 17.0%; background: var(--accent)">25</div></div>
-      <span style="color:var(--text-dim); font-size:10pt; width:60px">17.0%</span>
-    </div>
-    <div class="evidence-row">
-      <span class="tier-name">web</span>
-      <div class="tier-bar"><div class="tier-fill" style="width: 51.0%; background: var(--orange)">75</div></div>
-      <span style="color:var(--text-dim); font-size:10pt; width:60px">51.0%</span>
-    </div>
-    <div class="evidence-row">
-      <span class="tier-name">stated</span>
-      <div class="tier-bar"><div class="tier-fill" style="width: 8.8%; background: var(--text-dim)">13</div></div>
-      <span style="color:var(--text-dim); font-size:10pt; width:60px">8.8%</span>
-    </div>
+  <div class="flow-row">
+    <div class="flow-node">Claude Code CLI</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node accent">HTTP Hook POST</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node green-border">Remote Farmer Server</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node accent">SSE Push</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node">Browser Dashboard</div>
   </div>
 
-  <div style="margin-top: 32px;">
-    <div class="card" style="max-width: 700px;">
+  <div class="two-col" style="margin-top: 24px;">
+    <div class="card">
+      <div class="card-label">Permission Flow</div>
       <div class="card-detail">
-        <p><strong>No production-tier claims</strong> -- no real users yet. The /calibrate loop remains untested.</p>
-        <p><strong>51% web tier</strong> -- reflects extensive /witness corroboration passes. 14 claims externally corroborated.</p>
-        <p><strong>34 tested claims</strong> span 5 of 9 topics (architecture, ux-pattern, accessibility, output-format, dogfooding).</p>
-        <p><strong>13 stated claims</strong> are predominantly constraints and feedback -- their natural and correct tier.</p>
+        <strong>1.</strong> Claude Code fires a <code>PermissionRequest</code> hook POST to <code>localhost:9090</code> <span class="claim-ref">[r001]</span><br>
+        <strong>2.</strong> Server holds the HTTP response open in a pending map <span class="claim-ref">[p002]</span><br>
+        <strong>3.</strong> SSE pushes the request to all connected browsers <span class="claim-ref">[p004]</span><br>
+        <strong>4.</strong> User taps Approve or Deny on the dashboard<br>
+        <strong>5.</strong> Server responds to the held request with allow/deny JSON <span class="claim-ref">[r002]</span><br>
+        <strong>6.</strong> Claude Code proceeds (or halts) based on the decision
+      </div>
+    </div>
+    <div class="card green">
+      <div class="card-label">Activity Feed</div>
+      <div class="card-detail">
+        <code>PostToolUse</code> and <code>PostToolUseFailure</code> hooks fire after every tool execution &mdash; success or failure. These are non-blocking, so they feed a real-time activity stream without any performance impact on Claude Code. <span class="claim-ref">[r006]</span>
       </div>
     </div>
   </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
+
+  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
 </div>
 
-<!-- SLIDE 13: Superseded & Resolved -->
-<div class="slide" id="superseded">
-  <h3>Appendix</h3>
-  <h2>Superseded & Resolved Claims</h2>
+<!-- Slide 4: Security Model -->
+<div class="slide" id="security">
+  <span class="label red">Security</span>
+  <h2>Security Model</h2>
   <div class="divider"></div>
 
-  <h4 style="margin-bottom: 12px;">Superseded (disproved or replaced)</h4>
-  <table>
-    <thead>
-      <tr><th>ID</th><th>Original Claim</th><th>Replaced By</th><th>Reason</th></tr>
-    </thead>
-    <tbody>
-      <tr class="superseded-row"><td>r001</td><td>Use SSE server as primary architecture</td><td>f001</td><td>Stakeholder prefers static HTML; SSE is dev-only</td></tr>
-      <tr class="superseded-row"><td>p004</td><td>fs.watch fires reliably on macOS</td><td>e007</td><td>Dies on atomic file replacement (inode change)</td></tr>
-      <tr class="superseded-row"><td>r008</td><td>Server ~80 lines estimate</td><td>p001</td><td>Actual: 133 lines (tested > web)</td></tr>
-      <tr class="superseded-row"><td>r042</td><td>Gradual claim evolution assumption</td><td>x011</td><td>28% of commits are batch commits (documented > web)</td></tr>
-      <tr class="superseded-row"><td>r053</td><td>No automated tests for any component</td><td>P0 prep</td><td>8 tests added in test/compiler.test.js</td></tr>
-      <tr class="superseded-row"><td>r057</td><td>Recommendation: add minimal test suite</td><td>P0 prep</td><td>Implemented: 8 tests, all 6 recommended cases + 2 more</td></tr>
-      <tr class="superseded-row"><td>x014</td><td>Claim-level framing for replay</td><td>x015</td><td>Hybrid framing preserves git fidelity</td></tr>
-      <tr class="superseded-row"><td>x018</td><td>Replay.html is ~763KB</td><td>x020</td><td>Actual size 1.8MB after hybrid sub-framing</td></tr>
-      <tr class="superseded-row"><td>r066</td><td>Three-act gated structure</td><td>x031</td><td>Phase-colored timeline chosen instead</td></tr>
-    </tbody>
-  </table>
-
-  <h4 style="margin-top: 24px; margin-bottom: 12px;">Resolved Conflicts</h4>
-  <table>
-    <thead>
-      <tr><th>Risk</th><th>Resolution</th><th>Outcome</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>x012: Uneven replay pacing</td><td>e010</td><td>Hybrid framing: batch commits &gt;3 claims auto-split into sub-frames</td></tr>
-      <tr><td>x013: Batch narrative conflation</td><td>e010</td><td>Sub-frames grouped by topic for coherence</td></tr>
-    </tbody>
-  </table>
-
-  <div style="margin-top: 32px; padding: 20px; background: var(--bg-card); border-radius: 12px; border: 1px solid rgba(59,130,246,0.2);">
-    <p style="font-size: 10pt; color: var(--text-dim); margin: 0;">
-      <strong style="color: var(--accent-light);">Compilation Certificate</strong><br>
-      Compiler: Wheat v0.2.0 &nbsp;|&nbsp; Claims hash: 38b4f2a &nbsp;|&nbsp; Status: READY &nbsp;|&nbsp; Errors: 0<br>
-      Generated: 2026-03-11 &nbsp;|&nbsp; Active: 152 &nbsp;|&nbsp; Superseded: 9 &nbsp;|&nbsp; Resolved: 2 &nbsp;|&nbsp; Conflicted: 0
-    </p>
+  <div class="two-col">
+    <div>
+      <div class="card red" style="margin-bottom: 20px;">
+        <div class="card-label">Fail-Deny on Timeout</div>
+        <div class="card-text">Timeout = explicit deny</div>
+        <div class="card-detail">
+          Empty JSON <code>{}</code> on 2xx means auto-allow in Claude Code. The original timeout handler would have silently granted every timed-out permission. Fixed: timeout now returns an explicit deny decision. This is the single most important security property. <span class="claim-ref">[x001]</span> <span class="claim-ref">[x008]</span>
+        </div>
+      </div>
+      <div class="card orange">
+        <div class="card-label">Fail-Open on Server Crash</div>
+        <div class="card-text">Architectural limit of HTTP hooks</div>
+        <div class="card-detail">
+          If the Remote Farmer server crashes or the network drops, non-2xx / timeout = non-blocking error = Claude Code proceeds as if no hook exists. This is unfixable from the dashboard side &mdash; it is Claude Code's design choice. <span class="claim-ref">[x002]</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card purple" style="margin-bottom: 20px;">
+        <div class="card-label">Hybrid Hook Mitigation</div>
+        <div class="card-text">Command hook as fail-safe</div>
+        <div class="card-detail">
+          HTTP hook for the dashboard UI, plus a local <strong>command hook</strong> that checks if the dashboard server is alive before allowing any tool call. Command hooks with exit code 2 <em>are</em> blocking errors, unlike HTTP hooks. This closes the fail-open gap. <span class="claim-ref">[x010]</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Auth Layers</div>
+        <div class="card-text">Token + Tunnel</div>
+        <div class="card-detail">
+          Random 16-byte hex token generated on startup, required for dashboard and SSE access. Tunnel auth (ngrok basic auth or Cloudflare Zero Trust email OTP) provides the outer security layer. <span class="claim-ref">[p005]</span> <span class="claim-ref">[r009]</span>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="wheat-footer">Compiled by Wheat</div>
+
+  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
+</div>
+
+<!-- Slide 5: Trust Tiers -->
+<div class="slide" id="trust">
+  <span class="label purple">Batch Permissions</span>
+  <h2>Trust Tiers</h2>
+  <div class="divider"></div>
+
+  <div class="three-col">
+    <div class="card red">
+      <div class="card-label">Paranoid</div>
+      <div class="card-text">Approve everything manually</div>
+      <div class="card-detail">
+        Every tool call requires explicit approval. Maximum control, highest latency. Best for security-sensitive operations or unfamiliar codebases. <span class="claim-ref">[r030]</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">Standard</div>
+      <div class="card-text">Auto-approve reads, approve writes</div>
+      <div class="card-detail">
+        Read, Grep, Glob, WebSearch auto-approved via <code>PreToolUse</code> hook. Write tools (Edit, Write, Bash) require manual approval. Good balance of speed and safety. <span class="claim-ref">[r028]</span> <span class="claim-ref">[r030]</span>
+      </div>
+    </div>
+    <div class="card green">
+      <div class="card-label">Autonomous</div>
+      <div class="card-text">Auto-approve all except dangerous ops</div>
+      <div class="card-detail">
+        Only dangerous Bash commands (<code>rm</code>, <code>git push</code>, <code>curl|sh</code>) require approval. Near-zero latency for normal development. <span class="claim-ref">[r030]</span> <span class="claim-ref">[r032]</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col" style="margin-top: 24px;">
+    <div class="card">
+      <div class="card-label">Batch Approval</div>
+      <div class="card-detail">
+        <code>PreToolUse</code> hooks fire before every tool call regardless of permission status. Server maintains an in-memory allow-list with regex matching. Dashboard exposes a rules panel with category checkboxes and file-path patterns. <span class="claim-ref">[r028]</span> <span class="claim-ref">[r031]</span>
+      </div>
+    </div>
+    <div class="card green">
+      <div class="card-label">Persistent Rules</div>
+      <div class="card-detail">
+        <code>updatedPermissions</code> in <code>PermissionRequest</code> responses persists "always allow" rules into Claude Code's own permission system &mdash; survives session restarts. <span class="claim-ref">[r029]</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
+</div>
+
+<!-- Slide 6: Limitations -->
+<div class="slide" id="limitations">
+  <span class="label orange">Limitations</span>
+  <h2>Known Limitations</h2>
+  <div class="divider"></div>
+
+  <div class="three-col">
+    <div class="card red">
+      <div class="card-label">No Remote Text Input</div>
+      <div class="card-text">Cannot answer AskUserQuestion remotely</div>
+      <div class="card-detail">
+        Hooks cannot inject user prompts or answer dialogs. <code>AskUserQuestion</code> triggers a Notification hook (observe-only, cannot respond). The question is visible on the dashboard but unanswerable. <span class="claim-ref">[r023]</span> <span class="claim-ref">[r024]</span><br><br>
+        <strong>Workaround:</strong> Detect the dialog via Notification hook, collect the answer on the dashboard, inject it via <code>additionalContext</code> on the next hook response as "[Remote user answered: ...]". Not seamless, but functional. <span class="claim-ref">[r025]</span> <span class="claim-ref">[r026]</span>
+      </div>
+    </div>
+    <div class="card orange">
+      <div class="card-label">No Hot-Reload</div>
+      <div class="card-text">Hook config loaded at session start</div>
+      <div class="card-detail">
+        Hook JSON config is loaded at session startup. Mid-session changes require <code>/hooks</code> menu interaction or session restart. The dashboard cannot dynamically reconfigure which tools need approval without restarting Claude Code. <span class="claim-ref">[r007]</span>
+      </div>
+    </div>
+    <div class="card red">
+      <div class="card-label">Fail-Open Is Unfixable</div>
+      <div class="card-text">HTTP hooks fail silently by design</div>
+      <div class="card-detail">
+        If the dashboard server is unreachable, permissions are silently granted. This is Claude Code's design choice, not a bug. The hybrid command hook mitigation <span class="claim-ref">[x010]</span> is the best available workaround, but cannot be enforced from the dashboard alone. <span class="claim-ref">[x002]</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
+</div>
+
+<!-- Slide 7: Tunneling -->
+<div class="slide" id="tunneling">
+  <span class="label">Tunneling</span>
+  <h2>Tunneling Options</h2>
+  <div class="divider"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Option</th>
+        <th>Auth</th>
+        <th>Trust Model</th>
+        <th>Setup</th>
+        <th>Free Tier</th>
+        <th>Best For</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color: var(--text); font-weight: 500;">ngrok</td>
+        <td>Basic auth via <code>--basic-auth</code> <span class="claim-ref">[r017]</span></td>
+        <td>Traffic routes through ngrok infra</td>
+        <td>~1 min</td>
+        <td>1 GB/mo, interstitial page <span class="claim-ref">[r016]</span></td>
+        <td style="color: var(--green);">Quick one-off demos</td>
+      </tr>
+      <tr>
+        <td style="color: var(--text); font-weight: 500;">Cloudflare Tunnel</td>
+        <td>Zero Trust Access, email OTP <span class="claim-ref">[r019]</span></td>
+        <td>Your own CF account</td>
+        <td>~5 min</td>
+        <td>Free for 50 users <span class="claim-ref">[r018]</span></td>
+        <td style="color: var(--green);">Recurring sessions</td>
+      </tr>
+      <tr>
+        <td style="color: var(--text); font-weight: 500;">Tailscale Funnel</td>
+        <td>ACL-based, no built-in auth <span class="claim-ref">[r020]</span></td>
+        <td>P2P WireGuard mesh</td>
+        <td>~5 min</td>
+        <td>Free for personal use</td>
+        <td style="color: var(--green);">Both endpoints yours</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="two-col" style="margin-top: 24px;">
+    <div class="card green">
+      <div class="card-label">Recommendation</div>
+      <div class="card-detail">
+        <strong>Cloudflare Tunnel + Access</strong> for recurring use: email OTP second factor, free tier, no third-party trust dependency. <strong>ngrok</strong> for quick one-off demos where the interstitial warning is acceptable. Tailscale simplest if already installed but lacks its own auth layer beyond the dashboard token. <span class="claim-ref">[r010]</span> <span class="claim-ref">[r022]</span>
+      </div>
+    </div>
+    <div class="card orange">
+      <div class="card-label">Caveat</div>
+      <div class="card-detail">
+        Tunneling evidence is web-sourced only &mdash; no tested-tier claims. Vendor pricing and features may have changed since research. Verify before production deployment. <span class="claim-ref">[r016]</span>&ndash;<span class="claim-ref">[r022]</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
+</div>
+
+<!-- Slide 8: Next Steps -->
+<div class="slide" id="next">
+  <span class="label green">What's Next</span>
+  <h2>Next Steps</h2>
+  <div class="divider"></div>
+
+  <div class="two-col">
+    <div>
+      <h3>Build Now</h3>
+      <ul class="brief-list">
+        <li class="green-dot"><strong>Trust tier UI</strong> &mdash; radio toggle for Paranoid / Standard / Autonomous in the dashboard. Wire to PreToolUse auto-approve logic. <span class="claim-ref">[r030]</span> <span class="claim-ref">[r031]</span></li>
+        <li class="green-dot"><strong>Hybrid fail-safe hook</strong> &mdash; add a local command hook that checks <code>curl -sf localhost:9090/health</code> before allowing tool calls. Exit code 2 = blocking deny. Closes the fail-open gap. <span class="claim-ref">[x010]</span></li>
+        <li class="green-dot"><strong>Notification hooks</strong> &mdash; subscribe to Notification events for AskUserQuestion dialogs, session lifecycle, and error alerts. Display on dashboard even if not actionable yet. <span class="claim-ref">[r024]</span></li>
+        <li class="green-dot"><strong>updatedInput sandboxing</strong> &mdash; strip <code>--force</code> flags or add <code>--dry-run</code> to Bash commands in Autonomous mode. <span class="claim-ref">[r032]</span></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Wait For</h3>
+      <ul class="brief-list">
+        <li class="orange-dot"><strong>Claude Code API for text injection</strong> &mdash; multiple GitHub issues request the ability to answer AskUserQuestion remotely (#13830, #15872, #20169). Until this ships, the additionalContext workaround is the best option. <span class="claim-ref">[r023]</span></li>
+        <li class="orange-dot"><strong>Hot-reloadable hook config</strong> &mdash; currently requires session restart to change which hooks are active. <span class="claim-ref">[r007]</span></li>
+        <li class="orange-dot"><strong>Fail-closed HTTP hook mode</strong> &mdash; a Claude Code setting to treat non-2xx as blocking errors rather than non-blocking. Would eliminate the need for the hybrid hook workaround. <span class="claim-ref">[x002]</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
 </div>
 
 <script>
-  // Slide navigation active state
+(function() {
   const nav = document.querySelector('.slide-nav');
-  const links = nav.querySelectorAll('a');
+  const dots = nav.querySelectorAll('a');
   const slides = document.querySelectorAll('.slide');
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        links.forEach(l => l.classList.remove('active'));
         const id = entry.target.id;
-        const link = nav.querySelector('a[href="#' + id + '"]');
-        if (link) link.classList.add('active');
+        dots.forEach(d => d.classList.remove('active'));
+        const active = nav.querySelector('a[href="#' + id + '"]');
+        if (active) active.classList.add('active');
       }
     });
   }, { threshold: 0.5 });
 
   slides.forEach(s => observer.observe(s));
+})();
 </script>
 
 </body>

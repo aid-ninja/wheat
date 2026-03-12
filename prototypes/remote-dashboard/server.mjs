@@ -14,7 +14,7 @@
 import { createServer } from 'node:http';
 import { readFileSync, watchFile, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 // --- Config ---
@@ -35,6 +35,65 @@ const activity = [];         // last 200 activity events
 const MAX_ACTIVITY = 200;
 let claimsData = null;
 let compilationData = null;
+
+// --- Trust tiers ---
+let trustLevel = 'paranoid'; // 'paranoid' | 'standard' | 'autonomous'
+const sessionRules = [];     // [{tool: string, pattern?: string}]
+
+const STANDARD_AUTO_APPROVE = new Set(['Read', 'Grep', 'Glob', 'WebSearch', 'WebFetch']);
+
+const DANGEROUS_BASH_PATTERNS = [
+  /\brm\s+(-[^\s]*\s+)*\//,   // rm with absolute paths
+  /\brm\s+-rf?\b/,            // rm -r or rm -rf
+  /\bgit\s+push\b/,           // git push
+  /\bgit\s+reset\s+--hard\b/, // git reset --hard
+  /\bcurl\b.*\|\s*sh\b/,      // curl | sh
+  /\bcurl\b.*\|\s*bash\b/,    // curl | bash
+  /\bwget\b.*\|\s*sh\b/,      // wget | sh
+  /\bsudo\b/,                 // sudo anything
+  /\b(chmod|chown)\b/,        // permission changes
+  /\bgit\s+push\s+.*--force\b/, // force push
+];
+
+function shouldAutoApprove(toolName, toolInput) {
+  // Check session rules first (user-defined overrides)
+  for (const rule of sessionRules) {
+    if (rule.tool === toolName) {
+      if (!rule.pattern) return true;
+      // If pattern specified, check against file_path or command
+      const target = toolInput?.file_path || toolInput?.command || toolInput?.pattern || '';
+      if (target.includes(rule.pattern) || minimatch(target, rule.pattern)) return true;
+    }
+  }
+
+  if (trustLevel === 'paranoid') return false;
+
+  if (trustLevel === 'standard') {
+    return STANDARD_AUTO_APPROVE.has(toolName);
+  }
+
+  if (trustLevel === 'autonomous') {
+    // Auto-approve everything EXCEPT dangerous Bash patterns
+    if (toolName === 'Bash' && toolInput?.command) {
+      const cmd = toolInput.command;
+      for (const pat of DANGEROUS_BASH_PATTERNS) {
+        if (pat.test(cmd)) return false;
+      }
+    }
+    return true;
+  }
+
+  return false;
+}
+
+// Simple glob-like match (just checks if pattern appears in string or does basic * matching)
+function minimatch(str, pattern) {
+  if (!pattern.includes('*')) return str === pattern;
+  // Escape regex special chars, then convert * to .*
+  const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
+  const regex = new RegExp('^' + escaped + '$');
+  return regex.test(str);
+}
 
 // --- SSE clients ---
 const sseClients = new Set();
@@ -80,7 +139,11 @@ const server = createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
-  const authOk = () => url.searchParams.get('token') === TOKEN;
+  const authOk = () => {
+    const provided = url.searchParams.get('token') || '';
+    if (provided.length !== TOKEN.length) return false;
+    return timingSafeEqual(Buffer.from(provided), Buffer.from(TOKEN));
+  };
 
   // --- SSE endpoint ---
   if (req.method === 'GET' && url.pathname === '/events') {
@@ -100,6 +163,8 @@ const server = createServer(async (req, res) => {
         activity: activity.slice(-50),
         claims: claimsData,
         compilation: compilationData,
+        trustLevel,
+        sessionRules,
       }
     });
     res.write(`data: ${initData}\n\n`);
@@ -109,9 +174,14 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  // --- Hook endpoints (called by Claude Code) ---
+  // --- Hook endpoints (called by Claude Code — localhost only) ---
   if (req.method === 'POST' && url.pathname.startsWith('/hooks/')) {
-    const body = await readBody(req);
+    const remoteAddr = req.socket.remoteAddress;
+    if (remoteAddr !== '127.0.0.1' && remoteAddr !== '::1' && remoteAddr !== '::ffff:127.0.0.1') {
+      res.writeHead(403); res.end('Hook endpoints accept localhost only'); return;
+    }
+    let body;
+    try { body = await readBody(req); } catch { res.writeHead(413); res.end('Request too large'); return; }
     let data;
     try { data = JSON.parse(body); } catch { res.writeHead(400); res.end('Bad JSON'); return; }
 
@@ -123,6 +193,9 @@ const server = createServer(async (req, res) => {
     if (hookType === 'activity') {
       return handleActivity(data, res);
     }
+    if (hookType === 'notification') {
+      return handleNotification(data, res);
+    }
     res.writeHead(404); res.end('Unknown hook');
     return;
   }
@@ -130,10 +203,29 @@ const server = createServer(async (req, res) => {
   // --- Dashboard API ---
   if (req.method === 'POST' && url.pathname === '/api/decide') {
     if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
-    const body = await readBody(req);
+    let body;
+    try { body = await readBody(req); } catch { res.writeHead(413); res.end('Request too large'); return; }
     let data;
     try { data = JSON.parse(body); } catch { res.writeHead(400); res.end('Bad JSON'); return; }
     return handleDecision(data, res);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/trust-level') {
+    if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
+    let body;
+    try { body = await readBody(req); } catch { res.writeHead(413); res.end('Request too large'); return; }
+    let data;
+    try { data = JSON.parse(body); } catch { res.writeHead(400); res.end('Bad JSON'); return; }
+    return handleTrustLevel(data, res);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/rules') {
+    if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
+    let body;
+    try { body = await readBody(req); } catch { res.writeHead(413); res.end('Request too large'); return; }
+    let data;
+    try { data = JSON.parse(body); } catch { res.writeHead(400); res.end('Bad JSON'); return; }
+    return handleRules(data, res);
   }
 
   if (req.method === 'GET' && url.pathname === '/api/state') {
@@ -144,6 +236,8 @@ const server = createServer(async (req, res) => {
       activity: activity.slice(-50),
       claims: claimsData,
       compilation: compilationData,
+      trustLevel,
+      sessionRules,
     }));
     return;
   }
@@ -166,10 +260,63 @@ const server = createServer(async (req, res) => {
 // --- Permission handling ---
 function handlePermission(data, res) {
   const requestId = data.tool_use_id || randomBytes(8).toString('hex');
+  const toolName = data.tool_name;
+  const toolInput = data.tool_input;
+
+  // Track agent starts from PreToolUse on Agent tool
+  if (toolName === 'Agent') {
+    broadcast({ type: 'agent_start', data: {
+      id: requestId,
+      description: toolInput?.description || '',
+      agentType: toolInput?.subagent_type || 'general-purpose',
+      timestamp: Date.now(),
+    }});
+  }
+
+  // Check trust tiers FIRST — auto-approve if rules match
+  if (shouldAutoApprove(toolName, toolInput)) {
+    const hookEvent = data.hook_event_name || 'PermissionRequest';
+    const reason = `Auto-approved by ${trustLevel} trust level`;
+    let responseBody;
+
+    if (hookEvent === 'PreToolUse') {
+      responseBody = {
+        hookSpecificOutput: {
+          hookEventName: 'PreToolUse',
+          permissionDecision: 'allow',
+          permissionDecisionReason: reason,
+        }
+      };
+    } else {
+      responseBody = {
+        hookSpecificOutput: {
+          hookEventName: 'PermissionRequest',
+          decision: { behavior: 'allow', message: reason },
+        }
+      };
+    }
+
+    // Log to activity
+    addActivity({
+      type: 'decision',
+      tool_name: toolName,
+      tool_input: toolInput,
+      decision: 'auto-allowed',
+      reason,
+      timestamp: Date.now(),
+    });
+
+    broadcast({ type: 'auto_approved', data: { requestId, tool_name: toolName, reason } });
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(responseBody));
+    return;
+  }
+
   const event = {
     requestId,
-    tool_name: data.tool_name,
-    tool_input: data.tool_input,
+    tool_name: toolName,
+    tool_input: toolInput,
     session_id: data.session_id,
     permission_mode: data.permission_mode,
     cwd: data.cwd,
@@ -244,8 +391,154 @@ function handlePermission(data, res) {
   });
 }
 
+// --- Trust level ---
+function handleTrustLevel(data, res) {
+  const valid = ['paranoid', 'standard', 'autonomous'];
+  if (!valid.includes(data.level)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid level. Must be: paranoid, standard, autonomous' }));
+    return;
+  }
+  trustLevel = data.level;
+  broadcast({ type: 'trust_level', data: { level: trustLevel } });
+  addActivity({
+    type: 'decision',
+    tool_name: 'system',
+    tool_input: null,
+    decision: 'trust-level-changed',
+    reason: `Trust level set to ${trustLevel}`,
+    timestamp: Date.now(),
+  });
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ ok: true, level: trustLevel }));
+}
+
+// --- Session rules ---
+function handleRules(data, res) {
+  const { action, rule } = data;
+  if (!rule || !rule.tool) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'rule.tool is required' }));
+    return;
+  }
+
+  if (action === 'add') {
+    // Avoid duplicates
+    const exists = sessionRules.find(r => r.tool === rule.tool && (r.pattern || '') === (rule.pattern || ''));
+    if (!exists) {
+      sessionRules.push({ tool: rule.tool, pattern: rule.pattern || null });
+    }
+  } else if (action === 'remove') {
+    const idx = sessionRules.findIndex(r => r.tool === rule.tool && (r.pattern || '') === (rule.pattern || ''));
+    if (idx !== -1) sessionRules.splice(idx, 1);
+  } else {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'action must be add or remove' }));
+    return;
+  }
+
+  broadcast({ type: 'rules_updated', data: { sessionRules } });
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ ok: true, sessionRules }));
+}
+
+// --- Notification handling (AskUserQuestion / elicitation / agents) ---
+function handleNotification(data, res) {
+  const hookEvent = data.hook_event_name || '';
+
+  // Detect subagent lifecycle events from Agent tool notifications
+  const toolName = data.tool_name || '';
+  const message = data.message || data.body || data.tool_input?.prompt || '';
+
+  if (toolName === 'Agent' || message.includes('subagent') || message.includes('Subagent')) {
+    // Try to extract agent info from the notification
+    const agentId = data.tool_use_id || randomBytes(8).toString('hex');
+    const description = data.tool_input?.description || data.tool_input?.prompt || message;
+    const agentType = data.tool_input?.subagent_type || 'general-purpose';
+
+    if (message.toLowerCase().includes('start') || message.toLowerCase().includes('launch') || hookEvent.includes('Start')) {
+      broadcast({ type: 'agent_start', data: { id: agentId, description, agentType, timestamp: Date.now() } });
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end('{}');
+      return;
+    }
+    if (message.toLowerCase().includes('stop') || message.toLowerCase().includes('complete') || hookEvent.includes('Stop')) {
+      broadcast({ type: 'agent_stop', data: { id: agentId, timestamp: Date.now() } });
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end('{}');
+      return;
+    }
+  }
+
+  const isElicitation = hookEvent.includes('Notification') || hookEvent.includes('notification');
+
+  // Check if this is an elicitation dialog
+  const isElicitationDialog = data.tool_name === 'AskUserQuestion' ||
+    (data.tool_input && data.tool_input.prompt) ||
+    (data.elicitation_dialog);
+
+  const event = {
+    requestId: data.tool_use_id || randomBytes(8).toString('hex'),
+    type: 'question',
+    tool_name: data.tool_name || 'Notification',
+    prompt: data.tool_input?.prompt || data.message || data.body || '',
+    session_id: data.session_id,
+    hook_event_name: hookEvent,
+    timestamp: Date.now(),
+  };
+
+  if (isElicitationDialog || isElicitation) {
+    // Push as a "question" type to browser
+    broadcast({ type: 'question', data: event });
+
+    // Hold the request for a user response (like permissions)
+    const timeout = setTimeout(() => {
+      if (pending.has(event.requestId) && !resolved) {
+        resolved = true;
+        pending.delete(event.requestId);
+        broadcast({ type: 'question_expired', data: { requestId: event.requestId } });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({}));
+      }
+    }, 120_000);
+
+    let resolved = false;
+    pending.set(event.requestId, {
+      resolve: (decision) => {
+        if (resolved) return;
+        resolved = true;
+        clearTimeout(timeout);
+        pending.delete(event.requestId);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          hookSpecificOutput: {
+            hookEventName: hookEvent || 'Notification',
+            userResponse: decision.response || '',
+          }
+        }));
+        broadcast({ type: 'question_resolved', data: { requestId: event.requestId } });
+      },
+      data: { ...event, isQuestion: true },
+      timestamp: Date.now(),
+    });
+  } else {
+    // Simple notification — just broadcast and return
+    broadcast({ type: 'notification', data: { title: 'Claude Code', body: event.prompt } });
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end('{}');
+  }
+}
+
 // --- Activity feed ---
 function handleActivity(data, res) {
+  const isAgent = data.tool_name === 'Agent';
+
+  // Track agent completion via PostToolUse/PostToolUseFailure
+  if (isAgent) {
+    const agentId = data.tool_use_id || randomBytes(8).toString('hex');
+    broadcast({ type: 'agent_stop', data: { id: agentId, timestamp: Date.now() } });
+  }
+
   addActivity({
     type: data.hook_event_name === 'PostToolUseFailure' ? 'failure' : 'success',
     tool_name: data.tool_name,
@@ -266,24 +559,41 @@ function addActivity(event) {
 
 // --- Decision from browser ---
 function handleDecision(data, res) {
-  const { requestId, allow, reason } = data;
+  const { requestId, allow, reason, response } = data;
   const p = pending.get(requestId);
   if (!p) {
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Request not found or expired' }));
     return;
   }
-  p.resolve({ allow, reason });
+  // If this is a question response, pass `response` field
+  if (p.data.isQuestion) {
+    p.resolve({ response: response || '' });
+  } else {
+    p.resolve({ allow, reason });
+  }
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ ok: true }));
 }
 
 // --- Helpers ---
+const MAX_BODY_SIZE = 1024 * 1024; // 1MB max request body
+
 function readBody(req) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let body = '';
-    req.on('data', (chunk) => { body += chunk; });
+    let size = 0;
+    req.on('data', (chunk) => {
+      size += chunk.length;
+      if (size > MAX_BODY_SIZE) {
+        req.destroy();
+        reject(new Error('Request body too large'));
+        return;
+      }
+      body += chunk;
+    });
     req.on('end', () => resolve(body));
+    req.on('error', reject);
   });
 }
 
@@ -339,6 +649,7 @@ server.listen(PORT, () => {
   console.log(`\n  Hook endpoints:`);
   console.log(`    http://localhost:${PORT}/hooks/permission`);
   console.log(`    http://localhost:${PORT}/hooks/activity`);
+  console.log(`    http://localhost:${PORT}/hooks/notification`);
   console.log(`\n  SSE stream: /events?token=${TOKEN}`);
   console.log(`  Waiting for connections...\n`);
 });
