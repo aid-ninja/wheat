@@ -1276,47 +1276,64 @@ function renderSprint() {
     </div>
 
     <h3 style="font-size:13px;color:var(--muted);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.08em;">By Type</h3>
-    ${(() => {
-      const maxLabel = Math.max(...Object.keys(types).map(t => t.length));
-      const labelW = Math.max(110, maxLabel * 10 + 20);
-      return Object.entries(types).map(([t, n]) => `
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span class="claim-type ${t}" style="min-width:${labelW}px;max-width:${labelW}px;text-align:center;">${t}</span>
-          <div style="flex:1;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;">
-            <div style="width:${(n/claims.length*100).toFixed(0)}%;height:100%;background:var(--accent);border-radius:4px;"></div>
-          </div>
-          <span style="font-size:12px;color:var(--dim);min-width:24px;text-align:right;">${n}</span>
+    ${Object.entries(types).map(([t, n]) => `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span class="claim-type ${t}" style="min-width:80px;max-width:80px;text-align:center;font-size:10px;">${t}</span>
+        <div style="flex:1;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;">
+          <div style="width:${(n/claims.length*100).toFixed(0)}%;height:100%;background:var(--accent);border-radius:4px;"></div>
         </div>
-      `).join('');
-    })()}
+        <span style="font-size:12px;color:var(--dim);min-width:20px;text-align:right;">${n}</span>
+      </div>
+    `).join('')}
 
     <h3 style="font-size:13px;color:var(--muted);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.08em;">By Evidence</h3>
     ${(() => {
       const evLabels = ['stated','web','documented','tested','production'].filter(e => evidence[e]);
-      const maxLabel = Math.max(...evLabels.map(e => e.length));
-      const labelW = Math.max(110, maxLabel * 10 + 20);
       const evColors = { stated: '#94a3b8', web: '#60a5fa', documented: '#a78bfa', tested: '#34d399', production: '#fbbf24' };
       return evLabels.map(e => `
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="font-size:11px;font-weight:600;color:${evColors[e]};background:${evColors[e]}22;padding:3px 10px;border-radius:99px;min-width:${labelW}px;max-width:${labelW}px;text-align:center;">${e}</span>
+          <span style="font-size:10px;font-weight:600;color:${evColors[e]};background:${evColors[e]}22;padding:3px 8px;border-radius:99px;min-width:80px;max-width:80px;text-align:center;">${e}</span>
           <div style="flex:1;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;">
             <div style="width:${(evidence[e]/claims.length*100).toFixed(0)}%;height:100%;background:${evColors[e]};border-radius:4px;"></div>
           </div>
-          <span style="font-size:12px;color:var(--dim);min-width:24px;text-align:right;">${evidence[e]}</span>
+          <span style="font-size:12px;color:var(--dim);min-width:20px;text-align:right;">${evidence[e]}</span>
         </div>
       `).join('');
     })()}
 
     <h3 style="font-size:13px;color:var(--muted);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.08em;">Output Artifacts</h3>
-    <div style="display:flex;flex-direction:column;gap:6px;">
-      ${['brief.html','presentation.html','problem-statement.html','dashboard.html','replay.html'].map(f => `
-        <a href="/output/${f}?token=${TOKEN}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg2);border-radius:8px;color:var(--text);text-decoration:none;font-size:13px;">
-          <span style="font-size:16px;">&#128196;</span>
-          <span>${f}</span>
-          <span style="margin-left:auto;color:var(--dim);font-size:11px;">open &#8599;</span>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+      ${[
+        { f: 'brief.html', icon: '&#128221;', label: 'Brief' },
+        { f: 'presentation.html', icon: '&#127916;', label: 'Slides' },
+        { f: 'problem-statement.html', icon: '&#128269;', label: 'Problem' },
+        { f: 'dashboard.html', icon: '&#128202;', label: 'Dashboard' },
+      ].map(a => `
+        <a href="/output/${a.f}?token=${TOKEN}" target="_blank" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:14px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);text-decoration:none;">
+          <span style="font-size:24px;">${a.icon}</span>
+          <span style="font-size:12px;font-weight:600;">${a.label}</span>
         </a>
       `).join('')}
     </div>
+
+    <h3 style="font-size:13px;color:var(--muted);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.08em;">By Topic</h3>
+    ${(() => {
+      const topicMap = {};
+      claims.forEach(c => { const t = c.topic || 'other'; if (!topicMap[t]) topicMap[t] = { count: 0, maxEv: 'stated', types: new Set() }; topicMap[t].count++; topicMap[t].types.add(c.type); const evOrder = ['stated','web','documented','tested','production']; if (evOrder.indexOf(c.evidence) > evOrder.indexOf(topicMap[t].maxEv)) topicMap[t].maxEv = c.evidence; });
+      const evColors = { stated: '#94a3b8', web: '#60a5fa', documented: '#a78bfa', tested: '#34d399', production: '#fbbf24' };
+      return Object.entries(topicMap).map(([topic, info]) => `
+        <div style="padding:10px 12px;background:var(--bg2);border-radius:8px;margin-bottom:6px;border-left:3px solid ${evColors[info.maxEv] || '#94a3b8'};">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span style="font-size:13px;font-weight:600;color:var(--text);">${topic}</span>
+            <span style="font-size:10px;font-weight:600;color:${evColors[info.maxEv]};background:${evColors[info.maxEv]}22;padding:2px 8px;border-radius:99px;">${info.maxEv}</span>
+          </div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">
+            <span style="font-size:10px;color:var(--dim);">${info.count} claims</span>
+            ${[...info.types].map(t => `<span class="claim-type ${t}" style="font-size:9px;padding:1px 6px;">${t}</span>`).join('')}
+          </div>
+        </div>
+      `).join('');
+    })()}
   `;
 }
 

@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T06:51:10.089Z",
-  "claims_hash": "1f6f8ee",
+  "compiled_at": "2026-03-12T07:16:49.768Z",
+  "claims_hash": "ae44197",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -809,6 +809,50 @@
         "SessionState",
         "prototype"
       ]
+    },
+    {
+      "id": "p003",
+      "type": "factual",
+      "content": "Multi-session server refactor implemented: SessionState class, session-keyed Maps, getSession(id) lazy init, SSE tagged with session_id, dashboard session pills with hue-from-hash. Backwards compatible with single-session via 'default' fallback.",
+      "evidence": "tested",
+      "topic": "multi-session",
+      "tags": [
+        "prototype",
+        "tested",
+        "SessionState"
+      ],
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs multi-session refactor"
+      },
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "status": "active",
+      "conflicts_with": [],
+      "resolved_by": null
+    },
+    {
+      "id": "p004",
+      "type": "factual",
+      "content": "Multi-sprint server support implemented: --sprints-dir flag, sprint scanning, /api/sprints endpoint, hot-reload via fs.watchFile, backwards compatible with --claims.",
+      "evidence": "tested",
+      "topic": "multi-sprint",
+      "tags": [
+        "prototype",
+        "tested",
+        "sprint-switching"
+      ],
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs multi-sprint support"
+      },
+      "phase_added": "prototype",
+      "status": "active",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null
     }
   ],
   "conflict_graph": {
@@ -875,9 +919,9 @@
       ]
     },
     "multi-session": {
-      "claims": 12,
-      "max_evidence": "documented",
-      "status": "moderate",
+      "claims": 13,
+      "max_evidence": "tested",
+      "status": "strong",
       "types": [
         "constraint",
         "estimate",
@@ -897,7 +941,8 @@
         "r008",
         "w001",
         "w002",
-        "p002"
+        "p002",
+        "p003"
       ],
       "constraint_count": 1,
       "source_origins": [
@@ -913,12 +958,13 @@
       ]
     },
     "multi-sprint": {
-      "claims": 8,
-      "max_evidence": "documented",
-      "status": "moderate",
+      "claims": 9,
+      "max_evidence": "tested",
+      "status": "strong",
       "types": [
         "constraint",
         "estimate",
+        "factual",
         "recommendation",
         "risk"
       ],
@@ -930,17 +976,18 @@
         "r023",
         "r024",
         "r025",
-        "r026"
+        "r026",
+        "p004"
       ],
       "constraint_count": 1,
       "source_origins": [
         "analysis",
+        "prototype",
         "stakeholder"
       ],
-      "source_count": 2,
-      "type_diversity": 4,
+      "source_count": 3,
+      "type_diversity": 5,
       "missing_types": [
-        "factual",
         "feedback"
       ]
     },
@@ -1012,7 +1059,9 @@
     "r025": 0,
     "r026": 0,
     "p001": 0,
-    "p002": 0
+    "p002": 0,
+    "p003": 0,
+    "p004": 0
   },
   "phase_summary": {
     "define": {
@@ -1024,7 +1073,7 @@
       "complete": true
     },
     "prototype": {
-      "claims": 2,
+      "claims": 4,
       "complete": true
     },
     "evaluate": {
@@ -1044,14 +1093,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 35,
-    "active_claims": 35,
+    "total_claims": 37,
+    "active_claims": 37,
     "conflicted_claims": 0,
     "superseded_claims": 0,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:1f6f8eea32516e94997e6639ef683514b0b44e66ac075536ffcfae2ac39b646a",
+    "input_hash": "sha256:ae441976e7a83bf03c806c8b59e26fb1b9529c97fd60c480f9247274263c1eee",
     "compiler_version": "0.2.0",
     "deterministic": true
   }
