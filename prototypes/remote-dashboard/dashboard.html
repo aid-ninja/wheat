@@ -85,15 +85,21 @@
   }
   .tab:hover { color: var(--text); }
   .tab.active { color: var(--accent-light); border-bottom-color: var(--accent); }
+  .tab { position: relative; padding-right: 28px; }
   .tab .badge {
-    display: inline-block;
+    position: absolute;
+    top: 6px;
+    right: 4px;
     background: var(--red);
     color: white;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 10px;
-    margin-left: 6px;
+    min-width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    padding: 0 4px;
+    border-radius: 8px;
     animation: pulse 2s infinite;
   }
 
@@ -512,6 +518,61 @@
   }
   .empty .icon { font-size: 48px; margin-bottom: 12px; }
 
+  /* Session pill bar */
+  .session-bar {
+    display: flex;
+    gap: 6px;
+    padding: 8px 24px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .session-bar.hidden { display: none; }
+  .session-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .session-pill:hover { border-color: var(--dim); color: var(--text); }
+  .session-pill.active { border-color: var(--accent); color: var(--text); background: rgba(59,130,246,0.08); }
+  .session-pill .sdot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .session-pill .sdot.stale { opacity: 0.4; }
+  .session-pill .sdot.ended { background: var(--dim) !important; }
+  .session-pill.has-pending .sdot { animation: pulse 2s infinite; }
+  .session-pill .spending { font-size: 10px; font-weight: 700; color: var(--orange); margin-left: 2px; }
+
+  /* Session color dot on cards */
+  .session-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--dim);
+  }
+  .session-tag .sdot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
   @keyframes slideIn {
     from { transform: translateY(-10px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
@@ -522,6 +583,7 @@
     .header { padding: 10px 16px; }
     .content { padding: 16px; }
     .tabs { padding: 0 16px; overflow-x: auto; }
+    .session-bar { padding: 6px 16px; }
     .perm-actions { flex-direction: column; }
     .btn { width: 100%; text-align: center; }
     .trust-selector { flex-direction: column; }
@@ -539,6 +601,8 @@
       <span class="trust-badge paranoid" id="trustBadge">paranoid</span>
     </div>
   </div>
+
+  <div class="session-bar hidden" id="sessionBar"></div>
 
   <div class="tabs">
     <div class="tab active" data-tab="permissions">
@@ -561,11 +625,68 @@ const TOKEN = '{{TOKEN}}';
 const API = (path) => `${location.origin}${path}?token=${TOKEN}`;
 
 let evtSource;
-let state = { pending: [], activity: [], messages: [], claims: null, compilation: null, trustLevel: 'paranoid', sessionRules: [], agents: [], sprints: [], activeSprint: null };
+let state = { pending: [], activity: [], messages: [], claims: null, compilation: null, trustLevel: 'paranoid', sessionRules: [], agents: [], sprints: [], activeSprint: null, sessions: [] };
 let activeTab = 'permissions';
 let topicFilter = null;
 let openQuickRules = null; // requestId of open quick-rules dropdown
 let seenCardIds = new Set(); // track seen cards to avoid re-animating
+let sessionFilter = null;   // null = all sessions, string = filter to that session_id
+
+// Session color helper — deterministic hue from session_id (matches server)
+function sessionHue(id) {
+  if (!id) return 0;
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) % 360;
+}
+function sessionColor(id) {
+  if (!id || id === 'default') return 'var(--dim)';
+  return `hsl(${sessionHue(id)}, 70%, 50%)`;
+}
+
+function setSessionFilter(sessionId) {
+  sessionFilter = sessionFilter === sessionId ? null : sessionId;
+  renderSessionBar();
+  render();
+}
+
+function renderSessionBar() {
+  const bar = document.getElementById('sessionBar');
+  const ss = state.sessions || [];
+  // Hide bar in single-session mode (only "default" or empty)
+  if (ss.length <= 1 && (!ss[0] || ss[0].id === 'default')) {
+    bar.className = 'session-bar hidden';
+    return;
+  }
+  bar.className = 'session-bar';
+  const allPill = `<div class="session-pill ${!sessionFilter ? 'active' : ''}" onclick="setSessionFilter(null)">All</div>`;
+  bar.innerHTML = allPill + ss.map(s => {
+    const isActive = sessionFilter === s.id;
+    const hasPending = (s.pending_count || 0) > 0;
+    const statusCls = s.status === 'ended' ? ' ended' : s.status === 'stale' ? ' stale' : '';
+    return `<div class="session-pill${isActive ? ' active' : ''}${hasPending ? ' has-pending' : ''}" onclick="setSessionFilter('${esc(s.id)}')" data-session-id="${esc(s.id)}">
+      <span class="sdot${statusCls}" style="background:${sessionColor(s.id)}"></span>
+      <span>${esc(s.label)}</span>
+      ${hasPending ? `<span class="spending">${s.pending_count}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// Filter items by session
+function filterBySession(items) {
+  if (!sessionFilter) return items;
+  return items.filter(i => (i.session_id || 'default') === sessionFilter);
+}
+
+// Session tag HTML for cards
+function sessionTag(sessionId) {
+  if (!sessionId || sessionId === 'default') return '';
+  const label = (state.sessions || []).find(s => s.id === sessionId);
+  const displayLabel = label ? label.label : sessionId.slice(0, 8);
+  return `<span class="session-tag"><span class="sdot" style="background:${sessionColor(sessionId)}"></span>${esc(displayLabel)}</span>`;
+}
 
 // --- Connection: always poll, SSE upgrades if it works ---
 let pollInterval = null;
@@ -626,11 +747,13 @@ async function poll() {
       trustLevel: data.trustLevel,
       sessionRules: data.sessionRules || [],
       agents: data.agents || [],
+      sessions: data.sessions || [],
     };
     const changed = JSON.stringify(newState) !== lastPollHash;
     if (changed) {
       Object.assign(state, newState);
       lastPollHash = JSON.stringify(newState);
+      renderSessionBar();
       // Don't re-render if user is typing in an input/textarea (kills focus + text)
       const active = document.activeElement;
       if (!active || (active.tagName !== 'TEXTAREA' && active.tagName !== 'INPUT')) {
@@ -649,6 +772,7 @@ function handleMessage(msg) {
   switch (msg.type) {
     case 'init':
       state = { ...state, ...msg.data };
+      renderSessionBar();
       break;
     case 'permission_request':
       state.pending.push(msg.data);
@@ -720,6 +844,17 @@ function handleMessage(msg) {
         new Notification(msg.data.title, { body: msg.data.body });
       }
       break;
+    case 'session_new':
+    case 'session_start':
+    case 'session_stale':
+    case 'session_end': {
+      const sd = msg.data;
+      const idx = (state.sessions || []).findIndex(s => s.id === sd.id);
+      if (idx >= 0) state.sessions[idx] = sd;
+      else (state.sessions = state.sessions || []).push(sd);
+      renderSessionBar();
+      break;
+    }
   }
   render();
 }
@@ -851,6 +986,7 @@ function updateTrustBadge() {
 function render() {
   updateBadge();
   updateTrustBadge();
+  renderSessionBar();
   const el = document.getElementById('content');
   switch (activeTab) {
     case 'permissions': el.innerHTML = renderPermissions(); break;
@@ -886,7 +1022,8 @@ function updateBadge() {
 }
 
 function renderPermissions() {
-  const perms = state.pending.filter(p => (p.tool_name || '') !== 'Request');
+  const allPerms = state.pending.filter(p => (p.tool_name || '') !== 'Request');
+  const perms = filterBySession(allPerms);
   if (perms.length === 0) {
     return `<div class="empty"><div class="icon">&#10003;</div><p>No pending permissions</p><p style="font-size:12px;margin-top:4px;">Claude Code will send requests here when it needs approval</p></div>`;
   }
@@ -899,7 +1036,8 @@ function renderPermissions() {
 }
 
 function renderRequests() {
-  const reqs = state.pending.filter(p => (p.tool_name || '') === 'Request');
+  const allReqs = state.pending.filter(p => (p.tool_name || '') === 'Request');
+  const reqs = filterBySession(allReqs);
   if (reqs.length === 0) {
     return `<div class="empty"><div class="icon">&#128172;</div><p>No pending requests</p><p style="font-size:12px;margin-top:4px;">Questions from Claude Code will appear here for your input</p></div>`;
   }
@@ -907,9 +1045,9 @@ function renderRequests() {
     const prompt = (p.tool_input && p.tool_input.prompt) || p.prompt || '';
     const isNew = !seenCardIds.has(p.requestId);
     return `
-      <div class="perm-card question-card${isNew ? ' new-card' : ''}" id="perm-${p.requestId}">
-        <div class="tool-name">&#128172; Request from Claude</div>
-        <div class="meta">Session ${esc((p.session_id||'').slice(0,8))} &middot; ${new Date(p.timestamp || Date.now()).toLocaleTimeString()}</div>
+      <div class="perm-card question-card${isNew ? ' new-card' : ''}" id="perm-${p.requestId}" data-session-id="${esc(p.session_id || '')}">
+        <div class="tool-name">&#128172; Request from Claude ${sessionTag(p.session_id)}</div>
+        <div class="meta">${sessionTag(p.session_id) ? '' : 'Session ' + esc((p.session_id||'').slice(0,8)) + ' &middot; '}${new Date(p.timestamp || Date.now()).toLocaleTimeString()}</div>
         <div class="tool-input">${esc(prompt)}</div>
         <textarea class="question-input" id="question-input-${esc(p.requestId)}" placeholder="Type your response..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();respondToQuestion('${esc(p.requestId)}')}"></textarea>
         <div class="perm-actions">
@@ -939,8 +1077,8 @@ function renderPermissionCard(p) {
 
   const isNew = !seenCardIds.has(p.requestId);
   return `
-    <div class="perm-card${desc.danger ? ' danger' : ''}${isNew ? ' new-card' : ''}" id="perm-${p.requestId}">
-      <div class="tool-name">${desc.icon} ${esc(desc.title)}</div>
+    <div class="perm-card${desc.danger ? ' danger' : ''}${isNew ? ' new-card' : ''}" id="perm-${p.requestId}" data-session-id="${esc(p.session_id || '')}">
+      <div class="tool-name">${desc.icon} ${esc(desc.title)} ${sessionTag(p.session_id)}</div>
       <div class="tool-input" style="font-family:monospace;font-size:12px;background:var(--bg);padding:8px;border-radius:6px;margin:6px 0;word-break:break-all;">${esc(desc.detail)}</div>
       <div class="perm-actions">
         <button class="btn btn-allow" onclick="decide('${esc(p.requestId)}', true)">Allow</button>
@@ -990,10 +1128,11 @@ function describeAction(a) {
 }
 
 function renderActivity() {
-  if (state.activity.length === 0) {
+  const filtered = filterBySession(state.activity);
+  if (filtered.length === 0) {
     return `<div class="empty"><div class="icon">&#9881;</div><p>No activity yet</p><p style="font-size:12px;margin-top:4px;">Tool calls will appear here as Claude Code works</p></div>`;
   }
-  return [...state.activity].reverse().map(a => {
+  return [...filtered].reverse().map(a => {
     const d = describeAction(a);
     const failCls = a.type === 'failure' ? ' style="border-left:2px solid var(--red);padding-left:8px;"' : '';
     const decisionLabel = a.decision === 'auto-allowed'
@@ -1004,10 +1143,10 @@ function renderActivity() {
           ? ` <span style="color:var(--red);font-size:11px;">denied</span>`
           : '';
     return `
-      <div class="activity-item"${failCls}>
+      <div class="activity-item"${failCls} data-session-id="${esc(a.session_id || '')}">
         <div class="activity-icon" style="font-size:16px;">${d.icon}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:500;">${esc(d.verb)}${decisionLabel}</div>
+          <div style="font-size:13px;font-weight:500;">${esc(d.verb)}${decisionLabel} ${sessionTag(a.session_id)}</div>
           <div class="activity-detail" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(d.detail)}</div>
         </div>
         <div class="activity-time">${timeAgo(a.timestamp)}</div>

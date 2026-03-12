@@ -5,6 +5,11 @@
  * Receives HTTP hook events from Claude Code, pushes them to a browser
  * dashboard via Server-Sent Events (SSE), and relays approve/deny decisions.
  *
+ * Multi-session support: each Claude Code session gets its own SessionState
+ * (pending permissions, activity, trust level, rules). Sessions are lazily
+ * initialized from hook payloads via getSession(session_id). If no session_id
+ * is present in a hook payload, the "default" session is used (backwards compat).
+ *
  * Zero npm dependencies — uses only Node built-in modules.
  *
  * Usage:
@@ -29,181 +34,149 @@ const TOKEN = arg('token', randomBytes(16).toString('hex'));
 const CLAIMS_PATH = resolve(arg('claims', './claims.json'));
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
-// --- Multi-sprint support ---
-// Resolve sprints directory: --sprints-dir flag > wheat.config.json > fallback to single --claims mode
-function resolveSprintsDir() {
-  const explicit = arg('sprints-dir', null);
-  if (explicit) return resolve(explicit);
+// --- SessionState class ---
+class SessionState {
+  constructor(sessionId, cwd) {
+    this.id = sessionId;
+    this.label = cwd ? cwd.split('/').pop() : sessionId.slice(0, 8);
+    this.cwd = cwd || '';
+    this.color = SessionState.hueFromId(sessionId);
+    this.status = 'active';           // 'active' | 'stale' | 'ended'
+    this.startedAt = Date.now();
+    this.lastActivity = Date.now();
+    this.source = null;               // 'startup' | 'resume' | 'clear' | 'compact'
 
-  // Try wheat.config.json relative to claims path
-  const configPaths = [
-    resolve(dirname(CLAIMS_PATH), 'wheat.config.json'),
-    resolve('wheat.config.json'),
-  ];
-  for (const cp of configPaths) {
-    try {
-      if (existsSync(cp)) {
-        const cfg = JSON.parse(readFileSync(cp, 'utf8'));
-        if (cfg.sprintsDir) return resolve(dirname(cp), cfg.sprintsDir);
-      }
-    } catch { /* ignore */ }
+    // Per-session state (previously global singletons)
+    this.pending = new Map();         // requestId -> { resolve, data, timestamp }
+    this.activity = [];               // last 200 events for this session
+    this.messages = [];               // last 50 Claude messages for this session
+    this.trustLevel = 'paranoid';     // 'paranoid' | 'standard' | 'autonomous'
+    this.sessionRules = [];           // [{tool, pattern?}]
+    this.agents = [];                 // agent tracking
   }
-  return null;
-}
 
-const SPRINTS_DIR = resolveSprintsDir();
-const sprints = new Map(); // slug -> { claims, compilation, claimsPath, compilationPath, meta }
-let activeSprint = null; // slug of active sprint
-
-function scanSprints() {
-  if (!SPRINTS_DIR || !existsSync(SPRINTS_DIR)) return;
-  try {
-    const entries = readdirSync(SPRINTS_DIR);
-    for (const entry of entries) {
-      const dir = join(SPRINTS_DIR, entry);
-      try {
-        if (!statSync(dir).isDirectory()) continue;
-      } catch { continue; }
-      const claimsPath = join(dir, 'claims.json');
-      if (!existsSync(claimsPath)) continue;
-      if (!sprints.has(entry)) {
-        loadSprint(entry, claimsPath);
-        watchSprintFiles(entry, claimsPath);
-      }
+  static hueFromId(id) {
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+      hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
     }
-  } catch { /* ignore scan errors */ }
-}
+    return Math.abs(hash) % 360;
+  }
 
-function loadSprint(slug, claimsPath) {
-  const compilationPath = claimsPath.replace('claims.json', 'compilation.json');
-  let claims = null, compilation = null, meta = null;
-  try {
-    claims = JSON.parse(readFileSync(claimsPath, 'utf8'));
-    meta = claims.meta || null;
-  } catch { /* ignore */ }
-  try {
-    if (existsSync(compilationPath)) {
-      compilation = JSON.parse(readFileSync(compilationPath, 'utf8'));
-    }
-  } catch { /* ignore */ }
-  sprints.set(slug, { claims, compilation, claimsPath, compilationPath, meta });
-}
+  touch() {
+    this.lastActivity = Date.now();
+  }
 
-function reloadSprint(slug) {
-  const sprint = sprints.get(slug);
-  if (!sprint) return;
-  loadSprint(slug, sprint.claimsPath);
-  broadcastSprintsList();
-  // If this is the active sprint, also update main claims/compilation state
-  if (activeSprint === slug) {
-    const s = sprints.get(slug);
-    claimsData = s.claims;
-    compilationData = s.compilation;
-    broadcast({ type: 'claims', data: claimsData });
-    if (compilationData) broadcast({ type: 'compilation', data: compilationData });
+  isStale(timeoutMs = 5 * 60 * 1000) {
+    return this.status === 'active' && (Date.now() - this.lastActivity) > timeoutMs;
   }
 }
 
-function watchSprintFiles(slug, claimsPath) {
-  const compilationPath = claimsPath.replace('claims.json', 'compilation.json');
-  watchFile(claimsPath, { interval: 1000 }, () => reloadSprint(slug));
-  if (existsSync(compilationPath)) {
-    watchFile(compilationPath, { interval: 1000 }, () => reloadSprint(slug));
+// --- Session management ---
+const sessions = new Map();  // session_id -> SessionState
+
+function getSession(sessionId, cwd) {
+  const id = sessionId || 'default';
+  if (!sessions.has(id)) {
+    const session = new SessionState(id, cwd);
+    sessions.set(id, session);
+    broadcast({ type: 'session_new', session_id: id, data: sessionSummary(session) });
   }
+  const s = sessions.get(id);
+  if (cwd && (!s.cwd || s.cwd !== cwd)) { s.cwd = cwd; s.label = cwd.split('/').pop(); }
+  s.touch();
+  return s;
 }
 
-function getSprintsList() {
-  const list = [];
-  for (const [slug, s] of sprints) {
-    const meta = s.meta || {};
-    const claimCount = s.claims?.claims?.length || 0;
-    let lastModified = null;
-    try { lastModified = statSync(s.claimsPath).mtime.toISOString(); } catch { /* ignore */ }
-    list.push({
-      slug,
-      question: meta.question || slug,
-      phase: meta.phase || 'unknown',
-      claimCount,
-      lastModified,
-      active: slug === activeSprint,
-    });
-  }
-  // Sort: active first, then by lastModified descending
-  list.sort((a, b) => {
-    if (a.active && !b.active) return -1;
-    if (!a.active && b.active) return 1;
-    return (b.lastModified || '').localeCompare(a.lastModified || '');
-  });
-  return list;
+function sessionSummary(s) {
+  return {
+    id: s.id,
+    label: s.label,
+    color: s.color,
+    status: s.status,
+    cwd: s.cwd,
+    pending_count: s.pending.size,
+    trust: s.trustLevel,
+    startedAt: s.startedAt,
+    lastActivity: s.lastActivity,
+  };
 }
 
-function broadcastSprintsList() {
-  broadcast({ type: 'sprints_list', data: getSprintsList() });
-}
-
-function switchToSprint(slug) {
-  const sprint = sprints.get(slug);
-  if (!sprint) return false;
-  activeSprint = slug;
-  claimsData = sprint.claims;
-  compilationData = sprint.compilation;
-  broadcast({ type: 'claims', data: claimsData });
-  if (compilationData) broadcast({ type: 'compilation', data: compilationData });
-  broadcastSprintsList();
-  return true;
-}
-
-// Initial sprint scan
-scanSprints();
-// Also register the root claims.json as a sprint if in multi-sprint mode
-if (SPRINTS_DIR && existsSync(SPRINTS_DIR)) {
-  // If no sprints found, or root claims exists alongside sprints dir, register root as "current"
-  if (existsSync(CLAIMS_PATH) && !activeSprint) {
-    // Check if root claims is already covered by a sprint
-    let rootCovered = false;
-    for (const [, s] of sprints) {
-      if (resolve(s.claimsPath) === CLAIMS_PATH) { rootCovered = true; break; }
-    }
-    if (!rootCovered) {
-      const rootSlug = '_root';
-      loadSprint(rootSlug, CLAIMS_PATH);
-      watchSprintFiles(rootSlug, CLAIMS_PATH);
-    }
-  }
-  // Set first sprint as active if none set
-  if (!activeSprint && sprints.size > 0) {
-    activeSprint = sprints.keys().next().value;
-    const s = sprints.get(activeSprint);
-    if (s) { claimsData = s.claims; compilationData = s.compilation; }
-  }
-}
-// Periodic re-scan for new sprint directories (every 5s)
-if (SPRINTS_DIR) {
-  setInterval(scanSprints, 5000);
-}
-
-// --- State ---
-const pending = new Map();   // requestId → { resolve, data, timestamp }
-const activity = [];         // last 200 activity events
-const messages = [];         // last 50 Claude text messages
+// --- Global state (shared across sessions) ---
 const MAX_ACTIVITY = 200;
 let claimsData = null;
 let compilationData = null;
 
-// --- Trust tiers ---
-let trustLevel = 'paranoid'; // 'paranoid' | 'standard' | 'autonomous'
-const sessionRules = [];     // [{tool: string, pattern?: string}]
-
-// --- Agent tracking (server-side for polling support) ---
-const agents = [];  // [{id, description, agentType, status, timestamp, stoppedAt?}]
-function trackAgentStart(data) {
-  agents.push({ id: data.id, description: data.description, agent_type: data.agentType, status: 'running', startedAt: data.timestamp });
-  broadcast({ type: 'agent_start', data });
+// --- Agent tracking helpers (per-session) ---
+function trackAgentStart(session, data) {
+  session.agents.push({ id: data.id, description: data.description, agent_type: data.agentType, status: 'running', startedAt: data.timestamp });
+  broadcast({ type: 'agent_start', session_id: session.id, data });
 }
-function trackAgentStop(data) {
-  const a = agents.find(x => x.id === data.id);
+function trackAgentStop(session, data) {
+  const a = session.agents.find(x => x.id === data.id);
   if (a) { a.status = 'done'; a.stoppedAt = data.timestamp; }
-  broadcast({ type: 'agent_stop', data });
+  broadcast({ type: 'agent_stop', session_id: session.id, data });
+}
+
+// Helper: find pending entry across all sessions
+function findPending(requestId) {
+  for (const [sid, session] of sessions) {
+    if (session.pending.has(requestId)) {
+      return { session, entry: session.pending.get(requestId) };
+    }
+  }
+  return null;
+}
+
+// Helper: aggregate all pending across sessions
+function allPending() {
+  const result = [];
+  for (const [sid, session] of sessions) {
+    for (const [id, p] of session.pending) {
+      result.push({ id, ...p.data, timestamp: p.timestamp, session_id: session.id, session_label: session.label, session_color: session.color });
+    }
+  }
+  return result;
+}
+
+// Helper: aggregate all activity across sessions (latest 50)
+function allActivity() {
+  const result = [];
+  for (const [sid, session] of sessions) {
+    for (const a of session.activity) {
+      result.push({ ...a, session_id: a.session_id || session.id });
+    }
+  }
+  result.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+  return result.slice(-50);
+}
+
+// Helper: aggregate all messages across sessions
+function allMessages() {
+  const result = [];
+  for (const [sid, session] of sessions) {
+    for (const m of session.messages) {
+      result.push({ ...m, session_id: session.id });
+    }
+  }
+  result.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+  return result;
+}
+
+// Helper: aggregate all agents across sessions
+function allAgents() {
+  const result = [];
+  for (const [sid, session] of sessions) {
+    for (const a of session.agents) {
+      result.push({ ...a, session_id: session.id });
+    }
+  }
+  return result;
+}
+
+// Helper: all sessions summary list
+function allSessionsSummary() {
+  return [...sessions.values()].map(sessionSummary);
 }
 
 const STANDARD_AUTO_APPROVE = new Set(['Read', 'Grep', 'Glob', 'WebSearch', 'WebFetch']);
@@ -221,12 +194,12 @@ const DANGEROUS_BASH_PATTERNS = [
   /\bgit\s+push\s+.*--force\b/, // force push
 ];
 
-function shouldAutoApprove(toolName, toolInput) {
+function shouldAutoApprove(session, toolName, toolInput) {
   // Requests always need human input — never auto-approve
   if (toolName === 'Request') return false;
 
   // Check session rules first (user-defined overrides)
-  for (const rule of sessionRules) {
+  for (const rule of session.sessionRules) {
     if (rule.tool === toolName) {
       if (!rule.pattern) return true;
       // If pattern specified, check against file_path or command
@@ -235,13 +208,13 @@ function shouldAutoApprove(toolName, toolInput) {
     }
   }
 
-  if (trustLevel === 'paranoid') return false;
+  if (session.trustLevel === 'paranoid') return false;
 
-  if (trustLevel === 'standard') {
+  if (session.trustLevel === 'standard') {
     return STANDARD_AUTO_APPROVE.has(toolName);
   }
 
-  if (trustLevel === 'autonomous') {
+  if (session.trustLevel === 'autonomous') {
     // Auto-approve everything EXCEPT dangerous Bash patterns
     if (toolName === 'Bash' && toolInput?.command) {
       const cmd = toolInput.command;
@@ -298,6 +271,16 @@ loadClaims();
 loadCompilation();
 watchFile(CLAIMS_PATH, { interval: 1000 }, loadClaims);
 
+// --- Staleness detection ---
+setInterval(() => {
+  for (const [id, session] of sessions) {
+    if (session.isStale()) {
+      session.status = 'stale';
+      broadcast({ type: 'session_stale', session_id: id, data: sessionSummary(session) });
+    }
+  }
+}, 60_000);
+
 // --- HTTP Server ---
 const server = createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
@@ -328,22 +311,23 @@ const server = createServer(async (req, res) => {
     res.flushHeaders();
 
     // Send current state as separate small SSE messages (mobile proxies choke on large single messages)
+    const defaultSession = sessions.has('default') ? sessions.get('default') : null;
     const initBase = JSON.stringify({
       type: 'init',
       data: {
-        pending: [...pending.entries()].map(([id, p]) => ({ id, ...p.data, timestamp: p.timestamp })),
-        activity: activity.slice(-50),
+        pending: allPending(),
+        activity: allActivity(),
         claims: null,
         compilation: null,
-        trustLevel,
-        sessionRules,
-        agents,
+        trustLevel: defaultSession ? defaultSession.trustLevel : 'paranoid',
+        sessionRules: defaultSession ? defaultSession.sessionRules : [],
+        agents: allAgents(),
+        sessions: allSessionsSummary(),
       }
     });
     res.write(`data: ${initBase}\n\n`);
     if (claimsData) res.write(`data: ${JSON.stringify({ type: 'claims', data: claimsData })}\n\n`);
     if (compilationData) res.write(`data: ${JSON.stringify({ type: 'compilation', data: compilationData })}\n\n`);
-    if (sprints.size > 0) res.write(`data: ${JSON.stringify({ type: 'sprints_list', data: getSprintsList() })}\n\n`);
 
     sseClients.add(res);
     req.on('close', () => sseClients.delete(res));
@@ -371,6 +355,9 @@ const server = createServer(async (req, res) => {
     }
     if (hookType === 'notification') {
       return handleNotification(data, res);
+    }
+    if (hookType === 'lifecycle') {
+      return handleLifecycle(data, res);
     }
     res.writeHead(404); res.end('Unknown hook');
     return;
@@ -415,14 +402,17 @@ const server = createServer(async (req, res) => {
     try { body = await readBody(req); } catch { res.writeHead(413); res.end('Too large'); return; }
     let data;
     try { data = JSON.parse(body); } catch { res.writeHead(400); res.end('Bad JSON'); return; }
+
+    const session = getSession(data.session_id, data.cwd);
     const msg = {
       type: 'message',
       content: data.content || data.message || '',
       timestamp: Date.now(),
+      session_id: session.id,
     };
-    messages.push(msg);
-    if (messages.length > 50) messages.shift();
-    broadcast({ type: 'message', data: msg });
+    session.messages.push(msg);
+    if (session.messages.length > 50) session.messages.shift();
+    broadcast({ type: 'message', session_id: session.id, data: msg });
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end('{"ok":true}');
     return;
@@ -430,51 +420,19 @@ const server = createServer(async (req, res) => {
 
   if (req.method === 'GET' && url.pathname === '/api/state') {
     if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
+    const defaultSession = sessions.has('default') ? sessions.get('default') : null;
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
-      pending: [...pending.entries()].map(([id, p]) => ({ id, ...p.data, timestamp: p.timestamp })),
-      activity: activity.slice(-50),
-      messages,
+      pending: allPending(),
+      activity: allActivity(),
+      messages: allMessages(),
       claims: claimsData,
       compilation: compilationData,
-      trustLevel,
-      sessionRules,
-      agents,
+      trustLevel: defaultSession ? defaultSession.trustLevel : 'paranoid',
+      sessionRules: defaultSession ? defaultSession.sessionRules : [],
+      agents: allAgents(),
+      sessions: allSessionsSummary(),
     }));
-    return;
-  }
-
-  // --- Sprint endpoints ---
-  if (req.method === 'GET' && url.pathname === '/api/sprints') {
-    if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ sprints: getSprintsList(), activeSprint }));
-    return;
-  }
-
-  if (req.method === 'POST' && url.pathname === '/api/switch-sprint') {
-    if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
-    let body;
-    try { body = await readBody(req); } catch { res.writeHead(413); res.end('Request too large'); return; }
-    let data;
-    try { data = JSON.parse(body); } catch { res.writeHead(400); res.end('Bad JSON'); return; }
-    const slug = data.slug;
-    if (!slug || !sprints.has(slug)) {
-      res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Sprint not found', available: [...sprints.keys()] }));
-      return;
-    }
-    switchToSprint(slug);
-    addActivity({
-      type: 'decision',
-      tool_name: 'system',
-      tool_input: null,
-      decision: 'sprint-switched',
-      reason: `Switched to sprint: ${slug}`,
-      timestamp: Date.now(),
-    });
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ ok: true, activeSprint: slug }));
     return;
   }
 
@@ -517,13 +475,14 @@ const server = createServer(async (req, res) => {
 
 // --- Permission handling ---
 function handlePermission(data, res) {
+  const session = getSession(data.session_id, data.cwd);
   const requestId = data.tool_use_id || randomBytes(8).toString('hex');
   const toolName = data.tool_name;
   const toolInput = data.tool_input;
 
   // Track agent starts from PreToolUse on Agent tool
   if (toolName === 'Agent') {
-    trackAgentStart({
+    trackAgentStart(session, {
       id: requestId,
       description: toolInput?.description || '',
       agentType: toolInput?.subagent_type || 'general-purpose',
@@ -532,9 +491,9 @@ function handlePermission(data, res) {
   }
 
   // Check trust tiers FIRST — auto-approve if rules match
-  if (shouldAutoApprove(toolName, toolInput)) {
+  if (shouldAutoApprove(session, toolName, toolInput)) {
     const hookEvent = data.hook_event_name || 'PermissionRequest';
-    const reason = `Auto-approved by ${trustLevel} trust level`;
+    const reason = `Auto-approved by ${session.trustLevel} trust level`;
     let responseBody;
 
     if (hookEvent === 'PreToolUse') {
@@ -555,16 +514,17 @@ function handlePermission(data, res) {
     }
 
     // Log to activity
-    addActivity({
+    addActivity(session, {
       type: 'decision',
       tool_name: toolName,
       tool_input: toolInput,
       decision: 'auto-allowed',
       reason,
+      session_id: session.id,
       timestamp: Date.now(),
     });
 
-    broadcast({ type: 'auto_approved', data: { requestId, tool_name: toolName, reason } });
+    broadcast({ type: 'auto_approved', session_id: session.id, data: { requestId, tool_name: toolName, reason } });
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(responseBody));
@@ -575,20 +535,22 @@ function handlePermission(data, res) {
     requestId,
     tool_name: toolName,
     tool_input: toolInput,
-    session_id: data.session_id,
+    session_id: session.id,
+    session_label: session.label,
+    session_color: session.color,
     permission_mode: data.permission_mode,
     cwd: data.cwd,
     hook_event_name: data.hook_event_name,
     permission_suggestions: data.permission_suggestions,
   };
 
-  broadcast({ type: 'permission_request', data: event });
+  broadcast({ type: 'permission_request', session_id: session.id, data: event });
 
   const timeout = setTimeout(() => {
-    if (pending.has(requestId) && !resolved) {
+    if (session.pending.has(requestId) && !resolved) {
       resolved = true;
-      pending.delete(requestId);
-      broadcast({ type: 'permission_expired', data: { requestId } });
+      session.pending.delete(requestId);
+      broadcast({ type: 'permission_expired', session_id: session.id, data: { requestId } });
       // CRITICAL: must explicitly deny on timeout — empty JSON = auto-allow (x001)
       const hookEvent = data.hook_event_name || 'PermissionRequest';
       const denyBody = hookEvent === 'PreToolUse'
@@ -600,12 +562,12 @@ function handlePermission(data, res) {
   }, 120_000);
 
   let resolved = false; // guard against timeout/decide race (x005)
-  pending.set(requestId, {
+  session.pending.set(requestId, {
     resolve: (decision) => {
       if (resolved) return;
       resolved = true;
       clearTimeout(timeout);
-      pending.delete(requestId);
+      session.pending.delete(requestId);
 
       const hookEvent = data.hook_event_name || 'PermissionRequest';
       let responseBody;
@@ -633,16 +595,17 @@ function handlePermission(data, res) {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(responseBody));
 
-      addActivity({
+      addActivity(session, {
         type: 'decision',
         tool_name: data.tool_name,
         tool_input: data.tool_input,
         decision: decision.allow ? 'allowed' : 'denied',
         reason: decision.reason,
+        session_id: session.id,
         timestamp: Date.now(),
       });
 
-      broadcast({ type: 'permission_resolved', data: { requestId, decision: decision.allow ? 'allowed' : 'denied' } });
+      broadcast({ type: 'permission_resolved', session_id: session.id, data: { requestId, decision: decision.allow ? 'allowed' : 'denied' } });
     },
     data: event,
     timestamp: Date.now(),
@@ -657,18 +620,42 @@ function handleTrustLevel(data, res) {
     res.end(JSON.stringify({ error: 'Invalid level. Must be: paranoid, standard, autonomous' }));
     return;
   }
-  trustLevel = data.level;
-  broadcast({ type: 'trust_level', data: { level: trustLevel } });
-  addActivity({
-    type: 'decision',
-    tool_name: 'system',
-    tool_input: null,
-    decision: 'trust-level-changed',
-    reason: `Trust level set to ${trustLevel}`,
-    timestamp: Date.now(),
-  });
+
+  // Apply to specific session or all sessions
+  const targetSessionId = data.session_id;
+  if (targetSessionId && sessions.has(targetSessionId)) {
+    const session = sessions.get(targetSessionId);
+    session.trustLevel = data.level;
+    broadcast({ type: 'trust_level', session_id: session.id, data: { level: session.trustLevel } });
+    addActivity(session, {
+      type: 'decision',
+      tool_name: 'system',
+      tool_input: null,
+      decision: 'trust-level-changed',
+      reason: `Trust level set to ${session.trustLevel}`,
+      session_id: session.id,
+      timestamp: Date.now(),
+    });
+  } else {
+    // Apply to all sessions (backwards compat: no session_id means global)
+    for (const [sid, session] of sessions) {
+      session.trustLevel = data.level;
+    }
+    broadcast({ type: 'trust_level', data: { level: data.level } });
+    // Log to default session
+    const defaultSession = getSession('default');
+    addActivity(defaultSession, {
+      type: 'decision',
+      tool_name: 'system',
+      tool_input: null,
+      decision: 'trust-level-changed',
+      reason: `Trust level set to ${data.level} (all sessions)`,
+      session_id: 'default',
+      timestamp: Date.now(),
+    });
+  }
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ ok: true, level: trustLevel }));
+  res.end(JSON.stringify({ ok: true, level: data.level }));
 }
 
 // --- Session rules ---
@@ -680,28 +667,72 @@ function handleRules(data, res) {
     return;
   }
 
-  if (action === 'add') {
-    // Avoid duplicates
-    const exists = sessionRules.find(r => r.tool === rule.tool && (r.pattern || '') === (rule.pattern || ''));
-    if (!exists) {
-      sessionRules.push({ tool: rule.tool, pattern: rule.pattern || null });
-    }
-  } else if (action === 'remove') {
-    const idx = sessionRules.findIndex(r => r.tool === rule.tool && (r.pattern || '') === (rule.pattern || ''));
-    if (idx !== -1) sessionRules.splice(idx, 1);
-  } else {
-    res.writeHead(400, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'action must be add or remove' }));
-    return;
+  // Apply to specific session or all sessions
+  const targetSessionId = data.session_id;
+  const targetSessions = (targetSessionId && sessions.has(targetSessionId))
+    ? [sessions.get(targetSessionId)]
+    : [...sessions.values()];
+
+  // If no sessions exist yet, create default
+  if (targetSessions.length === 0) {
+    targetSessions.push(getSession('default'));
   }
 
+  for (const session of targetSessions) {
+    if (action === 'add') {
+      const exists = session.sessionRules.find(r => r.tool === rule.tool && (r.pattern || '') === (rule.pattern || ''));
+      if (!exists) {
+        session.sessionRules.push({ tool: rule.tool, pattern: rule.pattern || null });
+      }
+    } else if (action === 'remove') {
+      const idx = session.sessionRules.findIndex(r => r.tool === rule.tool && (r.pattern || '') === (rule.pattern || ''));
+      if (idx !== -1) session.sessionRules.splice(idx, 1);
+    } else {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'action must be add or remove' }));
+      return;
+    }
+  }
+
+  // Return the first target's rules for backwards compat
+  const sessionRules = targetSessions[0].sessionRules;
   broadcast({ type: 'rules_updated', data: { sessionRules } });
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ ok: true, sessionRules }));
 }
 
+// --- Lifecycle handling (SessionStart / SessionEnd) ---
+function handleLifecycle(data, res) {
+  const { event, session_id, cwd, source, reason } = data;
+
+  if (event === 'session_start') {
+    const session = getSession(session_id, cwd);
+    session.source = source;  // 'startup', 'resume', 'clear', 'compact'
+    session.status = 'active';
+    broadcast({ type: 'session_start', session_id, data: sessionSummary(session) });
+  }
+
+  if (event === 'session_end') {
+    const session = sessions.get(session_id);
+    if (session) {
+      session.status = 'ended';
+      session.endedAt = Date.now();
+      session.endReason = reason;
+      // Auto-deny any pending permissions for this session
+      for (const [reqId, entry] of session.pending) {
+        entry.resolve({ allow: false, reason: 'session ended' });
+      }
+      broadcast({ type: 'session_end', session_id, data: { reason } });
+    }
+  }
+
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end('{}');
+}
+
 // --- Notification handling (AskUserQuestion / elicitation / agents) ---
 function handleNotification(data, res) {
+  const session = getSession(data.session_id, data.cwd);
   const hookEvent = data.hook_event_name || '';
 
   // Detect subagent lifecycle events from Agent tool notifications
@@ -715,13 +746,13 @@ function handleNotification(data, res) {
     const agentType = data.tool_input?.subagent_type || 'general-purpose';
 
     if (message.toLowerCase().includes('start') || message.toLowerCase().includes('launch') || hookEvent.includes('Start')) {
-      trackAgentStart({ id: agentId, description, agentType, timestamp: Date.now() });
+      trackAgentStart(session, { id: agentId, description, agentType, timestamp: Date.now() });
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end('{}');
       return;
     }
     if (message.toLowerCase().includes('stop') || message.toLowerCase().includes('complete') || hookEvent.includes('Stop')) {
-      trackAgentStop({ id: agentId, timestamp: Date.now() });
+      trackAgentStop(session, { id: agentId, timestamp: Date.now() });
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end('{}');
       return;
@@ -754,18 +785,21 @@ function handleNotification(data, res) {
     type: 'question',
     tool_name: data.tool_name || 'Notification',
     prompt,
-    session_id: data.session_id,
+    session_id: session.id,
+    session_label: session.label,
+    session_color: session.color,
     hook_event_name: hookEvent,
     timestamp: Date.now(),
   };
 
   // Notifications are non-blocking in Claude Code — we can't hold the response.
   // Broadcast as activity/info and return immediately.
-  broadcast({ type: 'notification_card', data: event });
-  addActivity({
+  broadcast({ type: 'notification_card', session_id: session.id, data: event });
+  addActivity(session, {
     type: 'notification',
     tool_name: event.tool_name,
     tool_input: { prompt: event.prompt },
+    session_id: session.id,
     timestamp: Date.now(),
   });
   res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -774,41 +808,45 @@ function handleNotification(data, res) {
 
 // --- Activity feed ---
 function handleActivity(data, res) {
+  const session = getSession(data.session_id, data.cwd);
   const isAgent = data.tool_name === 'Agent';
 
   // Track agent completion via PostToolUse/PostToolUseFailure
   if (isAgent) {
     const agentId = data.tool_use_id || randomBytes(8).toString('hex');
-    trackAgentStop({ id: agentId, timestamp: Date.now() });
+    trackAgentStop(session, { id: agentId, timestamp: Date.now() });
   }
 
-  addActivity({
+  addActivity(session, {
     type: data.hook_event_name === 'PostToolUseFailure' ? 'failure' : 'success',
     tool_name: data.tool_name,
     tool_input: data.tool_input,
     tool_result: data.tool_result ? summarizeResult(data.tool_result) : null,
-    session_id: data.session_id,
+    session_id: session.id,
     timestamp: Date.now(),
   });
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end('{}');
 }
 
-function addActivity(event) {
-  activity.push(event);
-  if (activity.length > MAX_ACTIVITY) activity.shift();
-  broadcast({ type: 'activity', data: event });
+function addActivity(session, event) {
+  session.activity.push(event);
+  if (session.activity.length > MAX_ACTIVITY) session.activity.shift();
+  broadcast({ type: 'activity', session_id: session.id, data: event });
 }
 
 // --- Decision from browser ---
 function handleDecision(data, res) {
   const { requestId, allow, reason, response } = data;
-  const p = pending.get(requestId);
-  if (!p) {
+
+  // Search across all sessions for the pending request
+  const found = findPending(requestId);
+  if (!found) {
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Request not found or expired' }));
     return;
   }
+  const { entry: p } = found;
   // If this is a question response, pass `response` field
   if (p.data.isQuestion) {
     p.resolve({ response: response || '' });
@@ -884,19 +922,16 @@ function dashboardPage(token) {
 }
 
 server.listen(PORT, () => {
-  console.log(`\n  Remote Farmer`);
-  console.log(`  ─────────────`);
+  console.log(`\n  Remote Farmer (multi-session)`);
+  console.log(`  ──────────────────────────────`);
   console.log(`  Local:  http://localhost:${PORT}/?token=${TOKEN}`);
   console.log(`  Token:  ${TOKEN}`);
   console.log(`  Claims: ${CLAIMS_PATH}`);
-  if (SPRINTS_DIR) {
-    console.log(`  Sprints: ${SPRINTS_DIR} (${sprints.size} sprint${sprints.size !== 1 ? 's' : ''} found)`);
-    if (activeSprint) console.log(`  Active:  ${activeSprint}`);
-  }
   console.log(`\n  Hook endpoints:`);
   console.log(`    http://localhost:${PORT}/hooks/permission`);
   console.log(`    http://localhost:${PORT}/hooks/activity`);
   console.log(`    http://localhost:${PORT}/hooks/notification`);
+  console.log(`    http://localhost:${PORT}/hooks/lifecycle`);
   console.log(`\n  SSE stream: /events?token=${TOKEN}`);
   console.log(`  Waiting for connections...\n`);
 });
