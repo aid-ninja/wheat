@@ -597,11 +597,11 @@
         "connector": null
       },
       "evidence": "documented",
-      "status": "active",
+      "status": "superseded",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": ["f001"],
-      "resolved_by": "r025",
+      "resolved_by": "f001",
       "tags": [
         "directory-structure",
         "symlink",
@@ -715,11 +715,11 @@
         "connector": null
       },
       "evidence": "documented",
-      "status": "active",
+      "status": "superseded",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": ["f001"],
-      "resolved_by": "r020",
+      "resolved_by": "f001",
       "tags": [
         "symlink",
         "portability",
