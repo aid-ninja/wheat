@@ -108,6 +108,8 @@
     animation: slideIn 0.3s ease-out;
   }
   .perm-card.resolved { opacity: 0.5; border-left-color: var(--dim); }
+  .perm-card.danger { border-left-color: var(--red); background: rgba(239,68,68,0.05); }
+  .perm-card.danger .tool-name { color: var(--red); }
   .perm-card.question-card { border-left-color: var(--accent); }
   .perm-card .tool-name {
     font-size: 13px;
@@ -551,9 +553,13 @@ async function poll() {
     }
     prevPendingIds = new Set(newPending.map(p => p.id || p.requestId));
 
+    // Auto-clear stale pending items (older than 2 min = already timed out server-side)
+    const now = Date.now();
+    const freshPending = newPending.filter(p => !p.timestamp || (now - p.timestamp) < 130000);
+
     // Only re-render if data actually changed
     const newState = {
-      pending: newPending,
+      pending: freshPending,
       activity: data.activity || [],
       claims: data.claims,
       compilation: data.compilation,
@@ -594,20 +600,9 @@ function handleMessage(msg) {
     case 'permission_expired':
       state.pending = state.pending.filter(p => p.requestId !== msg.data.requestId);
       break;
-    case 'question':
-      state.pending.push({ ...msg.data, isQuestion: true });
-      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-        new Notification('Claude Code has a question', {
-          body: msg.data.prompt,
-          tag: msg.data.requestId,
-        });
-      }
-      break;
-    case 'question_resolved':
-      state.pending = state.pending.filter(p => p.requestId !== msg.data.requestId);
-      break;
-    case 'question_expired':
-      state.pending = state.pending.filter(p => p.requestId !== msg.data.requestId);
+    case 'notification_card':
+      state.activity.unshift({ type: 'info', tool_name: msg.data.tool_name, tool_input: { prompt: msg.data.prompt }, timestamp: msg.data.timestamp });
+      if (state.activity.length > 200) state.activity.pop();
       break;
     case 'auto_approved':
       // Flash in activity, no pending entry
@@ -784,16 +779,27 @@ function renderPermissions() {
   }).join('');
 }
 
+function describePermission(p) {
+  const t = p.tool_name || '';
+  const i = p.tool_input || {};
+  if (t === 'Bash') return { icon: '&#9654;', title: 'Run command', detail: i.command || '', danger: /\brm\b|sudo|--force|--hard/.test(i.command || '') };
+  if (t === 'Edit') return { icon: '&#9998;', title: 'Edit file', detail: i.file_path || '' };
+  if (t === 'Write') return { icon: '&#128190;', title: 'Create/overwrite file', detail: i.file_path || '' };
+  if (t === 'Agent') return { icon: '&#129302;', title: 'Launch agent', detail: i.description || '' };
+  if (t === 'Read') return { icon: '&#128196;', title: 'Read file', detail: i.file_path || '' };
+  return { icon: '&#128274;', title: `${t} permission`, detail: formatInput(i) };
+}
+
 function renderPermissionCard(p) {
   const readTools = ['Read', 'Grep', 'Glob'];
   const toolName = p.tool_name || '';
   const isReadTool = readTools.includes(toolName);
+  const desc = describePermission(p);
 
   return `
-    <div class="perm-card" id="perm-${p.requestId}">
-      <div class="tool-name">${esc(toolName)}</div>
-      <div class="meta">Session ${esc((p.session_id||'').slice(0,8))} · ${esc(p.permission_mode || 'default')} mode · ${esc(p.cwd || '')}</div>
-      <div class="tool-input">${esc(formatInput(p.tool_input))}</div>
+    <div class="perm-card${desc.danger ? ' danger' : ''}" id="perm-${p.requestId}">
+      <div class="tool-name">${desc.icon} ${esc(desc.title)}</div>
+      <div class="tool-input" style="font-family:monospace;font-size:12px;background:var(--bg);padding:8px;border-radius:6px;margin:6px 0;word-break:break-all;">${esc(desc.detail)}</div>
       <div class="perm-actions">
         <button class="btn btn-allow" onclick="decide('${esc(p.requestId)}', true)">Allow</button>
         <button class="btn btn-deny" onclick="decide('${esc(p.requestId)}', false)">Deny</button>
@@ -825,25 +831,42 @@ function renderQuestionCard(p) {
   `;
 }
 
+function describeAction(a) {
+  const t = a.tool_name || '';
+  const i = a.tool_input || {};
+  if (t === 'Read') return { icon: '&#128196;', verb: 'Read file', detail: i.file_path || '' };
+  if (t === 'Write') return { icon: '&#9998;', verb: 'Wrote file', detail: i.file_path || '' };
+  if (t === 'Edit') return { icon: '&#9998;', verb: 'Edited file', detail: i.file_path || '' };
+  if (t === 'Bash') return { icon: '&#9654;', verb: 'Ran command', detail: i.command || '' };
+  if (t === 'Grep') return { icon: '&#128269;', verb: 'Searched', detail: `"${i.pattern || ''}" ${i.path ? 'in ' + i.path : ''}` };
+  if (t === 'Glob') return { icon: '&#128193;', verb: 'Found files', detail: i.pattern || '' };
+  if (t === 'Agent') return { icon: '&#129302;', verb: 'Launched agent', detail: i.description || i.subagent_type || '' };
+  if (t === 'WebFetch') return { icon: '&#127760;', verb: 'Fetched URL', detail: i.url || '' };
+  if (t === 'WebSearch') return { icon: '&#128269;', verb: 'Web search', detail: i.query || '' };
+  if (t === 'Notification' || a.type === 'info') return { icon: '&#128172;', verb: 'Info', detail: i.prompt || '' };
+  return { icon: '&#9881;', verb: t, detail: formatInput(i) };
+}
+
 function renderActivity() {
   if (state.activity.length === 0) {
     return `<div class="empty"><div class="icon">&#9881;</div><p>No activity yet</p><p style="font-size:12px;margin-top:4px;">Tool calls will appear here as Claude Code works</p></div>`;
   }
   return [...state.activity].reverse().map(a => {
-    const icon = a.type === 'failure' ? '&#10007;' : a.type === 'decision' ? '&#9998;' : '&#10003;';
-    const cls = a.type === 'failure' ? 'failure' : a.type === 'decision' ? 'decision' : 'success';
+    const d = describeAction(a);
+    const failCls = a.type === 'failure' ? ' style="border-left:2px solid var(--red);padding-left:8px;"' : '';
     const decisionLabel = a.decision === 'auto-allowed'
-      ? ` &mdash; <span style="color:var(--green)">auto-allowed</span>`
-      : a.decision
-        ? ` &mdash; <span style="color:${a.decision === 'allowed' ? 'var(--green)' : 'var(--red)'}">${esc(a.decision)}</span>`
-        : '';
+      ? ` <span style="color:var(--green);font-size:11px;">auto</span>`
+      : a.decision === 'allowed'
+        ? ` <span style="color:var(--green);font-size:11px;">approved</span>`
+        : a.decision === 'denied'
+          ? ` <span style="color:var(--red);font-size:11px;">denied</span>`
+          : '';
     return `
-      <div class="activity-item">
-        <div class="activity-icon ${cls}">${icon}</div>
-        <div>
-          <div><span class="activity-tool">${esc(a.tool_name || '')}</span>${decisionLabel}</div>
-          <div class="activity-detail">${esc(formatInput(a.tool_input))}</div>
-          ${a.reason ? `<div class="activity-detail" style="color:var(--dim);font-style:italic;">${esc(a.reason)}</div>` : ''}
+      <div class="activity-item"${failCls}>
+        <div class="activity-icon" style="font-size:16px;">${d.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;">${esc(d.verb)}${decisionLabel}</div>
+          <div class="activity-detail" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(d.detail)}</div>
         </div>
         <div class="activity-time">${timeAgo(a.timestamp)}</div>
       </div>
@@ -966,7 +989,7 @@ function renderSprint() {
     <h3 style="font-size:13px;color:var(--muted);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.08em;">Output Artifacts</h3>
     <div style="display:flex;flex-direction:column;gap:6px;">
       ${['brief.html','presentation.html','problem-statement.html','dashboard.html','replay.html'].map(f => `
-        <a href="/output/${f}?token=${TOKEN}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg2);border-radius:8px;color:var(--fg);text-decoration:none;font-size:13px;">
+        <a href="/output/${f}?token=${TOKEN}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg2);border-radius:8px;color:var(--text);text-decoration:none;font-size:13px;">
           <span style="font-size:16px;">&#128196;</span>
           <span>${f}</span>
           <span style="margin-left:auto;color:var(--dim);font-size:11px;">open &#8599;</span>

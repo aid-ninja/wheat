@@ -497,6 +497,9 @@ function handleNotification(data, res) {
     }
   }
 
+  // Log notification payload for debugging
+  console.log('[notification]', JSON.stringify(data).slice(0, 500));
+
   const isElicitation = hookEvent.includes('Notification') || hookEvent.includes('notification');
 
   // Check if this is an elicitation dialog
@@ -504,56 +507,38 @@ function handleNotification(data, res) {
     (data.tool_input && data.tool_input.prompt) ||
     (data.elicitation_dialog);
 
+  // Extract prompt from various possible locations in the hook payload
+  const prompt = data.tool_input?.prompt
+    || data.tool_input?.question
+    || data.tool_input?.message
+    || data.message
+    || data.body
+    || data.notification?.message
+    || data.notification?.body
+    || (typeof data.tool_input === 'string' ? data.tool_input : '')
+    || '';
+
   const event = {
     requestId: data.tool_use_id || randomBytes(8).toString('hex'),
     type: 'question',
     tool_name: data.tool_name || 'Notification',
-    prompt: data.tool_input?.prompt || data.message || data.body || '',
+    prompt,
     session_id: data.session_id,
     hook_event_name: hookEvent,
     timestamp: Date.now(),
   };
 
-  if (isElicitationDialog || isElicitation) {
-    // Push as a "question" type to browser
-    broadcast({ type: 'question', data: event });
-
-    // Hold the request for a user response (like permissions)
-    const timeout = setTimeout(() => {
-      if (pending.has(event.requestId) && !resolved) {
-        resolved = true;
-        pending.delete(event.requestId);
-        broadcast({ type: 'question_expired', data: { requestId: event.requestId } });
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({}));
-      }
-    }, 120_000);
-
-    let resolved = false;
-    pending.set(event.requestId, {
-      resolve: (decision) => {
-        if (resolved) return;
-        resolved = true;
-        clearTimeout(timeout);
-        pending.delete(event.requestId);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          hookSpecificOutput: {
-            hookEventName: hookEvent || 'Notification',
-            userResponse: decision.response || '',
-          }
-        }));
-        broadcast({ type: 'question_resolved', data: { requestId: event.requestId } });
-      },
-      data: { ...event, isQuestion: true },
-      timestamp: Date.now(),
-    });
-  } else {
-    // Simple notification — just broadcast and return
-    broadcast({ type: 'notification', data: { title: 'Claude Code', body: event.prompt } });
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end('{}');
-  }
+  // Notifications are non-blocking in Claude Code — we can't hold the response.
+  // Broadcast as activity/info and return immediately.
+  broadcast({ type: 'notification_card', data: event });
+  addActivity({
+    type: 'notification',
+    tool_name: event.tool_name,
+    tool_input: { prompt: event.prompt },
+    timestamp: Date.now(),
+  });
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end('{}');
 }
 
 // --- Activity feed ---
