@@ -32,6 +32,7 @@
   .card-red { border-left: 3px solid var(--red); }
   .cert { margin-top: 32px; padding: 16px; background: var(--bg2); border-radius: 8px; font-family: monospace; font-size: 12px; color: var(--dim); }
   ul { padding-left: 20px; }
+  code { font-family: 'SF Mono', monospace; font-size: 13px; background: rgba(96,165,250,0.1); padding: 1px 5px; border-radius: 3px; }
   @media (max-width: 640px) { .slide { padding: 40px 20px; } h1 { font-size: 22px; } }
 </style>
 </head>
@@ -39,20 +40,25 @@
 
 <div class="slide">
   <h1>Scaling Remote Farmer</h1>
-  <p class="meta">Decision Brief | 2026-03-12 | 35 claims | 5 topics</p>
+  <p class="meta">Decision Brief | 2026-03-12 | 37 claims | 5 topics | 3 prototypes validated</p>
   <p>Three independent workstreams to scale Remote Farmer: <strong>multi-session</strong> via session-keyed Maps, <strong>multi-sprint</strong> via sprints/ directory with config pointer, and <strong>repo cartography</strong> via compiler-generated topic-map manifest.</p>
-  <p>The manifest generator is already built and tested at <10ms <span class="claim-ref">p001</span>. Multi-session refactor is planned at ~300 lines <span class="claim-ref">p002</span>. Total effort: 5-9 hours <span class="claim-ref">r008</span> <span class="claim-ref">r026</span>.</p>
+  <p>All three prototypes are <strong>built and tested</strong>. The manifest generator runs in <10ms <span class="claim-ref">p001</span>. Multi-session refactor is working <span class="claim-ref">p003</span>. Multi-sprint scanning is operational <span class="claim-ref">p004</span>. Total effort: 5-9 hours <span class="claim-ref">r008</span> <span class="claim-ref">r026</span>.</p>
   <div style="margin-top: 24px; display: flex; gap: 8px; flex-wrap: wrap;">
+    <span class="tag tested">multi-session: tested</span>
+    <span class="tag tested">multi-sprint: tested</span>
     <span class="tag tested">cartography: tested</span>
-    <span class="tag documented">multi-session: documented</span>
-    <span class="tag documented">multi-sprint: documented</span>
     <span class="tag tested">performance: tested</span>
+    <span class="tag stated">compatibility: stated</span>
   </div>
 </div>
 
 <div class="slide">
   <h2>Multi-Session</h2>
-  <p class="meta">12 claims | documented evidence | 4 sources</p>
+  <p class="meta">13 claims | tested evidence | 4 sources | prototype working</p>
+  <div class="card card-green">
+    <h3>Prototype Validated</h3>
+    <p>SessionState class, session-keyed Maps, getSession(id) lazy init, SSE tagged with session_id, dashboard session pills with hue-from-hash. Backwards compatible with single-session via 'default' fallback <span class="claim-ref">p003</span>.</p>
+  </div>
   <div class="card card-accent">
     <h3>Architecture</h3>
     <p>Single server, session-keyed state: <code>Map&lt;session_id, SessionState&gt;</code> with lazy <code>getSession(id)</code> initializer <span class="claim-ref">r003</span> <span class="claim-ref">r004</span>. Hook payloads already include stable <code>session_id</code> UUID <span class="claim-ref">r001</span>.</p>
@@ -74,7 +80,11 @@
 
 <div class="slide">
   <h2>Multi-Sprint</h2>
-  <p class="meta">8 claims | documented evidence | 2 sources</p>
+  <p class="meta">9 claims | tested evidence | 3 sources | prototype working</p>
+  <div class="card card-green">
+    <h3>Prototype Validated</h3>
+    <p>Sprint scanning, <code>/api/sprints</code> endpoint, hot-reload via <code>fs.watchFile</code>, backwards compatible with <code>--claims</code> flag <span class="claim-ref">p004</span>.</p>
+  </div>
   <div class="card card-accent">
     <h3>Data Model</h3>
     <p>Each sprint in <code>sprints/&lt;slug&gt;/</code>, self-contained with own claims.json <span class="claim-ref">r020</span>. Current sprint pointer in <code>wheat.config.json</code> (not symlinks) for portability <span class="claim-ref">r025</span>.</p>
@@ -95,7 +105,7 @@
 
 <div class="slide">
   <h2>Repo Cartography</h2>
-  <p class="meta">8 claims | tested evidence | 4 sources</p>
+  <p class="meta">8 claims | tested evidence | 4 sources | generator built</p>
   <div class="card card-green">
     <h3>Manifest Generator (BUILT)</h3>
     <p><code>wheat-manifest.json</code> — topic map generated in <10ms, ~5KB <span class="claim-ref">p001</span>. Maps topics to claims, files, and sprints. Single <code>Read</code> replaces 3-5 Glob/Grep calls <span class="claim-ref">r012</span>.</p>
@@ -111,27 +121,44 @@
 </div>
 
 <div class="slide">
+  <h2>Blind Spots</h2>
+  <p class="meta">Identified gaps from /blind-spot analysis</p>
+  <div class="card card-red">
+    <h3>Security — No Coverage</h3>
+    <p>Farmer is exposed via Cloudflare Tunnel with token-based auth. No claims analyze attack vectors, token leakage, session hijacking, or tunnel reliability.</p>
+  </div>
+  <div class="card card-orange">
+    <h3>Compatibility — Untested</h3>
+    <p>Single constraint (d004) states "zero deps, backwards compat" but no claim verifies single-session still works after multi-session refactor.</p>
+  </div>
+  <div class="card card-orange">
+    <h3>Zero Corroboration</h3>
+    <p>None of the 37 claims have been independently corroborated by a second source. Multi-sprint has no external documentation witness.</p>
+  </div>
+</div>
+
+<div class="slide">
   <h2>Implementation Roadmap</h2>
   <table>
-    <tr><th>Phase</th><th>Workstream</th><th>Effort</th><th>Files</th></tr>
-    <tr><td>1</td><td style="color:var(--green)">Manifest generator (DONE)</td><td>—</td><td>generate-manifest.js</td></tr>
-    <tr><td>2</td><td>Multi-session server refactor</td><td>2-4h</td><td>server.mjs, dashboard.html</td></tr>
-    <tr><td>3</td><td>Multi-sprint support</td><td>3-5h</td><td>server.mjs, dashboard.html, wheat-init.js, wheat-compiler.js</td></tr>
-    <tr><td>4</td><td>Compiler manifest integration</td><td>1h</td><td>wheat-compiler.js</td></tr>
+    <tr><th>Phase</th><th>Workstream</th><th>Effort</th><th>Status</th></tr>
+    <tr><td>1</td><td style="color:var(--green)">Manifest generator</td><td>—</td><td style="color:var(--green)">DONE (p001)</td></tr>
+    <tr><td>2</td><td style="color:var(--green)">Multi-session refactor</td><td>2-4h</td><td style="color:var(--green)">DONE (p003)</td></tr>
+    <tr><td>3</td><td style="color:var(--green)">Multi-sprint support</td><td>3-5h</td><td style="color:var(--green)">DONE (p004)</td></tr>
+    <tr><td>4</td><td>Compiler manifest integration</td><td>1h</td><td style="color:var(--orange)">TODO</td></tr>
   </table>
 
   <h3 style="margin-top: 32px;">Evidence Coverage</h3>
   <table>
     <tr><th>Topic</th><th>Claims</th><th>Evidence</th><th>Sources</th><th>Types</th></tr>
+    <tr><td>multi-session</td><td>13</td><td><span class="tag tested">tested</span></td><td>4</td><td>5/6</td></tr>
+    <tr><td>multi-sprint</td><td>9</td><td><span class="tag tested">tested</span></td><td>3</td><td>5/6</td></tr>
     <tr><td>cartography</td><td>8</td><td><span class="tag tested">tested</span></td><td>4</td><td>4/6</td></tr>
-    <tr><td>multi-session</td><td>12</td><td><span class="tag documented">documented</span></td><td>4</td><td>5/6</td></tr>
-    <tr><td>multi-sprint</td><td>8</td><td><span class="tag documented">documented</span></td><td>2</td><td>4/6</td></tr>
     <tr><td>performance</td><td>6</td><td><span class="tag tested">tested</span></td><td>4</td><td>4/6</td></tr>
     <tr><td>compatibility</td><td>1</td><td><span class="tag stated">stated</span></td><td>1</td><td>1/6</td></tr>
   </table>
 
   <div class="cert">
-    Compilation certificate: sha256:1f6f8eea32516 | Compiler: wheat v0.2.0 | Claims: 35 | Compiled: 2026-03-12T06:51:46.090Z
+    Compilation certificate: sha256:ae441976e7a83 | Compiler: wheat v0.2.0 | Claims: 37 | Compiled: 2026-03-12T07:52:28.621Z
   </div>
 </div>
 

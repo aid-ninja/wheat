@@ -19,35 +19,49 @@ css: |-
 
 ## Executive Summary
 
-Remote Farmer should scale via three independent workstreams: (1) session-keyed server state with per-session Maps for multi-session support, (2) a sprints/ directory model with config-file pointer for multi-sprint, and (3) a compiler-generated topic-map manifest for repo cartography. The manifest generator is already built and produces results in <10ms (p001). The multi-session refactor is planned at ~300 lines (p002). Total implementation effort across all three is estimated at 5-9 hours (r008, r026).
+Remote Farmer should scale via three independent workstreams: (1) session-keyed server state with `Map<session_id, SessionState>` for multi-session support (r003, p003), (2) a `sprints/` directory model with `wheat.config.json` pointer for multi-sprint (r020, r025, p004), and (3) a compiler-generated topic-map manifest for repo cartography (r011, r017, p001). All three prototypes are built and tested. The manifest generator produces results in <10ms (p001). Total implementation effort: 5-9 hours across all workstreams (r008, r026).
 
 ## Recommendation
 
-### Multi-Session (12 claims, documented evidence)
-Use a single-server, session-keyed architecture (r003). Replace global singletons with a `Map<session_id, SessionState>` and a `getSession(id)` lazy initializer (r004). Claude Code's hook payloads already include a stable `session_id` UUID (r001), and SessionStart/SessionEnd lifecycle hooks provide explicit session boundaries (r002, w001). **Critical constraint**: SessionStart/SessionEnd only support command-type hooks, not HTTP (w002) -- a curl wrapper is required for Farmer integration.
+### Multi-Session (13 claims, tested evidence)
 
-Dashboard UX: unified feed with session color-coding via hue-from-hash, plus a pill-bar session switcher (r005, p002). Permission cards must prominently display session labels to mitigate cross-session approval confusion (r006).
+Use a single-server, session-keyed architecture (r003). Replace global singletons with a `Map<session_id, SessionState>` and a `getSession(id)` lazy initializer (r004). Claude Code's hook payloads already include a stable `session_id` UUID (r001), and SessionStart/SessionEnd lifecycle hooks provide explicit session boundaries (r002, w001).
 
-### Multi-Sprint (8 claims, documented evidence)
+**Critical constraint**: SessionStart/SessionEnd only support command-type hooks, not HTTP (w002) -- a curl wrapper is required for Farmer integration.
+
+**Prototype validated**: SessionState class, session-keyed Maps, SSE tagging, and pill-bar session switcher with hue-from-hash color coding are implemented and tested (p003). Backwards compatible with single-session via 'default' fallback.
+
+Dashboard UX: unified feed with session color-coding, pill-bar session switcher (r005, p002). Permission cards must prominently display session labels to mitigate cross-session approval confusion (r006). Heartbeat timeout (5min) for crashed sessions (r007). Estimated effort: 2-4 hours (r008).
+
+### Multi-Sprint (9 claims, tested evidence)
+
 Use a `sprints/` directory with one subdirectory per sprint, each self-contained (r020). The current sprint pointer lives in `wheat.config.json` (not symlinks) for cross-platform portability (r025, resolved against r020). Dashboard shows a collapsible sprint card list for switching (r022). Cross-sprint claim references use `sprint-slug:claim-id` format (r024). Server adds `--sprints-dir` flag with hot-reload via `fs.watchFile` (r021).
 
-### Repo Cartography (8 claims, tested evidence)
-Generate `wheat-manifest.json` as a topic map on every compilation (r011, r017). The manifest maps topics to claim IDs, file paths, and sprints -- enabling a single `Read` call to replace 3-5 iterative Glob/Grep searches (r012). The generator is built and tested: <10ms generation time, ~5KB output (p001). CLAUDE.md remains the behavioral instruction layer; the manifest handles structural discovery (r015). Commit messages should include `[topic]` tags for fast `git log --grep` (r014).
+**Prototype validated**: Sprint scanning, `/api/sprints` endpoint, hot-reload, and backwards-compatible `--claims` flag are implemented and tested (p004).
 
-**Cartography is needed now, not later**: the repo already has 157 files (x001), and the `examples/` directory creates search noise with 62 duplicate-named files (x002). Context window pollution -- not I/O time -- is the real cost metric (x003).
+Sprint lifecycle: `/init` creates under `sprints/`, archiving sets `meta.phase` to 'archived' (r023). Estimated effort: 3-5 hours (r026).
+
+### Repo Cartography (8 claims, tested evidence)
+
+Generate `wheat-manifest.json` as a topic map on every compilation (r011, r017). The manifest maps topics to claim IDs, file paths, and sprints -- enabling a single `Read` call to replace 3-5 iterative Glob/Grep searches (r012). CLAUDE.md remains the behavioral instruction layer; the manifest handles structural discovery (r015). Commit messages should include `[topic]` tags for fast `git log --grep` (r014).
+
+**Prototype validated**: Generator built and tested at <10ms, ~5KB output (p001).
+
+**Cartography is needed now**: the repo has 157 files (x001), not 80 as previously estimated (r016 challenged). The `examples/` directory creates 62 duplicate-named files causing search noise (x002). Context window pollution -- not I/O time -- is the real cost metric (x003).
 
 ### Compatibility
+
 Zero npm dependencies constraint maintained (d004). All implementations use Node built-in modules only. Single-session workflow preserved via backwards-compatible defaults.
 
 ## Evidence Summary
 
 | Topic | Claims | Max Evidence | Sources | Types | Key Finding |
 |-------|--------|-------------|---------|-------|-------------|
+| multi-session | 13 | tested | 4 | 5/6 | SessionState Maps + session_id routing, prototype working (p003) |
+| multi-sprint | 9 | tested | 3 | 5/6 | sprints/ dir + config pointer, prototype working (p004) |
 | cartography | 8 | tested | 4 | 4/6 | Manifest generator built, <10ms, 5KB (p001) |
-| multi-session | 12 | documented | 4 | 5/6 | session_id routing + SessionState Maps (r003) |
-| multi-sprint | 8 | documented | 2 | 4/6 | sprints/ dir + config pointer, not symlinks (r020, r025) |
 | performance | 6 | tested | 4 | 4/6 | 157 files now, context pollution is real cost (x001-x003) |
-| compatibility | 1 | stated | 1 | 1/6 | Zero deps constraint, no research done |
+| compatibility | 1 | stated | 1 | 1/6 | Zero deps constraint, not independently verified |
 
 ## Tradeoffs and Risks
 
@@ -59,18 +73,25 @@ Zero npm dependencies constraint maintained (d004). All implementations use Node
 | SessionStart/SessionEnd command-only hooks (w002) | documented | Curl wrapper scripts instead of direct HTTP hooks |
 | Context window pollution from noisy search results (x003) | documented | Manifest eliminates iterative search, saves 10-40K tokens/session |
 
+## Blind Spots (from /blind-spot analysis)
+
+- **Security**: No claims address attack vectors for Farmer exposed via Cloudflare Tunnel
+- **Dashboard UX**: UX decisions scattered across topics, no dedicated risk analysis
+- **Compatibility**: Single constraint claim (d004), never independently tested
+- **Corroboration**: Zero claims have independent corroboration from a second source
+
 ## Resolved Conflicts
 
 **r020 vs r025** (multi-sprint): r020 recommended symlinks for current-sprint pointer. r025 identified Windows portability risk. Resolution: use `wheat.config.json` `currentSprint` field as canonical pointer; symlinks optional as local convenience, not committed to git. Both claims remain active with complementary guidance.
 
 ## Implementation Roadmap
 
-| Phase | Workstream | Effort | Files |
-|-------|-----------|--------|-------|
-| 1 | Manifest generator (DONE) | -- | generate-manifest.js |
-| 2 | Multi-session server refactor | 2-4h (r008) | server.mjs, dashboard.html |
-| 3 | Multi-sprint support | 3-5h (r026) | server.mjs, dashboard.html, wheat-init.js, wheat-compiler.js |
-| 4 | Compiler manifest integration | 1h | wheat-compiler.js |
+| Phase | Workstream | Effort | Status | Files |
+|-------|-----------|--------|--------|-------|
+| 1 | Manifest generator | -- | DONE (p001) | generate-manifest.js |
+| 2 | Multi-session server refactor | 2-4h (r008) | DONE (p003) | server.mjs, dashboard.html |
+| 3 | Multi-sprint support | 3-5h (r026) | DONE (p004) | server.mjs, dashboard.html, wheat-init.js, wheat-compiler.js |
+| 4 | Compiler manifest integration | 1h | TODO | wheat-compiler.js |
 
 ## Appendix: Claim Inventory
 
@@ -95,7 +116,7 @@ Zero npm dependencies constraint maintained (d004). All implementations use Node
 | r013 | recommendation | cartography | documented | Sprint index in compilation output |
 | r014 | recommendation | cartography | documented | [topic] tags in commit messages |
 | r015 | risk | cartography | documented | Per-directory CLAUDE.md staleness |
-| r016 | estimate | performance | stated | Crossover at 150-200 files (CHALLENGED) |
+| r016 | estimate | performance | stated | Crossover at 150-200 files (CHALLENGED by x001) |
 | r017 | recommendation | cartography | documented | Topic map over file tree |
 | x001 | factual | performance | tested | Repo already 157 files, not 80 |
 | x002 | factual | performance | tested | examples/ creates 62 duplicate-name files |
@@ -111,8 +132,10 @@ Zero npm dependencies constraint maintained (d004). All implementations use Node
 | r026 | estimate | multi-sprint | stated | ~250 lines, 3-5 hours |
 | p001 | factual | cartography | tested | Manifest generator: <10ms, 5KB topic map |
 | p002 | recommendation | multi-session | documented | Multi-session refactor plan with SessionState |
+| p003 | factual | multi-session | tested | Multi-session prototype implemented and working |
+| p004 | factual | multi-sprint | tested | Multi-sprint prototype implemented and working |
 
 ---
 <div class="certificate">
-Compilation certificate: sha256:1f6f8eea32516 | Compiler: wheat v0.2.0 | Claims: 35 | Compiled: 2026-03-12T06:51:46.090Z
+Compilation certificate: sha256:ae441976e7a83 | Compiler: wheat v0.2.0 | Claims: 37 | Compiled: 2026-03-12T07:52:28.621Z
 </div>
