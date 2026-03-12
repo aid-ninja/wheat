@@ -415,6 +415,44 @@
       "resolved_by": null,
       "challenges": "r016",
       "tags": ["context-window", "token-cost", "hidden-cost", "compounding"]
+    },
+    {
+      "id": "w001",
+      "type": "factual",
+      "topic": "multi-session",
+      "content": "Official Claude Code docs (code.claude.com/docs/en/hooks) confirm SessionStart and SessionEnd are supported hook event types. SessionStart input includes a `source` field with values 'startup', 'resume', 'clear', 'compact' — exactly as r002 states. SessionEnd cannot block termination (no decision control). SessionStart stdout is injected as context for Claude; only `type: \"command\"` hooks are supported for SessionStart. SessionEnd receives a `reason` field (not `source`) with values: 'clear', 'logout', 'prompt_input_exit', 'bypass_permissions_disabled', 'other'.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "https://code.claude.com/docs/en/hooks",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "witness",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["SessionStart", "SessionEnd", "lifecycle", "hooks-reference"],
+      "corroborates": "r002"
+    },
+    {
+      "id": "w002",
+      "type": "factual",
+      "topic": "multi-session",
+      "content": "Claude Code supports at least 17 hook event types beyond SessionStart/SessionEnd: PreToolUse, PostToolUse, PostToolUseFailure, Notification, UserPromptSubmit, Stop, SubagentStart, SubagentStop, PreCompact, PermissionRequest, Setup, TeammateIdle, TaskCompleted, ConfigChange, WorktreeCreate, WorktreeRemove, InstructionsLoaded. Four hook handler types exist: command, http, prompt, and agent — but SessionStart and SessionEnd only support 'command' type. This is a design constraint for multi-session Farmer: SessionStart/SessionEnd hooks cannot use HTTP POST directly; they require a shell command wrapper (e.g., curl) to notify the Farmer server.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "https://code.claude.com/docs/en/hooks",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "witness",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hook-types", "handler-types", "command-only-limitation"],
+      "corroborates": "r002"
     }
   ]
 }
