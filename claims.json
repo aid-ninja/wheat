@@ -370,6 +370,51 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["topic-map", "semantic-index", "ai-friendly"]
+    },
+    {
+      "id": "x001",
+      "type": "factual",
+      "topic": "performance",
+      "content": "r016 states '80 files' but the repo actually contains 157 files (excluding .git). The repo has already crossed into r016's own predicted crossover zone of 150-200 files. The baseline measurement is wrong, which invalidates the 'overhead without measurable benefit' conclusion — the benefit zone is NOW, not future.",
+      "source": { "origin": "measurement", "artifact": "find . -type f -not -path '*/.git/*' | wc -l => 157", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "challenges": "r016",
+      "tags": ["file-count", "baseline-error", "crossover"]
+    },
+    {
+      "id": "x002",
+      "type": "factual",
+      "topic": "performance",
+      "content": "r016 frames the crossover as file-count-driven, but the real cost driver is result noise from structural duplication. At 157 files, 'dashboard.html' matches 10 files across examples/*/output, prototypes/*, and templates/. Grepping 'claims.json' returns 71 file matches. Grepping 'createServer' returns 5 hits across 3 near-identical copies. The examples/ directory alone holds 62 files that mirror active sprint files. This duplication means the noise problem is already acute — a manifest that says 'the current sprint's server is prototypes/remote-dashboard/server.mjs, ignore examples/' would eliminate 40-60% of false hits TODAY, not at some future scale.",
+      "source": { "origin": "measurement", "artifact": "Grep 'dashboard.html' => 40 files; Grep 'claims.json' => 71 files; examples/ = 62 files", "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "challenges": "r016",
+      "tags": ["duplication", "noise", "examples-dir", "false-positives"]
+    },
+    {
+      "id": "x003",
+      "type": "risk",
+      "topic": "performance",
+      "content": "r016 measures cost as wall-clock Glob/Grep time (<1s) but ignores the dominant cost: context window pollution. When Grep returns 71 results for 'claims.json', the AI must process all paths in its context window to determine which is relevant. Each noisy tool result consumes ~500-2000 tokens of context. Over a multi-step research session with 20+ tool calls, noisy results can waste 10-40K tokens — equivalent to 5-20% of the context window. The crossover point for cartography is not about I/O latency, it is about context budget efficiency, and that threshold is much lower than r016 estimates because even one noisy result triggers follow-up tool calls that compound the cost.",
+      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "challenges": "r016",
+      "tags": ["context-window", "token-cost", "hidden-cost", "compounding"]
     }
   ]
 }
