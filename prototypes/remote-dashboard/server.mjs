@@ -354,6 +354,7 @@ const sseClients = new Set();
 
 // --- WebSocket clients (raw implementation for Node < 21, zero deps) ---
 const wsClients = new Set();
+const MAX_WS_BUFFER_SIZE = 1 * 1024 * 1024; // 1MB max buffer per client (x006)
 
 // WebSocket frame encoder: creates a text frame from a string
 function wsEncodeFrame(payload) {
@@ -385,6 +386,7 @@ function wsEncodeFrame(payload) {
 function wsDecodeFrame(buf) {
   if (buf.length < 2) return null;
   const firstByte = buf[0];
+  const fin = (firstByte & 0x80) !== 0; // x007: check FIN bit
   const opcode = firstByte & 0x0f;
   const masked = (buf[1] & 0x80) !== 0;
   let payloadLen = buf[1] & 0x7f;
@@ -400,19 +402,35 @@ function wsDecodeFrame(buf) {
     offset = 10;
   }
 
+  let payload;
   if (masked) {
     if (buf.length < offset + 4 + payloadLen) return null;
     const mask = buf.slice(offset, offset + 4);
     offset += 4;
-    const data = Buffer.alloc(payloadLen);
+    payload = Buffer.alloc(payloadLen);
     for (let i = 0; i < payloadLen; i++) {
-      data[i] = buf[offset + i] ^ mask[i % 4];
+      payload[i] = buf[offset + i] ^ mask[i % 4];
     }
-    return { opcode, payload: data, bytesConsumed: offset + payloadLen };
   } else {
     if (buf.length < offset + payloadLen) return null;
-    return { opcode, payload: buf.slice(offset, offset + payloadLen), bytesConsumed: offset + payloadLen };
+    payload = buf.slice(offset, offset + payloadLen);
   }
+  return { opcode, fin, payload, bytesConsumed: offset + payloadLen };
+}
+
+// Helper: validate a token against current + retired tokens (reusable for WS auth)
+function wsTokenMatches(provided) {
+  if (!provided) return false;
+  if (provided.length === TOKEN.length) {
+    try { if (timingSafeEqual(Buffer.from(provided), Buffer.from(TOKEN))) return true; } catch {}
+  }
+  const cutoff = Date.now() - TOKEN_GRACE_PERIOD * 1000;
+  for (const rt of retiredTokens) {
+    if (rt.retiredAt > cutoff && provided.length === rt.token.length) {
+      try { if (timingSafeEqual(Buffer.from(provided), Buffer.from(rt.token))) return true; } catch {}
+    }
+  }
+  return false;
 }
 
 // Handle WebSocket upgrade request
@@ -425,25 +443,23 @@ function handleWsUpgrade(req, socket, head) {
     return;
   }
 
-  // Auth check: token in query string (supports grace period for rotated tokens)
-  const provided = url.searchParams.get('token') || '';
-  const wsTokenOk = (() => {
-    if (!provided) return false;
-    if (provided.length === TOKEN.length) {
-      try { if (timingSafeEqual(Buffer.from(provided), Buffer.from(TOKEN))) return true; } catch {}
-    }
-    const cutoff = Date.now() - TOKEN_GRACE_PERIOD * 1000;
-    for (const rt of retiredTokens) {
-      if (rt.retiredAt > cutoff && provided.length === rt.token.length) {
-        try { if (timingSafeEqual(Buffer.from(provided), Buffer.from(rt.token))) return true; } catch {}
+  // x004: Origin header validation — allow same-origin and localhost
+  const origin = req.headers.origin || '';
+  if (origin) {
+    try {
+      const o = new URL(origin);
+      const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(o.hostname);
+      const isSameHost = o.host === req.headers.host;
+      if (!isLocalhost && !isSameHost) {
+        socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+        socket.destroy();
+        return;
       }
+    } catch {
+      socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+      socket.destroy();
+      return;
     }
-    return false;
-  })();
-  if (!wsTokenOk) {
-    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-    socket.destroy();
-    return;
   }
 
   // Validate WebSocket headers
@@ -457,7 +473,7 @@ function handleWsUpgrade(req, socket, head) {
   const GUID = '258EAFA5-E914-47DA-95CA-5AB5DC799B07';
   const acceptKey = createHash('sha1').update(key + GUID).digest('base64');
 
-  // Send upgrade response
+  // Send upgrade response (x005: no token check here — auth via first message)
   socket.write(
     'HTTP/1.1 101 Switching Protocols\r\n' +
     'Upgrade: websocket\r\n' +
@@ -466,42 +482,35 @@ function handleWsUpgrade(req, socket, head) {
     '\r\n'
   );
 
-  // Track this client
-  const client = { socket, buffer: Buffer.alloc(0), alive: true };
+  // Track this client — starts unauthenticated (x005)
+  const client = { socket, buffer: Buffer.alloc(0), alive: true, authenticated: false, fragments: [] };
   wsClients.add(client);
 
-  // Send initial state (same as SSE init)
-  const defaultSession = sessions.has('default') ? sessions.get('default') : null;
-  const wsCsrfToken = generateCsrfToken();
-  const initBase = {
-    type: 'init',
-    data: {
-      pending: allPending(),
-      activity: allActivity(),
-      claims: null,
-      compilation: null,
-      trustLevel: defaultSession ? defaultSession.trustLevel : 'paranoid',
-      sessionRules: defaultSession ? defaultSession.sessionRules : [],
-      agents: allAgents(),
-      sessions: allSessionsSummary(),
-      csrfToken: wsCsrfToken,
-    }
-  };
-  wsSend(client, initBase);
-  if (claimsData) wsSend(client, { type: 'claims', data: claimsData });
-  if (compilationData) wsSend(client, { type: 'compilation', data: compilationData });
+  // x005: send state only after authentication (moved to data handler below)
 
   // Handle incoming frames
   socket.on('data', (chunk) => {
     client.buffer = Buffer.concat([client.buffer, chunk]);
+
+    // x006: enforce max buffer size
+    if (client.buffer.length > MAX_WS_BUFFER_SIZE) {
+      console.log('  [ws] Client exceeded max buffer size, disconnecting');
+      wsClients.delete(client);
+      try { socket.destroy(); } catch {}
+      return;
+    }
+
     while (true) {
       const frame = wsDecodeFrame(client.buffer);
       if (!frame) break;
       client.buffer = client.buffer.slice(frame.bytesConsumed);
 
       if (frame.opcode === 0x08) {
-        // Close frame — echo it back and clean up
-        try { socket.write(wsEncodeFrame('')); } catch {}
+        // x008: Close frame — respond with proper close frame (opcode 0x88)
+        const closeFrame = Buffer.alloc(2);
+        closeFrame[0] = 0x88; // FIN + close opcode
+        closeFrame[1] = 0x00;
+        try { socket.write(closeFrame); } catch {}
         wsClients.delete(client);
         socket.destroy();
         return;
@@ -519,7 +528,29 @@ function handleWsUpgrade(req, socket, head) {
         client.alive = true;
         continue;
       }
-      // Text frame (0x01) — currently not expecting client messages, ignore
+
+      // x007: Handle fragmentation — accumulate continuation frames until FIN
+      if (frame.opcode === 0x00) {
+        // Continuation frame
+        client.fragments.push(frame.payload);
+        if (frame.fin) {
+          // Final fragment — reassemble
+          const fullPayload = Buffer.concat(client.fragments);
+          client.fragments = [];
+          handleWsTextPayload(client, fullPayload);
+        }
+        continue;
+      }
+      if (frame.opcode === 0x01) {
+        // Text frame
+        if (!frame.fin) {
+          // First fragment of a fragmented message
+          client.fragments = [frame.payload];
+          continue;
+        }
+        // Complete single-frame text message
+        handleWsTextPayload(client, frame.payload);
+      }
     }
   });
 
@@ -530,6 +561,57 @@ function handleWsUpgrade(req, socket, head) {
   if (head && head.length > 0) {
     socket.emit('data', head);
   }
+}
+
+// x005: Handle text payloads — first message must be auth token
+function handleWsTextPayload(client, payload) {
+  const text = payload.toString('utf8');
+
+  // If not yet authenticated, first message must be the auth token
+  if (!client.authenticated) {
+    let token = text;
+    // Support JSON { "type": "auth", "token": "..." } format too
+    try {
+      const msg = JSON.parse(text);
+      if (msg.type === 'auth' && msg.token) token = msg.token;
+    } catch { /* plain text token */ }
+
+    if (wsTokenMatches(token)) {
+      client.authenticated = true;
+      // Now send initial state
+      const defaultSession = sessions.has('default') ? sessions.get('default') : null;
+      const wsCsrfToken = generateCsrfToken();
+      const initBase = {
+        type: 'init',
+        data: {
+          pending: allPending(),
+          activity: allActivity(),
+          claims: null,
+          compilation: null,
+          trustLevel: defaultSession ? defaultSession.trustLevel : 'paranoid',
+          sessionRules: defaultSession ? defaultSession.sessionRules : [],
+          agents: allAgents(),
+          sessions: allSessionsSummary(),
+          csrfToken: wsCsrfToken,
+        }
+      };
+      wsSend(client, initBase);
+      if (claimsData) wsSend(client, { type: 'claims', data: claimsData });
+      if (compilationData) wsSend(client, { type: 'compilation', data: compilationData });
+    } else {
+      // Auth failed — close connection
+      wsSend(client, { type: 'error', data: 'Authentication failed' });
+      const closeFrame = Buffer.alloc(2);
+      closeFrame[0] = 0x88;
+      closeFrame[1] = 0x00;
+      try { client.socket.write(closeFrame); } catch {}
+      wsClients.delete(client);
+      try { client.socket.destroy(); } catch {}
+    }
+    return;
+  }
+
+  // Authenticated client — currently not expecting client messages, ignore
 }
 
 function wsSend(client, msg) {
@@ -568,9 +650,10 @@ function broadcast(msg) {
   for (const res of sseClients) {
     res.write(`data: ${data}\n\n`);
   }
-  // WebSocket clients
+  // WebSocket clients (only authenticated — x005)
   const frame = wsEncodeFrame(data);
   for (const client of wsClients) {
+    if (!client.authenticated) continue;
     try {
       client.socket.write(frame);
     } catch {

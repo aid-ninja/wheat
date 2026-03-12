@@ -734,21 +734,37 @@ function connect() {
   tryWebSocket();
 }
 
+let wsRetryCount = 0;
+const WS_RETRY_MAX = 5;
+const WS_RETRY_BASE_MS = 1000;
+let wsRetryTimer = null;
+
 function tryWebSocket() {
   try {
     const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProto}//${location.host}/ws?token=${TOKEN}`;
+    // x005: no token in URL — authenticate via first message after connect
+    const wsUrl = `${wsProto}//${location.host}/ws`;
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-      liveTransport = 'ws';
-      document.getElementById('statusDot').className = 'dot connected';
-      document.getElementById('statusText').textContent = 'Connected (WebSocket)';
+      // x005: send token as first message for authentication
+      ws.send(JSON.stringify({ type: 'auth', token: TOKEN }));
     };
 
     ws.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data);
+        if (msg.type === 'error') {
+          // Auth failed or server error
+          console.warn('WS error:', msg.data);
+          try { ws.close(); } catch {}
+          return;
+        }
+        // Successfully receiving data means we're authenticated
+        if (liveTransport !== 'ws') {
+          liveTransport = 'ws';
+          wsRetryCount = 0; // reset backoff on successful connection
+        }
         handleMessage(msg);
         document.getElementById('statusDot').className = 'dot connected';
         document.getElementById('statusText').textContent = 'Connected (WebSocket)';
@@ -756,25 +772,42 @@ function tryWebSocket() {
     };
 
     ws.onclose = () => {
-      if (liveTransport === 'ws') {
-        liveTransport = null;
-        // WebSocket lost — try SSE as fallback
-        trySSE();
-      }
+      const wasWs = liveTransport === 'ws';
+      if (wasWs) liveTransport = null;
       ws = null;
+      // x009: retry WebSocket with exponential backoff before falling to SSE
+      scheduleWsRetry(wasWs);
     };
 
     ws.onerror = () => {
-      // WebSocket failed to connect — fall back to SSE
       liveTransport = null;
       try { ws.close(); } catch {}
       ws = null;
-      trySSE();
+      // x009: retry handled by onclose (which fires after onerror)
     };
   } catch {
-    // WebSocket constructor failed — fall back to SSE
-    trySSE();
+    // WebSocket constructor failed — schedule retry or fall back to SSE
+    scheduleWsRetry(false);
   }
+}
+
+// x009: exponential backoff for WebSocket reconnection
+function scheduleWsRetry(hadConnection) {
+  if (wsRetryTimer) return; // already scheduled
+  if (wsRetryCount >= WS_RETRY_MAX) {
+    // Exhausted retries — fall back to SSE
+    wsRetryCount = 0;
+    trySSE();
+    return;
+  }
+  const delay = WS_RETRY_BASE_MS * Math.pow(2, wsRetryCount);
+  wsRetryCount++;
+  document.getElementById('statusText').textContent = `Reconnecting WS (${wsRetryCount}/${WS_RETRY_MAX})...`;
+  wsRetryTimer = setTimeout(() => {
+    wsRetryTimer = null;
+    if (liveTransport === 'ws') return; // already reconnected
+    tryWebSocket();
+  }, delay);
 }
 
 function trySSE() {

@@ -1,10 +1,26 @@
 {
-  "compiled_at": "2026-03-12T10:14:35.627Z",
-  "claims_hash": "8c0d720",
+  "compiled_at": "2026-03-12T10:17:38.552Z",
+  "claims_hash": "ddef041",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
-  "warnings": [],
+  "warnings": [
+    {
+      "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"reliability\" has only 1 claim type(s): risk. Missing: constraint, factual, estimate, recommendation, feedback",
+      "claims": [
+        "x006",
+        "x009"
+      ]
+    },
+    {
+      "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"websocket-hardening\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
+      "claims": [
+        "p011"
+      ]
+    }
+  ],
   "resolved_claims": [
     {
       "id": "d001",
@@ -1332,6 +1348,182 @@
         "auth",
         "prototype"
       ]
+    },
+    {
+      "id": "x004",
+      "type": "risk",
+      "topic": "security",
+      "content": "WebSocket upgrade handler (handleWsUpgrade) performs no Origin header validation. HTTP routes apply CORS origin reflection, but the upgrade path skips it entirely. A malicious page that knows the token can open a WebSocket cross-origin. Mitigated partially by token secrecy, but weakened by x005 (token in URL). Fix: validate req.headers.origin against an allowlist or reject if origin doesn't match the served dashboard origin.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:419-467 — handleWsUpgrade() checks token but not Origin header"
+      },
+      "evidence": "tested",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p009"
+      ],
+      "resolved_by": "p011 — Added Origin header check in handleWsUpgrade(), allows same-origin and localhost only",
+      "tags": [
+        "websocket",
+        "security",
+        "origin-validation",
+        "cross-origin"
+      ]
+    },
+    {
+      "id": "x005",
+      "type": "risk",
+      "topic": "security",
+      "content": "Auth token is transmitted in the WebSocket URL query string (?token=...). Query strings are logged by proxies, CDNs (Cloudflare tunnel logs), browser history, and server access logs. This is a credential leakage vector that undermines the timing-safe comparison and token rotation features. RFC 6455 Section 10.5 warns against sensitive data in URLs. Fix: send token in the first WebSocket message after upgrade, or use a short-lived upgrade ticket obtained via an authenticated POST.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:428-441 (token from query), dashboard.html:740 (token in wsUrl)"
+      },
+      "evidence": "tested",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p009"
+      ],
+      "resolved_by": "p011 — Token removed from WS URL. Client sends {type:'auth',token} as first message; server validates before sending state",
+      "tags": [
+        "websocket",
+        "security",
+        "token-exposure",
+        "cloudflare-tunnel"
+      ]
+    },
+    {
+      "id": "x006",
+      "type": "risk",
+      "topic": "reliability",
+      "content": "WebSocket receive buffer (client.buffer) grows without bound. Buffer.concat appends every incoming chunk, but nothing enforces a maximum size. A slow-drip attacker (or a buggy client sending oversized frames) can grow the buffer until the Node process runs out of memory. Fix: enforce a MAX_WS_BUFFER_SIZE (e.g., 1MB) and destroy the socket if exceeded.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:496 — client.buffer = Buffer.concat([client.buffer, chunk]) with no size check"
+      },
+      "evidence": "tested",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p009"
+      ],
+      "resolved_by": "p011 — Added MAX_WS_BUFFER_SIZE (1MB) check; socket destroyed if exceeded",
+      "tags": [
+        "websocket",
+        "reliability",
+        "memory-leak",
+        "dos"
+      ]
+    },
+    {
+      "id": "x007",
+      "type": "risk",
+      "topic": "compatibility",
+      "content": "WebSocket frame decoder ignores the FIN bit — it reads opcode from firstByte but never checks (firstByte & 0x80). RFC 6455 allows fragmented messages (FIN=0 on non-final frames, opcode=0x00 for continuation frames). While browsers rarely fragment small JSON payloads, proxies and WebSocket intermediaries (including Cloudflare) may re-fragment frames. Fragmented messages will be silently misinterpreted or dropped. Fix: accumulate continuation frames until FIN=1, or reject fragmented frames explicitly with a close frame.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:385-416 — wsDecodeFrame() reads opcode but ignores FIN bit and continuation frames"
+      },
+      "evidence": "tested",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p009"
+      ],
+      "resolved_by": "p011 — wsDecodeFrame now returns fin bit; frame loop accumulates continuation fragments until FIN=1",
+      "tags": [
+        "websocket",
+        "compatibility",
+        "rfc6455",
+        "fragmentation",
+        "cloudflare-tunnel"
+      ]
+    },
+    {
+      "id": "x008",
+      "type": "risk",
+      "topic": "compatibility",
+      "content": "Close frame handling violates RFC 6455: when the server receives opcode 0x08 (close), it responds with wsEncodeFrame('') which sends a text frame (opcode 0x81) instead of a close frame (opcode 0x88). RFC 6455 Section 5.5.1 requires responding with a close frame. Some browsers or proxies may flag this as a protocol violation and report errors. Fix: send a proper close frame (first byte 0x88, then length 0x00) before destroying the socket.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:502-507 — close frame handler sends text frame via wsEncodeFrame('')"
+      },
+      "evidence": "tested",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p009"
+      ],
+      "resolved_by": "p011 — Close frame response now uses opcode 0x88 (Buffer [0x88, 0x00]) instead of wsEncodeFrame('')",
+      "tags": [
+        "websocket",
+        "compatibility",
+        "rfc6455",
+        "close-frame"
+      ]
+    },
+    {
+      "id": "x009",
+      "type": "risk",
+      "topic": "reliability",
+      "content": "Client-side WebSocket has no reconnection logic. When the WebSocket closes (ws.onclose), the client falls through to SSE and never retries WebSocket. A transient network blip permanently degrades the session to the inferior SSE transport for the lifetime of the page. This contradicts the 'WebSocket preferred' design. Fix: implement exponential backoff reconnection for WebSocket before falling back to SSE, or periodically attempt WebSocket upgrade while on SSE.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "dashboard.html:758-764 — ws.onclose calls trySSE() without scheduling WebSocket retry"
+      },
+      "evidence": "tested",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p009"
+      ],
+      "resolved_by": "p011 — Added exponential backoff retry (5 attempts, 1s-16s) before SSE fallback; reset on success",
+      "tags": [
+        "websocket",
+        "reliability",
+        "reconnection",
+        "fallback",
+        "client"
+      ]
+    },
+    {
+      "id": "p011",
+      "type": "factual",
+      "topic": "websocket-hardening",
+      "content": "Patched 6 WebSocket risks identified by /challenge p009: (1) Origin header validation rejects cross-origin upgrades (x004), (2) token sent as first WS message instead of URL query string (x005), (3) 1MB max buffer with forced disconnect on overflow (x006), (4) FIN bit + continuation frame accumulation for RFC 6455 fragmentation (x007), (5) close frame response uses opcode 0x88 per RFC 6455 (x008), (6) client-side exponential backoff reconnect (5 attempts, 1s-16s) before SSE fallback (x009). All fixes maintain zero-dep constraint.",
+      "source": {
+        "type": "code-review",
+        "origin": "prototype",
+        "detail": "server.mjs (handleWsUpgrade, wsDecodeFrame, frame loop) + dashboard.html (tryWebSocket, scheduleWsRetry)"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "websocket",
+        "security",
+        "reliability",
+        "rfc6455",
+        "prototype"
+      ]
     }
   ],
   "conflict_graph": {
@@ -1369,36 +1561,6 @@
       {
         "winner": "p003",
         "loser": "x016",
-        "reason": "evidence_tier: tested (4) > documented (3)"
-      },
-      {
-        "winner": "p009",
-        "loser": "x004",
-        "reason": "evidence_tier: tested (4) > documented (3)"
-      },
-      {
-        "winner": "p009",
-        "loser": "x005",
-        "reason": "evidence_tier: tested (4) > documented (3)"
-      },
-      {
-        "winner": "p009",
-        "loser": "x006",
-        "reason": "evidence_tier: tested (4) > documented (3)"
-      },
-      {
-        "winner": "p009",
-        "loser": "x007",
-        "reason": "evidence_tier: tested (4) > documented (3)"
-      },
-      {
-        "winner": "p009",
-        "loser": "x008",
-        "reason": "evidence_tier: tested (4) > documented (3)"
-      },
-      {
-        "winner": "p009",
-        "loser": "x009",
         "reason": "evidence_tier: tested (4) > documented (3)"
       }
     ],
@@ -1441,27 +1603,30 @@
       ]
     },
     "compatibility": {
-      "claims": 2,
+      "claims": 4,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
         "constraint",
-        "factual"
+        "factual",
+        "risk"
       ],
       "claim_ids": [
         "d004",
-        "p006"
+        "p006",
+        "x007",
+        "x008"
       ],
       "constraint_count": 1,
       "source_origins": [
+        "challenge",
         "prototype",
         "stakeholder"
       ],
-      "source_count": 2,
-      "type_diversity": 2,
+      "source_count": 3,
+      "type_diversity": 3,
       "missing_types": [
         "estimate",
-        "risk",
         "recommendation",
         "feedback"
       ]
@@ -1570,8 +1735,33 @@
         "feedback"
       ]
     },
+    "reliability": {
+      "claims": 2,
+      "max_evidence": "tested",
+      "status": "strong",
+      "types": [
+        "risk"
+      ],
+      "claim_ids": [
+        "x006",
+        "x009"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "challenge"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "constraint",
+        "factual",
+        "estimate",
+        "recommendation",
+        "feedback"
+      ]
+    },
     "security": {
-      "claims": 14,
+      "claims": 16,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -1593,17 +1783,20 @@
         "r037",
         "p005",
         "p009",
-        "p010"
+        "p010",
+        "x004",
+        "x005"
       ],
       "constraint_count": 0,
       "source_origins": [
         "OWASP",
         "OWASP-best-practices",
+        "challenge",
         "cloudflare-docs",
         "code-review",
         "prototype"
       ],
-      "source_count": 5,
+      "source_count": 6,
       "type_diversity": 3,
       "missing_types": [
         "constraint",
@@ -1639,6 +1832,30 @@
       "type_diversity": 4,
       "missing_types": [
         "constraint",
+        "feedback"
+      ]
+    },
+    "websocket-hardening": {
+      "claims": 1,
+      "max_evidence": "tested",
+      "status": "strong",
+      "types": [
+        "factual"
+      ],
+      "claim_ids": [
+        "p011"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "prototype"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "risk",
+        "recommendation",
         "feedback"
       ]
     }
@@ -1701,7 +1918,14 @@
     "p007": 0,
     "p008": 0,
     "p009": 0,
-    "p010": 0
+    "p010": 0,
+    "x004": 0,
+    "x005": 0,
+    "x006": 0,
+    "x007": 0,
+    "x008": 0,
+    "x009": 0,
+    "p011": 0
   },
   "phase_summary": {
     "define": {
@@ -1713,7 +1937,7 @@
       "complete": true
     },
     "prototype": {
-      "claims": 10,
+      "claims": 11,
       "complete": true
     },
     "evaluate": {
@@ -1733,14 +1957,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 73,
-    "active_claims": 58,
+    "total_claims": 74,
+    "active_claims": 59,
     "conflicted_claims": 0,
-    "superseded_claims": 15,
+    "superseded_claims": 9,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:8c0d720d4491ed96df27f653ea328a7b42a2941c085a0b85fec3c6f4df2e99bf",
+    "input_hash": "sha256:ddef041129e765f62cfaa16d01a4811f27ce65f1d61aad5bcb523c5a0a0794bc",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

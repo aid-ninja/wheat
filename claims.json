@@ -1251,12 +1251,12 @@
         "origin": "challenge",
         "detail": "server.mjs:419-467 — handleWsUpgrade() checks token but not Origin header"
       },
-      "evidence": "documented",
-      "status": "active",
+      "evidence": "tested",
+      "status": "resolved",
       "phase_added": "challenge",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": ["p009"],
-      "resolved_by": null,
+      "resolved_by": "p011 — Added Origin header check in handleWsUpgrade(), allows same-origin and localhost only",
       "tags": ["websocket", "security", "origin-validation", "cross-origin"]
     },
     {
@@ -1269,12 +1269,12 @@
         "origin": "challenge",
         "detail": "server.mjs:428-441 (token from query), dashboard.html:740 (token in wsUrl)"
       },
-      "evidence": "documented",
-      "status": "active",
+      "evidence": "tested",
+      "status": "resolved",
       "phase_added": "challenge",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": ["p009"],
-      "resolved_by": null,
+      "resolved_by": "p011 — Token removed from WS URL. Client sends {type:'auth',token} as first message; server validates before sending state",
       "tags": ["websocket", "security", "token-exposure", "cloudflare-tunnel"]
     },
     {
@@ -1287,12 +1287,12 @@
         "origin": "challenge",
         "detail": "server.mjs:496 — client.buffer = Buffer.concat([client.buffer, chunk]) with no size check"
       },
-      "evidence": "documented",
-      "status": "active",
+      "evidence": "tested",
+      "status": "resolved",
       "phase_added": "challenge",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": ["p009"],
-      "resolved_by": null,
+      "resolved_by": "p011 — Added MAX_WS_BUFFER_SIZE (1MB) check; socket destroyed if exceeded",
       "tags": ["websocket", "reliability", "memory-leak", "dos"]
     },
     {
@@ -1305,12 +1305,12 @@
         "origin": "challenge",
         "detail": "server.mjs:385-416 — wsDecodeFrame() reads opcode but ignores FIN bit and continuation frames"
       },
-      "evidence": "documented",
-      "status": "active",
+      "evidence": "tested",
+      "status": "resolved",
       "phase_added": "challenge",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": ["p009"],
-      "resolved_by": null,
+      "resolved_by": "p011 — wsDecodeFrame now returns fin bit; frame loop accumulates continuation fragments until FIN=1",
       "tags": ["websocket", "compatibility", "rfc6455", "fragmentation", "cloudflare-tunnel"]
     },
     {
@@ -1323,12 +1323,12 @@
         "origin": "challenge",
         "detail": "server.mjs:502-507 — close frame handler sends text frame via wsEncodeFrame('')"
       },
-      "evidence": "documented",
-      "status": "active",
+      "evidence": "tested",
+      "status": "resolved",
       "phase_added": "challenge",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": ["p009"],
-      "resolved_by": null,
+      "resolved_by": "p011 — Close frame response now uses opcode 0x88 (Buffer [0x88, 0x00]) instead of wsEncodeFrame('')",
       "tags": ["websocket", "compatibility", "rfc6455", "close-frame"]
     },
     {
@@ -1341,12 +1341,12 @@
         "origin": "challenge",
         "detail": "dashboard.html:758-764 — ws.onclose calls trySSE() without scheduling WebSocket retry"
       },
-      "evidence": "documented",
-      "status": "active",
+      "evidence": "tested",
+      "status": "resolved",
       "phase_added": "challenge",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": ["p009"],
-      "resolved_by": null,
+      "resolved_by": "p011 — Added exponential backoff retry (5 attempts, 1s-16s) before SSE fallback; reset on success",
       "tags": ["websocket", "reliability", "reconnection", "fallback", "client"]
     },
     {
@@ -1474,6 +1474,24 @@
       "conflicts_with": ["p003"],
       "resolved_by": null,
       "tags": ["multi-session", "ux", "scalability", "dashboard", "performance"]
+    },
+    {
+      "id": "p011",
+      "type": "factual",
+      "topic": "websocket-hardening",
+      "content": "Patched 6 WebSocket risks identified by /challenge p009: (1) Origin header validation rejects cross-origin upgrades (x004), (2) token sent as first WS message instead of URL query string (x005), (3) 1MB max buffer with forced disconnect on overflow (x006), (4) FIN bit + continuation frame accumulation for RFC 6455 fragmentation (x007), (5) close frame response uses opcode 0x88 per RFC 6455 (x008), (6) client-side exponential backoff reconnect (5 attempts, 1s-16s) before SSE fallback (x009). All fixes maintain zero-dep constraint.",
+      "source": {
+        "type": "code-review",
+        "origin": "prototype",
+        "detail": "server.mjs (handleWsUpgrade, wsDecodeFrame, frame loop) + dashboard.html (tryWebSocket, scheduleWsRetry)"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["websocket", "security", "reliability", "rfc6455", "prototype"]
     }
   ]
 }
