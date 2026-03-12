@@ -622,7 +622,9 @@
 
 <script>
 const TOKEN = '{{TOKEN}}';
-const API = (path) => `${location.origin}${path}?token=${TOKEN}`;
+// Cookie auth is primary (HttpOnly cookie set on login redirect).
+// Token fallback for SSE which doesn't send cookies cross-origin in some browsers.
+const API = (path) => `${location.origin}${path}`;
 const isRequest = (name) => name === 'Request' || name === 'AskUserQuestion';
 
 let evtSource;

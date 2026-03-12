@@ -285,13 +285,36 @@ setInterval(() => {
 const server = createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
 
-  // CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Security headers
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+
+  // CORS — restrict to request origin (not wildcard)
+  const origin = req.headers.origin || '';
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
+  // Auth: check cookie first, then URL token fallback
+  const parseCookies = () => {
+    const h = req.headers.cookie || '';
+    const map = {};
+    h.split(';').forEach(c => { const [k, ...v] = c.trim().split('='); if (k) map[k] = v.join('='); });
+    return map;
+  };
+  const cookies = parseCookies();
+
   const authOk = () => {
+    // Cookie auth (preferred — no token in URL)
+    const cookieToken = cookies['farmer_token'] || '';
+    if (cookieToken.length === TOKEN.length) {
+      try { if (timingSafeEqual(Buffer.from(cookieToken), Buffer.from(TOKEN))) return true; } catch {}
+    }
+    // URL token fallback (for initial login and hook endpoints)
     const provided = url.searchParams.get('token') || '';
     if (provided.length !== TOKEN.length) return false;
     return timingSafeEqual(Buffer.from(provided), Buffer.from(TOKEN));
@@ -492,7 +515,22 @@ const server = createServer(async (req, res) => {
       res.end(loginPage());
       return;
     }
-    res.writeHead(200, { 'Content-Type': 'text/html', 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' });
+    // If token was in URL, set cookie and redirect to clean URL (removes token from address bar/history)
+    const urlToken = url.searchParams.get('token');
+    if (urlToken) {
+      res.writeHead(302, {
+        'Set-Cookie': `farmer_token=${TOKEN}; HttpOnly; SameSite=Strict; Path=/; Max-Age=86400`,
+        'Location': '/',
+        'Cache-Control': 'no-store',
+      });
+      res.end();
+      return;
+    }
+    res.writeHead(200, {
+      'Content-Type': 'text/html',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+    });
     res.end(dashboardPage(TOKEN));
     return;
   }

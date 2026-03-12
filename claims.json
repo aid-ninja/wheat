@@ -1024,6 +1024,24 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["security", "token-exposure", "template-injection"]
+    },
+    {
+      "id": "p005",
+      "type": "factual",
+      "topic": "security",
+      "content": "Security hardening implemented: (1) Cookie-based auth — first visit with ?token= sets HttpOnly/SameSite=Strict cookie and 302-redirects to clean URL, removing token from address bar and browser history. (2) CORS restricted from wildcard * to request origin with credentials support. (3) Referrer-Policy: no-referrer header on all responses prevents token leakage via Referer. (4) X-Content-Type-Options: nosniff added. Dashboard API calls use cookie auth; SSE retains token param as fallback for cross-origin EventSource.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs security hardening"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "cookie-auth", "cors", "referrer-policy", "prototype"]
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T08:06:14.023Z",
-  "claims_hash": "d1e9b72",
+  "compiled_at": "2026-03-12T08:11:07.446Z",
+  "claims_hash": "1a92757",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -1110,6 +1110,30 @@
         "token-exposure",
         "template-injection"
       ]
+    },
+    {
+      "id": "p005",
+      "type": "factual",
+      "topic": "security",
+      "content": "Security hardening implemented: (1) Cookie-based auth — first visit with ?token= sets HttpOnly/SameSite=Strict cookie and 302-redirects to clean URL, removing token from address bar and browser history. (2) CORS restricted from wildcard * to request origin with credentials support. (3) Referrer-Policy: no-referrer header on all responses prevents token leakage via Referer. (4) X-Content-Type-Options: nosniff added. Dashboard API calls use cookie auth; SSE retains token param as fallback for cross-origin EventSource.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs security hardening"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "cookie-auth",
+        "cors",
+        "referrer-policy",
+        "prototype"
+      ]
     }
   ],
   "conflict_graph": {
@@ -1281,9 +1305,9 @@
       ]
     },
     "security": {
-      "claims": 11,
-      "max_evidence": "documented",
-      "status": "moderate",
+      "claims": 12,
+      "max_evidence": "tested",
+      "status": "strong",
       "types": [
         "factual",
         "recommendation",
@@ -1300,16 +1324,18 @@
         "r034",
         "r035",
         "r036",
-        "r037"
+        "r037",
+        "p005"
       ],
       "constraint_count": 0,
       "source_origins": [
         "OWASP",
         "OWASP-best-practices",
         "cloudflare-docs",
-        "code-review"
+        "code-review",
+        "prototype"
       ],
-      "source_count": 4,
+      "source_count": 5,
       "type_diversity": 3,
       "missing_types": [
         "constraint",
@@ -1366,7 +1392,8 @@
     "r034": 0,
     "r035": 0,
     "r036": 0,
-    "r037": 0
+    "r037": 0,
+    "p005": 0
   },
   "phase_summary": {
     "define": {
@@ -1378,7 +1405,7 @@
       "complete": true
     },
     "prototype": {
-      "claims": 4,
+      "claims": 5,
       "complete": true
     },
     "evaluate": {
@@ -1398,14 +1425,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 48,
-    "active_claims": 48,
+    "total_claims": 49,
+    "active_claims": 49,
     "conflicted_claims": 0,
     "superseded_claims": 0,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:d1e9b72a4c4f651a51639b13291cebf121cbbedfa22da498f4d1c56420e0f533",
+    "input_hash": "sha256:1a9275762baa1170e8a3b7f7e986733e8a76db43940a5748b66d6a568c582396",
     "compiler_version": "0.2.0",
     "deterministic": true
   }
