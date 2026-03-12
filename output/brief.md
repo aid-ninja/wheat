@@ -1,164 +1,118 @@
-# Remote Farmer — Architecture Recommendation
-
-> Remote permission dashboard for Claude Code
-> Claims hash: 473da3f | 56 claims | 10 topics | ~650 LOC prototype
-
 ---
+pdf_options:
+  format: A4
+  margin: 25mm 20mm
+css: |-
+  body { font-family: system-ui, sans-serif; font-size: 11pt; line-height: 1.6; color: #111; max-width: 100%; }
+  h1 { font-size: 20pt; margin-bottom: 4pt; }
+  h2 { font-size: 14pt; margin-top: 16pt; margin-bottom: 6pt; border-bottom: 1px solid #ddd; padding-bottom: 4pt; }
+  table { border-collapse: collapse; width: 100%; margin: 8pt 0; font-size: 10pt; }
+  th, td { border: 1px solid #ccc; padding: 4pt 8pt; text-align: left; }
+  th { background: #f5f5f5; }
+  .citation { font-size: 9pt; color: #666; }
+  .certificate { margin-top: 24pt; padding: 12pt; background: #f9f9f9; border-radius: 4pt; font-size: 9pt; }
+---
+
+# Decision Brief: Scaling Remote Farmer for Multi-Session, Multi-Sprint, and Repo Cartography
+
+**Date**: 2026-03-12  |  **Audience**: Solo developer, team leads  |  **Phase**: Compiled
 
 ## Executive Summary
 
-Remote Farmer is a zero-dependency Node.js server that intercepts Claude Code's permission requests via HTTP hooks and relays them to a browser dashboard. A remote user approves or denies each tool call from their phone, with the decision relayed back synchronously before Claude Code proceeds. [r001] [p001]
-
-No patching, no forking, no subprocess wrapping. The hook system is the entire integration surface — and the prototype proves it works end-to-end, including remote access from an iPhone via Cloudflare Tunnel. [d001] [p007] [p012]
-
-**Key numbers:** 56 claims, 10 topics, ~650 LOC prototype, 0 npm dependencies [p003]
-
----
-
-## How It Works
-
-### Architecture
-
-```
-Claude Code CLI
-  │
-  ├── PreToolUse hook ───────POST──► localhost:9090/hooks/permission
-  ├── PostToolUse hook ──────POST──► localhost:9090/hooks/activity
-  ├── PostToolUseFailure ────POST──► localhost:9090/hooks/activity
-  └── Notification hook ─────POST──► localhost:9090/hooks/notification
-                                              │
-                                    Remote Farmer Server (Node.js)
-                                              │
-                                    SSE push + polling fallback
-                                              │
-                                       Browser Dashboard
-                                    (approve / deny / monitor)
-```
-
-### Permission Flow
-
-1. Claude Code fires a `PreToolUse` hook POST to `localhost:9090` [r001]
-2. Server checks trust tier — auto-approves if rules match [p009]
-3. If not auto-approved, holds HTTP response and pushes to browser [p002]
-4. User taps Approve or Deny on the dashboard
-5. Server responds with allow/deny JSON [r002]
-6. Claude Code proceeds (or halts) based on the decision
-
-### Connectivity
-
-SSE (Server-Sent Events) for local connections. Cloudflare and other reverse proxies buffer SSE, so the dashboard auto-detects this and falls back to polling `/api/state` every 2 seconds. State diff prevents UI flash on re-render. [p007] [p011]
-
----
-
-## Security Model
-
-### Fail-Deny on Timeout [x001] [x008]
-
-Empty JSON `{}` on 2xx means auto-allow in Claude Code. The timeout handler returns an explicit deny decision. This is the single most important security property of the system.
-
-### Fail-Open on Server Crash [x002]
-
-If the server crashes or network drops, non-2xx / timeout = Claude Code proceeds as if no hook exists. **Unfixable from dashboard side** — it is Claude Code's design choice. Mitigate with a local command hook that checks server health. [x010]
-
-### Hardening [p010]
-
-- Hook endpoints restricted to localhost (remoteAddress check)
-- Request body capped at 1MB
-- Token comparison uses `crypto.timingSafeEqual`
-- Regex patterns escape special chars (ReDoS prevention)
-- Dangerous Bash patterns flagged visually in dashboard
-
-### Auth Layers [p005] [r009]
-
-- **Inner:** Random hex token (or `--token` flag), required for all dashboard/API access
-- **Outer:** Tunnel auth (Cloudflare Zero Trust email OTP, or ngrok basic auth)
-
----
-
-## Trust Tiers [p009]
-
-| Tier | Behavior | Best For |
-|------|----------|----------|
-| **Paranoid** | Approve everything manually | Security-sensitive ops |
-| **Standard** | Auto-approve Read/Grep/Glob/WebSearch/WebFetch | Daily development |
-| **Autonomous** | Auto-approve all except dangerous Bash | Trusted codebases, max speed |
-
-Standard mode eliminates approval fatigue for safe read-only tools while keeping write/execute under remote control. Autonomous mode was tested live — only `rm`, `git push`, `sudo`, `curl|sh`, and similar patterns require approval. [r030] [r032]
-
-### Session Rules
-
-Dashboard exposes checkbox rules by tool category. Users can also add per-tool rules from "Quick Rules" dropdown on each permission card. Rules persist in server memory for the session. [r028] [r031]
-
----
-
-## Tested Findings
-
-### Cloudflare Tunnel [p007] [p012]
-
-- `cloudflared tunnel --url http://localhost:9090` works with no account
-- SSE is **buffered** by Cloudflare despite `X-Accel-Buffering: no` headers
-- Polling fallback required — auto-detected after 4s SSE silence
-- Tunnel URL changes on each `cloudflared` restart (use named tunnels for persistence)
-- Quick tunnels have no SLA but work fine for dev sessions
-
-### iOS Safari [p008]
-
-- `Notification` API does not exist — `typeof Notification === 'undefined'`
-- All references must be guarded or dashboard JS crashes silently
-- `env(safe-area-inset-top)` needed for iPhone Dynamic Island
-- `viewport-fit=cover` required in meta viewport
-
-### Hook Behavior [r004] [x001]
-
-- HTTP hooks are fail-open by design (non-2xx = proceed)
-- Empty JSON `{}` on 2xx = auto-allow (critical security footgun)
-- `PreToolUse` fires before every tool regardless of permission config
-- Notification hooks are non-blocking (fire and forget, can't relay user input)
-
----
-
-## Limitations
-
-### No Remote Text Input [r023] [r024]
-
-Hooks cannot answer `AskUserQuestion` prompts. Questions are visible on dashboard but unanswerable — the Notification hook is fire-and-forget. Text conversation must stay in the terminal.
-
-### Fail-Open Is Unfixable [x002]
-
-Server crash = permissions silently granted. Hybrid command hook is the best workaround. [x010]
-
-### No Hot-Reload [r007]
-
-Hook config loaded at session startup. Changes require session restart.
-
----
-
-## Tunneling
-
-| Option | Auth | Setup | Free Tier | Tested |
-|--------|------|-------|-----------|--------|
-| **Cloudflare Tunnel** | Zero Trust email OTP [r019] | ~2 min | Free/50 users | Yes [p007] [p012] |
-| **ngrok** | `--basic-auth` [r017] | ~1 min | 1 GB/mo + interstitial [r016] | No |
-| **Tailscale Funnel** | ACL-based [r020] | ~5 min | Free personal | No |
-
-**Recommendation:** Cloudflare Tunnel for sessions. Requires polling fallback but otherwise works well. Named tunnel + Zero Trust Access for recurring use. [r022]
-
----
+Remote Farmer should scale via three independent workstreams: (1) session-keyed server state with per-session Maps for multi-session support, (2) a sprints/ directory model with config-file pointer for multi-sprint, and (3) a compiler-generated topic-map manifest for repo cartography. The manifest generator is already built and produces results in <10ms (p001). The multi-session refactor is planned at ~300 lines (p002). Total implementation effort across all three is estimated at 5-9 hours (r008, r026).
 
 ## Recommendation
 
-**Ship the prototype.** The 650-line Node.js server with self-contained HTML dashboard covers the core use case: remote permission approval from a phone over a tunneled connection. Trust tiers solve the approval fatigue problem. Polling fallback handles proxy compatibility.
+### Multi-Session (12 claims, documented evidence)
+Use a single-server, session-keyed architecture (r003). Replace global singletons with a `Map<session_id, SessionState>` and a `getSession(id)` lazy initializer (r004). Claude Code's hook payloads already include a stable `session_id` UUID (r001), and SessionStart/SessionEnd lifecycle hooks provide explicit session boundaries (r002, w001). **Critical constraint**: SessionStart/SessionEnd only support command-type hooks, not HTTP (w002) -- a curl wrapper is required for Farmer integration.
 
-**What to build next:**
-1. Hybrid fail-safe command hook (closes fail-open gap) [x010]
-2. Named Cloudflare tunnel with stable URL
-3. `updatedInput` sandboxing for Autonomous mode [r032]
+Dashboard UX: unified feed with session color-coding via hue-from-hash, plus a pill-bar session switcher (r005, p002). Permission cards must prominently display session labels to mitigate cross-session approval confusion (r006).
 
-**What to wait for:**
-- Claude Code API for remote text injection [r023]
-- Fail-closed HTTP hook mode [x002]
-- Hot-reloadable hook config [r007]
+### Multi-Sprint (8 claims, documented evidence)
+Use a `sprints/` directory with one subdirectory per sprint, each self-contained (r020). The current sprint pointer lives in `wheat.config.json` (not symlinks) for cross-platform portability (r025, resolved against r020). Dashboard shows a collapsible sprint card list for switching (r022). Cross-sprint claim references use `sprint-slug:claim-id` format (r024). Server adds `--sprints-dir` flag with hot-reload via `fs.watchFile` (r021).
+
+### Repo Cartography (8 claims, tested evidence)
+Generate `wheat-manifest.json` as a topic map on every compilation (r011, r017). The manifest maps topics to claim IDs, file paths, and sprints -- enabling a single `Read` call to replace 3-5 iterative Glob/Grep searches (r012). The generator is built and tested: <10ms generation time, ~5KB output (p001). CLAUDE.md remains the behavioral instruction layer; the manifest handles structural discovery (r015). Commit messages should include `[topic]` tags for fast `git log --grep` (r014).
+
+**Cartography is needed now, not later**: the repo already has 157 files (x001), and the `examples/` directory creates search noise with 62 duplicate-named files (x002). Context window pollution -- not I/O time -- is the real cost metric (x003).
+
+### Compatibility
+Zero npm dependencies constraint maintained (d004). All implementations use Node built-in modules only. Single-session workflow preserved via backwards-compatible defaults.
+
+## Evidence Summary
+
+| Topic | Claims | Max Evidence | Sources | Types | Key Finding |
+|-------|--------|-------------|---------|-------|-------------|
+| cartography | 8 | tested | 4 | 4/6 | Manifest generator built, <10ms, 5KB (p001) |
+| multi-session | 12 | documented | 4 | 5/6 | session_id routing + SessionState Maps (r003) |
+| multi-sprint | 8 | documented | 2 | 4/6 | sprints/ dir + config pointer, not symlinks (r020, r025) |
+| performance | 6 | tested | 4 | 4/6 | 157 files now, context pollution is real cost (x001-x003) |
+| compatibility | 1 | stated | 1 | 1/6 | Zero deps constraint, no research done |
+
+## Tradeoffs and Risks
+
+| Risk | Evidence | Mitigation |
+|------|----------|------------|
+| Concurrent permission confusion across sessions (r006) | stated | Color-coded session labels, distinct hue per session_id |
+| CLAUDE.md staleness if used for structural cartography (r015) | documented | Use manifest as structural truth, CLAUDE.md for behavior only |
+| Symlink portability on Windows (r025) | documented | Config file as canonical pointer, symlinks as convenience only |
+| SessionStart/SessionEnd command-only hooks (w002) | documented | Curl wrapper scripts instead of direct HTTP hooks |
+| Context window pollution from noisy search results (x003) | documented | Manifest eliminates iterative search, saves 10-40K tokens/session |
+
+## Resolved Conflicts
+
+**r020 vs r025** (multi-sprint): r020 recommended symlinks for current-sprint pointer. r025 identified Windows portability risk. Resolution: use `wheat.config.json` `currentSprint` field as canonical pointer; symlinks optional as local convenience, not committed to git. Both claims remain active with complementary guidance.
+
+## Implementation Roadmap
+
+| Phase | Workstream | Effort | Files |
+|-------|-----------|--------|-------|
+| 1 | Manifest generator (DONE) | -- | generate-manifest.js |
+| 2 | Multi-session server refactor | 2-4h (r008) | server.mjs, dashboard.html |
+| 3 | Multi-sprint support | 3-5h (r026) | server.mjs, dashboard.html, wheat-init.js, wheat-compiler.js |
+| 4 | Compiler manifest integration | 1h | wheat-compiler.js |
+
+## Appendix: Claim Inventory
+
+| ID | Type | Topic | Evidence | Content |
+|----|------|-------|----------|---------|
+| d001 | constraint | multi-session | stated | Multi-session dashboard support required |
+| d002 | constraint | multi-sprint | stated | Multi-sprint viewing and switching required |
+| d003 | constraint | cartography | stated | Repo must be self-describing for AI sessions |
+| d004 | constraint | compatibility | stated | Zero npm deps, backwards compatible |
+| d005 | constraint | performance | stated | Measurably faster search with cartography |
+| r001 | factual | multi-session | documented | session_id UUID in all hook payloads |
+| r002 | factual | multi-session | documented | SessionStart/SessionEnd lifecycle hooks |
+| r003 | recommendation | multi-session | documented | Single-server, session-keyed Maps |
+| r004 | recommendation | multi-session | documented | getSession(id) lazy initializer |
+| r005 | recommendation | multi-session | documented | Unified feed with session color-coding |
+| r006 | risk | multi-session | stated | Concurrent permission confusion |
+| r007 | factual | multi-session | documented | Heartbeat timeout for stale sessions |
+| r008 | estimate | multi-session | stated | ~300 lines, 2-4 hours |
+| r010 | factual | cartography | documented | CLAUDE.md auto-loads per directory |
+| r011 | recommendation | cartography | documented | wheat-manifest.json topic map |
+| r012 | factual | performance | documented | Single Read replaces 3-5 tool calls |
+| r013 | recommendation | cartography | documented | Sprint index in compilation output |
+| r014 | recommendation | cartography | documented | [topic] tags in commit messages |
+| r015 | risk | cartography | documented | Per-directory CLAUDE.md staleness |
+| r016 | estimate | performance | stated | Crossover at 150-200 files (CHALLENGED) |
+| r017 | recommendation | cartography | documented | Topic map over file tree |
+| x001 | factual | performance | tested | Repo already 157 files, not 80 |
+| x002 | factual | performance | tested | examples/ creates 62 duplicate-name files |
+| x003 | risk | performance | documented | Context pollution is real cost, not I/O |
+| w001 | factual | multi-session | documented | SessionStart/SessionEnd confirmed with source field |
+| w002 | factual | multi-session | documented | Lifecycle hooks are command-only, not HTTP |
+| r020 | recommendation | multi-sprint | documented | sprints/ directory + config pointer |
+| r021 | recommendation | multi-sprint | documented | --sprints-dir flag with hot-reload |
+| r022 | recommendation | multi-sprint | documented | Collapsible card list sprint switcher |
+| r023 | recommendation | multi-sprint | documented | /init creates under sprints/, phase-based lifecycle |
+| r024 | recommendation | multi-sprint | documented | Cross-sprint refs: sprint-slug:claim-id |
+| r025 | risk | multi-sprint | documented | Symlink portability, use config instead |
+| r026 | estimate | multi-sprint | stated | ~250 lines, 3-5 hours |
+| p001 | factual | cartography | tested | Manifest generator: <10ms, 5KB topic map |
+| p002 | recommendation | multi-session | documented | Multi-session refactor plan with SessionState |
 
 ---
-
-*Claims hash 473da3f — Compiled by Wheat*
+<div class="certificate">
+Compilation certificate: sha256:1f6f8eea32516 | Compiler: wheat v0.2.0 | Claims: 35 | Compiled: 2026-03-12T06:51:46.090Z
+</div>
