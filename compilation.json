@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T10:00:46.995Z",
-  "claims_hash": "18488f7",
+  "compiled_at": "2026-03-12T10:06:04.823Z",
+  "claims_hash": "d66705c",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -1308,6 +1308,30 @@
         "fallback",
         "prototype"
       ]
+    },
+    {
+      "id": "p010",
+      "type": "factual",
+      "topic": "security",
+      "content": "CSRF protection and auth token rotation added to Remote Farmer. Per-session CSRF tokens are generated server-side (crypto.randomBytes, 24h TTL) and delivered to the dashboard via init payloads (SSE, WebSocket) and /api/state polling responses. All mutating dashboard endpoints (POST /api/decide, /api/trust-level, /api/rules, /api/admin/rotate-token) validate X-CSRF-Token header, returning 403 on mismatch. Hook endpoints (localhost-only) are exempt. Token rotation supports configurable auto-rotation (--token-rotation-interval) and on-demand rotation via POST /api/admin/rotate-token. Retired tokens have a configurable grace period (--token-grace-period, default 60s) using timing-safe comparison. Dashboard auto-updates cookie on rotation via broadcast event. Zero dependencies, ~80 LOC added.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs — generateCsrfToken(), validateCsrfToken(), rotateToken(), csrfOk(); dashboard.html — postJSON(), csrfToken handling in handleMessage()"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "csrf",
+        "token-rotation",
+        "security",
+        "auth",
+        "prototype"
+      ]
     }
   ],
   "conflict_graph": {
@@ -1481,7 +1505,7 @@
       ]
     },
     "security": {
-      "claims": 13,
+      "claims": 14,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -1502,7 +1526,8 @@
         "r036",
         "r037",
         "p005",
-        "p009"
+        "p009",
+        "p010"
       ],
       "constraint_count": 0,
       "source_origins": [
@@ -1609,7 +1634,8 @@
     "f001": 0,
     "p007": 0,
     "p008": 0,
-    "p009": 0
+    "p009": 0,
+    "p010": 0
   },
   "phase_summary": {
     "define": {
@@ -1621,7 +1647,7 @@
       "complete": true
     },
     "prototype": {
-      "claims": 9,
+      "claims": 10,
       "complete": true
     },
     "evaluate": {
@@ -1641,14 +1667,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 59,
-    "active_claims": 57,
+    "total_claims": 60,
+    "active_claims": 58,
     "conflicted_claims": 0,
     "superseded_claims": 2,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:18488f750cc3d6babff0812536fbe3c806703b596b9b237b439489d372aedf57",
+    "input_hash": "sha256:d66705c3eac8e0bfc97ea56789f9460403a4e74be07671a63069fe5f7ad81fb0",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

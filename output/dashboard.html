@@ -131,6 +131,21 @@
 
   /* Footer */
   .footer { text-align: center; padding: 24px; font-size: 11px; color: var(--text-dim); }
+
+  /* Mobile */
+  @media (max-width: 640px) {
+    body { padding: 16px; }
+    .grid { grid-template-columns: 1fr; }
+    .question { font-size: 16px; }
+    .meta-row { flex-direction: column; gap: 4px; }
+    .cov-row { flex-wrap: wrap; gap: 6px; }
+    .cov-topic { min-width: auto; width: 100%; }
+    .cov-label { min-width: auto; text-align: left; }
+    table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .git-row { flex-wrap: wrap; }
+    .git-msg { white-space: normal; }
+    .header-row { flex-wrap: wrap; }
+  }
 </style>
 </head>
 <body>

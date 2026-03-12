@@ -1222,6 +1222,24 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["websocket", "cloudflare-tunnel", "transport", "realtime", "fallback", "prototype"]
+    },
+    {
+      "id": "p010",
+      "type": "factual",
+      "topic": "security",
+      "content": "CSRF protection and auth token rotation added to Remote Farmer. Per-session CSRF tokens are generated server-side (crypto.randomBytes, 24h TTL) and delivered to the dashboard via init payloads (SSE, WebSocket) and /api/state polling responses. All mutating dashboard endpoints (POST /api/decide, /api/trust-level, /api/rules, /api/admin/rotate-token) validate X-CSRF-Token header, returning 403 on mismatch. Hook endpoints (localhost-only) are exempt. Token rotation supports configurable auto-rotation (--token-rotation-interval) and on-demand rotation via POST /api/admin/rotate-token. Retired tokens have a configurable grace period (--token-grace-period, default 60s) using timing-safe comparison. Dashboard auto-updates cookie on rotation via broadcast event. Zero dependencies, ~80 LOC added.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs — generateCsrfToken(), validateCsrfToken(), rotateToken(), csrfOk(); dashboard.html — postJSON(), csrfToken handling in handleMessage()"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["csrf", "token-rotation", "security", "auth", "prototype"]
     }
   ]
 }

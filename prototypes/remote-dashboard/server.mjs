@@ -30,10 +30,65 @@ function arg(name, fallback) {
 }
 
 const PORT = parseInt(arg('port', '9090'), 10);
-const TOKEN = arg('token', randomBytes(16).toString('hex'));
+let TOKEN = arg('token', randomBytes(16).toString('hex'));
+const TOKEN_ROTATION_INTERVAL = parseInt(arg('token-rotation-interval', '0'), 10); // seconds, 0 = disabled
+const TOKEN_GRACE_PERIOD = parseInt(arg('token-grace-period', '60'), 10); // seconds old tokens remain valid
 const CLAIMS_PATH = resolve(arg('claims', './claims.json'));
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const STATE_PATH = join(__dirname, '.farmer-state.json');
+
+// --- CSRF tokens (per-browser-session) ---
+const csrfTokens = new Map(); // csrfToken -> { createdAt }
+const CSRF_TOKEN_TTL = 24 * 60 * 60 * 1000; // 24h
+
+function generateCsrfToken() {
+  const token = randomBytes(24).toString('hex');
+  csrfTokens.set(token, { createdAt: Date.now() });
+  return token;
+}
+
+function validateCsrfToken(token) {
+  if (!token) return false;
+  const entry = csrfTokens.get(token);
+  if (!entry) return false;
+  if (Date.now() - entry.createdAt > CSRF_TOKEN_TTL) {
+    csrfTokens.delete(token);
+    return false;
+  }
+  return true;
+}
+
+// Periodic CSRF cleanup
+setInterval(() => {
+  const now = Date.now();
+  for (const [t, entry] of csrfTokens) {
+    if (now - entry.createdAt > CSRF_TOKEN_TTL) csrfTokens.delete(t);
+  }
+}, 60 * 60 * 1000); // hourly
+
+// --- Auth token rotation ---
+let retiredTokens = []; // [{ token, retiredAt }]
+
+function rotateToken() {
+  const oldToken = TOKEN;
+  const newToken = randomBytes(16).toString('hex');
+  retiredTokens.push({ token: oldToken, retiredAt: Date.now() });
+  TOKEN = newToken;
+  // Purge expired retired tokens
+  const cutoff = Date.now() - TOKEN_GRACE_PERIOD * 1000;
+  retiredTokens = retiredTokens.filter(t => t.retiredAt > cutoff);
+  console.log(`  [rotate] Auth token rotated. New: ${TOKEN.slice(0, 8)}... Grace: ${TOKEN_GRACE_PERIOD}s`);
+  // Notify connected clients they need to re-auth
+  broadcast({ type: 'token_rotated', data: { newToken: TOKEN, gracePeriod: TOKEN_GRACE_PERIOD } });
+  return TOKEN;
+}
+
+// Auto-rotation timer
+let rotationTimer = null;
+if (TOKEN_ROTATION_INTERVAL > 0) {
+  rotationTimer = setInterval(rotateToken, TOKEN_ROTATION_INTERVAL * 1000);
+  console.log(`  [rotate] Auto-rotation every ${TOKEN_ROTATION_INTERVAL}s`);
+}
 
 // --- State persistence (JSON snapshots) ---
 function saveState() {
@@ -370,9 +425,22 @@ function handleWsUpgrade(req, socket, head) {
     return;
   }
 
-  // Auth check: token in query string
+  // Auth check: token in query string (supports grace period for rotated tokens)
   const provided = url.searchParams.get('token') || '';
-  if (provided.length !== TOKEN.length || !timingSafeEqual(Buffer.from(provided), Buffer.from(TOKEN))) {
+  const wsTokenOk = (() => {
+    if (!provided) return false;
+    if (provided.length === TOKEN.length) {
+      try { if (timingSafeEqual(Buffer.from(provided), Buffer.from(TOKEN))) return true; } catch {}
+    }
+    const cutoff = Date.now() - TOKEN_GRACE_PERIOD * 1000;
+    for (const rt of retiredTokens) {
+      if (rt.retiredAt > cutoff && provided.length === rt.token.length) {
+        try { if (timingSafeEqual(Buffer.from(provided), Buffer.from(rt.token))) return true; } catch {}
+      }
+    }
+    return false;
+  })();
+  if (!wsTokenOk) {
     socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
     socket.destroy();
     return;
@@ -404,6 +472,7 @@ function handleWsUpgrade(req, socket, head) {
 
   // Send initial state (same as SSE init)
   const defaultSession = sessions.has('default') ? sessions.get('default') : null;
+  const wsCsrfToken = generateCsrfToken();
   const initBase = {
     type: 'init',
     data: {
@@ -415,6 +484,7 @@ function handleWsUpgrade(req, socket, head) {
       sessionRules: defaultSession ? defaultSession.sessionRules : [],
       agents: allAgents(),
       sessions: allSessionsSummary(),
+      csrfToken: wsCsrfToken,
     }
   };
   wsSend(client, initBase);
@@ -563,7 +633,7 @@ const server = createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-CSRF-Token');
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
   // Auth: check cookie first, then URL token fallback
@@ -575,16 +645,33 @@ const server = createServer(async (req, res) => {
   };
   const cookies = parseCookies();
 
+  const tokenMatches = (provided) => {
+    if (!provided || provided.length !== TOKEN.length) return false;
+    try { if (timingSafeEqual(Buffer.from(provided), Buffer.from(TOKEN))) return true; } catch {}
+    // Check retired tokens within grace period
+    const cutoff = Date.now() - TOKEN_GRACE_PERIOD * 1000;
+    for (const rt of retiredTokens) {
+      if (rt.retiredAt > cutoff && provided.length === rt.token.length) {
+        try { if (timingSafeEqual(Buffer.from(provided), Buffer.from(rt.token))) return true; } catch {}
+      }
+    }
+    return false;
+  };
+
   const authOk = () => {
     // Cookie auth (preferred — no token in URL)
     const cookieToken = cookies['farmer_token'] || '';
-    if (cookieToken.length === TOKEN.length) {
-      try { if (timingSafeEqual(Buffer.from(cookieToken), Buffer.from(TOKEN))) return true; } catch {}
-    }
+    if (tokenMatches(cookieToken)) return true;
     // URL token fallback (for initial login and hook endpoints)
     const provided = url.searchParams.get('token') || '';
-    if (provided.length !== TOKEN.length) return false;
-    return timingSafeEqual(Buffer.from(provided), Buffer.from(TOKEN));
+    return tokenMatches(provided);
+  };
+
+  // CSRF validation for mutating requests (POST/PUT/DELETE)
+  const csrfOk = () => {
+    if (req.method === 'GET' || req.method === 'OPTIONS' || req.method === 'HEAD') return true;
+    const csrfHeader = req.headers['x-csrf-token'] || '';
+    return validateCsrfToken(csrfHeader);
   };
 
   // --- SSE endpoint ---
@@ -602,6 +689,7 @@ const server = createServer(async (req, res) => {
 
     // Send current state as separate small SSE messages (mobile proxies choke on large single messages)
     const defaultSession = sessions.has('default') ? sessions.get('default') : null;
+    const csrfToken = generateCsrfToken();
     const initBase = JSON.stringify({
       type: 'init',
       data: {
@@ -613,6 +701,7 @@ const server = createServer(async (req, res) => {
         sessionRules: defaultSession ? defaultSession.sessionRules : [],
         agents: allAgents(),
         sessions: allSessionsSummary(),
+        csrfToken,
       }
     });
     res.write(`data: ${initBase}\n\n`);
@@ -656,6 +745,7 @@ const server = createServer(async (req, res) => {
   // --- Dashboard API ---
   if (req.method === 'POST' && url.pathname === '/api/decide') {
     if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
+    if (!csrfOk()) { res.writeHead(403); res.end('CSRF token invalid'); return; }
     let body;
     try { body = await readBody(req); } catch { res.writeHead(413); res.end('Request too large'); return; }
     let data;
@@ -665,6 +755,7 @@ const server = createServer(async (req, res) => {
 
   if (req.method === 'POST' && url.pathname === '/api/trust-level') {
     if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
+    if (!csrfOk()) { res.writeHead(403); res.end('CSRF token invalid'); return; }
     let body;
     try { body = await readBody(req); } catch { res.writeHead(413); res.end('Request too large'); return; }
     let data;
@@ -674,6 +765,7 @@ const server = createServer(async (req, res) => {
 
   if (req.method === 'POST' && url.pathname === '/api/rules') {
     if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
+    if (!csrfOk()) { res.writeHead(403); res.end('CSRF token invalid'); return; }
     let body;
     try { body = await readBody(req); } catch { res.writeHead(413); res.end('Request too large'); return; }
     let data;
@@ -760,6 +852,7 @@ const server = createServer(async (req, res) => {
   if (req.method === 'GET' && url.pathname === '/api/state') {
     if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
     const defaultSession = sessions.has('default') ? sessions.get('default') : null;
+    const csrfToken = generateCsrfToken();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       pending: allPending(),
@@ -771,7 +864,21 @@ const server = createServer(async (req, res) => {
       sessionRules: defaultSession ? defaultSession.sessionRules : [],
       agents: allAgents(),
       sessions: allSessionsSummary(),
+      csrfToken,
     }));
+    return;
+  }
+
+  // --- Admin: rotate auth token on-demand ---
+  if (req.method === 'POST' && url.pathname === '/api/admin/rotate-token') {
+    if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
+    if (!csrfOk()) { res.writeHead(403); res.end('CSRF token invalid'); return; }
+    const newToken = rotateToken();
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Set-Cookie': `farmer_token=${newToken}; HttpOnly; SameSite=Strict; Path=/; Max-Age=86400`,
+    });
+    res.end(JSON.stringify({ ok: true, token: newToken, gracePeriod: TOKEN_GRACE_PERIOD }));
     return;
   }
 
@@ -821,6 +928,18 @@ const server = createServer(async (req, res) => {
     } catch {
       res.writeHead(404); res.end('Not found');
     }
+    return;
+  }
+
+  // --- Serve PWA assets (sw.js, manifest.json) ---
+  if (req.method === 'GET' && (url.pathname === '/sw.js' || url.pathname === '/manifest.json')) {
+    const file = url.pathname.slice(1);
+    try {
+      const content = readFileSync(join(__dirname, file), 'utf8');
+      const mime = file.endsWith('.js') ? 'application/javascript' : 'application/json';
+      res.writeHead(200, { 'Content-Type': mime, 'Cache-Control': 'no-cache' });
+      res.end(content);
+    } catch { res.writeHead(404); res.end('Not found'); }
     return;
   }
 
@@ -1281,10 +1400,12 @@ function dashboardPage(token) {
 server.on('upgrade', handleWsUpgrade);
 
 server.listen(PORT, () => {
-  console.log(`\n  Remote Farmer (multi-session + WebSocket)`);
-  console.log(`  ──────────────────────────────────────────`);
+  console.log(`\n  Remote Farmer (multi-session + WebSocket + CSRF)`);
+  console.log(`  ───────────────────────────────────────────────`);
   console.log(`  Local:  http://localhost:${PORT}/?token=${TOKEN}`);
   console.log(`  Token:  ${TOKEN}`);
+  console.log(`  CSRF:   enabled (per-session tokens in API responses)`);
+  console.log(`  Rotate: ${TOKEN_ROTATION_INTERVAL > 0 ? `every ${TOKEN_ROTATION_INTERVAL}s (grace: ${TOKEN_GRACE_PERIOD}s)` : 'manual via POST /api/admin/rotate-token'}`);
   console.log(`  Claims: ${CLAIMS_PATH}`);
   console.log(`\n  Hook endpoints:`);
   console.log(`    http://localhost:${PORT}/hooks/permission`);
