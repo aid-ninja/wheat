@@ -1087,7 +1087,7 @@ function renderRequests() {
         <div class="meta">${new Date(p.timestamp || Date.now()).toLocaleTimeString()}</div>
         <div class="tool-input">${esc(prompt)}</div>
         ${options.length > 0 ? `<div style="display:flex;flex-direction:column;gap:6px;margin:8px 0;">${options.map((o, i) => `
-          <button class="btn" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);text-align:left;padding:10px 12px;border-radius:8px;" ontouchend="event.preventDefault();respondToQuestion('${esc(p.requestId)}','${esc(o.label)}')" onclick="respondToQuestion('${esc(p.requestId)}','${esc(o.label)}')">
+          <button class="btn opt-btn" data-rid="${esc(p.requestId)}" data-val="${esc(o.label)}" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);text-align:left;padding:10px 12px;border-radius:8px;">
             <strong>${esc(o.label)}</strong>${o.description ? `<br><span style="font-size:11px;color:var(--dim);">${esc(o.description)}</span>` : ''}
           </button>`).join('')}</div>` : ''}
         <textarea class="question-input" id="question-input-${esc(p.requestId)}" placeholder="Type your response..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();respondToQuestion('${esc(p.requestId)}')}"></textarea>
@@ -1535,6 +1535,12 @@ document.querySelectorAll('.tab').forEach(tab => {
 
 // Close quick-rules dropdowns on outside click
 document.addEventListener('click', (e) => {
+  const optBtn = e.target.closest('.opt-btn');
+  if (optBtn) {
+    e.preventDefault();
+    respondToQuestion(optBtn.dataset.rid, optBtn.dataset.val);
+    return;
+  }
   if (!e.target.closest('.quick-rules') && openQuickRules) {
     openQuickRules = null;
     render();
