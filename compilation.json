@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T10:22:50.662Z",
-  "claims_hash": "959247f",
+  "compiled_at": "2026-03-12T10:23:07.840Z",
+  "claims_hash": "b15eb2f",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -1597,6 +1597,30 @@
         "resource-exhaustion",
         "prototype"
       ]
+    },
+    {
+      "id": "p013",
+      "type": "factual",
+      "topic": "multi-sprint",
+      "content": "detect-sprints.js determines the active sprint purely from filesystem + git — no config pointer needed. Scans for claims.json files (root + examples/), reads meta.phase for archived status, queries git log for last commit date and commit count per claims.json, then ranks candidates: non-archived > most recent git activity > most recent initiated date > highest claim count. Outputs human-readable, JSON, or --active (path only) modes. Measured at ~150ms for 3 sprints. Correctly identifies root sprint as active (71 git commits, 74 claims) over 2 example sprints. Validates f001: config should not duplicate git-derivable state. Zero npm dependencies.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "detect-sprints.js — detectSprints(), analyzeSprint(), findSprintRoots(); uses git log + git rev-list via child_process.execFileSync"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "multi-sprint",
+        "git-detection",
+        "no-config",
+        "sprint-discovery",
+        "prototype"
+      ]
     }
   ],
   "conflict_graph": {
@@ -1738,7 +1762,7 @@
       ]
     },
     "multi-sprint": {
-      "claims": 8,
+      "claims": 9,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -1756,7 +1780,8 @@
         "r024",
         "r026",
         "p004",
-        "f001"
+        "f001",
+        "p013"
       ],
       "constraint_count": 2,
       "source_origins": [
@@ -1995,7 +2020,8 @@
     "x010": 0,
     "x011": 0,
     "p011": 0,
-    "p012": 0
+    "p012": 0,
+    "p013": 0
   },
   "phase_summary": {
     "define": {
@@ -2007,7 +2033,7 @@
       "complete": true
     },
     "prototype": {
-      "claims": 12,
+      "claims": 13,
       "complete": true
     },
     "evaluate": {
@@ -2027,14 +2053,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 75,
-    "active_claims": 60,
+    "total_claims": 76,
+    "active_claims": 61,
     "conflicted_claims": 0,
     "superseded_claims": 7,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:959247fa741ec8f4db792aef8308e17036101ba1bd3eb5ceb0ef4d8399888f25",
+    "input_hash": "sha256:b15eb2f385b387398aa2c22f0235eacc121376d7bf8e464bd515d43ca4cd4feb",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

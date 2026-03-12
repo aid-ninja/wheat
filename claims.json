@@ -1510,6 +1510,24 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["multi-session", "gc", "memory-leak", "resource-exhaustion", "prototype"]
+    },
+    {
+      "id": "p013",
+      "type": "factual",
+      "topic": "multi-sprint",
+      "content": "detect-sprints.js determines the active sprint purely from filesystem + git — no config pointer needed. Scans for claims.json files (root + examples/), reads meta.phase for archived status, queries git log for last commit date and commit count per claims.json, then ranks candidates: non-archived > most recent git activity > most recent initiated date > highest claim count. Outputs human-readable, JSON, or --active (path only) modes. Measured at ~150ms for 3 sprints. Correctly identifies root sprint as active (71 git commits, 74 claims) over 2 example sprints. Validates f001: config should not duplicate git-derivable state. Zero npm dependencies.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "detect-sprints.js — detectSprints(), analyzeSprint(), findSprintRoots(); uses git log + git rev-list via child_process.execFileSync"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["multi-sprint", "git-detection", "no-config", "sprint-discovery", "prototype"]
     }
   ]
 }
