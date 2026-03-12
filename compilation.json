@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T10:49:49.603Z",
-  "claims_hash": "525231b",
+  "compiled_at": "2026-03-12T10:52:52.665Z",
+  "claims_hash": "84f569f",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -2461,26 +2461,26 @@
   },
   "sprints": [
     {
-      "name": "how-should-we-scale",
-      "path": ".",
-      "status": "active",
-      "phase": "research",
-      "question": "How should we scale Remote Farmer for multi-session and multi-sprint support, and what repo cartography system keeps AI model interactions fast as the Wheat codebase and git history grow?",
-      "claims_count": 86,
-      "active_claims": 71,
-      "last_git_activity": "2026-03-12T05:47:49-05:00",
-      "git_commit_count": 76
-    },
-    {
       "name": "remote-farmer-sprint",
       "path": "examples/remote-farmer-sprint",
-      "status": "example",
+      "status": "active",
       "phase": "prototype",
       "question": "How should we build a remote permission and monitoring dashboard for Claude Code — a web UI that receives permission requests, shows live activity, and lets users approve/deny tool calls remotely over tunneled connections?",
       "claims_count": 56,
       "active_claims": 54,
       "last_git_activity": "2026-03-12T00:17:05-05:00",
       "git_commit_count": 1
+    },
+    {
+      "name": "how-should-we-scale",
+      "path": ".",
+      "status": "archived",
+      "phase": "archived",
+      "question": "How should we scale Remote Farmer for multi-session and multi-sprint support, and what repo cartography system keeps AI model interactions fast as the Wheat codebase and git history grow?",
+      "claims_count": 86,
+      "active_claims": 71,
+      "last_git_activity": "2026-03-12T05:50:03-05:00",
+      "git_commit_count": 77
     },
     {
       "name": "self-referential-sprint",
@@ -2501,7 +2501,7 @@
       "team leads"
     ],
     "initiated": "2026-03-12",
-    "phase": "research",
+    "phase": "archived",
     "total_claims": 86,
     "active_claims": 71,
     "conflicted_claims": 0,
@@ -2509,7 +2509,7 @@
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:525231b1886328a11a39688f6307f664c30d5baaad2a989b52bf35b4643604b5",
+    "input_hash": "sha256:84f569f3fd6fdca077265bb99b34a3d027c6fc7580d763ff5bb53268c64467ce",
     "compiler_version": "0.2.0",
     "deterministic": true
   }
