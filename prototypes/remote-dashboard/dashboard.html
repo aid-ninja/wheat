@@ -29,11 +29,14 @@
     font-size: 14px;
     line-height: 1.5;
     height: 100vh;
+    height: 100dvh; /* iOS dynamic viewport — shrinks with Safari toolbar */
     overflow: hidden;
+    position: fixed;
+    width: 100%;
   }
 
   /* Layout */
-  .app { display: flex; flex-direction: column; height: 100vh; }
+  .app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
   .header {
     display: flex;
     align-items: center;
@@ -572,6 +575,7 @@ async function poll() {
       compilation: data.compilation,
       trustLevel: data.trustLevel,
       sessionRules: data.sessionRules || [],
+      agents: data.agents || [],
     };
     const changed = JSON.stringify(newState) !== lastPollHash;
     if (changed) {

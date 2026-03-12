@@ -41,6 +41,18 @@ let compilationData = null;
 let trustLevel = 'paranoid'; // 'paranoid' | 'standard' | 'autonomous'
 const sessionRules = [];     // [{tool: string, pattern?: string}]
 
+// --- Agent tracking (server-side for polling support) ---
+const agents = [];  // [{id, description, agentType, status, timestamp, stoppedAt?}]
+function trackAgentStart(data) {
+  agents.push({ id: data.id, description: data.description, agent_type: data.agentType, status: 'running', startedAt: data.timestamp });
+  broadcast({ type: 'agent_start', data });
+}
+function trackAgentStop(data) {
+  const a = agents.find(x => x.id === data.id);
+  if (a) { a.status = 'done'; a.stoppedAt = data.timestamp; }
+  broadcast({ type: 'agent_stop', data });
+}
+
 const STANDARD_AUTO_APPROVE = new Set(['Read', 'Grep', 'Glob', 'WebSearch', 'WebFetch']);
 
 const DANGEROUS_BASH_PATTERNS = [
@@ -172,6 +184,7 @@ const server = createServer(async (req, res) => {
         compilation: null,
         trustLevel,
         sessionRules,
+        agents,
       }
     });
     res.write(`data: ${initBase}\n\n`);
@@ -272,6 +285,7 @@ const server = createServer(async (req, res) => {
       compilation: compilationData,
       trustLevel,
       sessionRules,
+      agents,
     }));
     return;
   }
@@ -321,12 +335,12 @@ function handlePermission(data, res) {
 
   // Track agent starts from PreToolUse on Agent tool
   if (toolName === 'Agent') {
-    broadcast({ type: 'agent_start', data: {
+    trackAgentStart({
       id: requestId,
       description: toolInput?.description || '',
       agentType: toolInput?.subagent_type || 'general-purpose',
       timestamp: Date.now(),
-    }});
+    });
   }
 
   // Check trust tiers FIRST — auto-approve if rules match
@@ -513,13 +527,13 @@ function handleNotification(data, res) {
     const agentType = data.tool_input?.subagent_type || 'general-purpose';
 
     if (message.toLowerCase().includes('start') || message.toLowerCase().includes('launch') || hookEvent.includes('Start')) {
-      broadcast({ type: 'agent_start', data: { id: agentId, description, agentType, timestamp: Date.now() } });
+      trackAgentStart({ id: agentId, description, agentType, timestamp: Date.now() });
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end('{}');
       return;
     }
     if (message.toLowerCase().includes('stop') || message.toLowerCase().includes('complete') || hookEvent.includes('Stop')) {
-      broadcast({ type: 'agent_stop', data: { id: agentId, timestamp: Date.now() } });
+      trackAgentStop({ id: agentId, timestamp: Date.now() });
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end('{}');
       return;
@@ -577,7 +591,7 @@ function handleActivity(data, res) {
   // Track agent completion via PostToolUse/PostToolUseFailure
   if (isAgent) {
     const agentId = data.tool_use_id || randomBytes(8).toString('hex');
-    broadcast({ type: 'agent_stop', data: { id: agentId, timestamp: Date.now() } });
+    trackAgentStop({ id: agentId, timestamp: Date.now() });
   }
 
   addActivity({
