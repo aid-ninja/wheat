@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Sprint Handoff — Scaling Remote Farmer</title>
+<style>
+  :root { --bg: #0f172a; --bg2: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --dim: #64748b; --accent: #60a5fa; --green: #34d399; --orange: #fbbf24; --red: #f87171; --purple: #a78bfa; --border: rgba(255,255,255,0.08); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.7; }
+  .slide { min-height: 100vh; scroll-snap-align: start; padding: 60px 32px; display: flex; flex-direction: column; justify-content: center; max-width: 860px; margin: 0 auto; }
+  .slide + .slide { border-top: 1px solid var(--border); }
+  h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(135deg, #f0a030, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; }
+  h2 { font-size: 20px; font-weight: 700; color: var(--accent); margin-bottom: 16px; }
+  h3 { font-size: 16px; font-weight: 600; color: var(--text); margin: 20px 0 8px; }
+  p, li { color: var(--muted); margin-bottom: 10px; }
+  strong { color: var(--text); }
+  .meta { font-size: 13px; color: var(--dim); margin-bottom: 24px; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 12px; margin-right: 6px; margin-bottom: 4px; }
+  .tag.tested { background: rgba(52,211,153,0.15); color: var(--green); }
+  .tag.done { background: rgba(52,211,153,0.15); color: var(--green); }
+  .tag.todo { background: rgba(251,191,36,0.15); color: var(--orange); }
+  .tag.risk { background: rgba(248,113,113,0.15); color: var(--red); }
+  .claim-ref { font-family: 'SF Mono', monospace; font-size: 12px; color: var(--accent); background: rgba(96,165,250,0.1); padding: 1px 6px; border-radius: 3px; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  th { text-align: left; padding: 8px 12px; background: var(--bg2); color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+  .card-accent { border-left: 3px solid var(--accent); }
+  .card-green { border-left: 3px solid var(--green); }
+  .card-orange { border-left: 3px solid var(--orange); }
+  .card-red { border-left: 3px solid var(--red); }
+  .card-purple { border-left: 3px solid var(--purple); }
+  .cert { margin-top: 32px; padding: 16px; background: var(--bg2); border-radius: 8px; font-family: monospace; font-size: 12px; color: var(--dim); }
+  ul { padding-left: 20px; }
+  code { font-family: 'SF Mono', monospace; font-size: 13px; background: rgba(96,165,250,0.1); padding: 1px 5px; border-radius: 3px; }
+  pre { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; font-family: 'SF Mono', monospace; font-size: 13px; color: var(--muted); line-height: 1.5; margin: 12px 0; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center; margin-top: 24px; }
+  .grid-3 > div { padding: 16px; border-radius: 8px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; text-align: center; margin-top: 24px; }
+  .grid-4 > div { padding: 16px; border-radius: 8px; }
+  .num { font-size: 24px; font-weight: 800; }
+  .label { font-size: 11px; color: var(--dim); }
+  @media (max-width: 640px) { .slide { padding: 40px 20px; } h1 { font-size: 22px; } .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- Slide 1: Title -->
+<div class="slide">
+  <h1>Sprint Handoff: Scaling Remote Farmer</h1>
+  <p class="meta">Knowledge Transfer Package | 2026-03-12 | Claims hash: ddef041 | Compiler: wheat v0.2.0</p>
+  <p><strong>Question:</strong> How should we scale Remote Farmer for multi-session and multi-sprint support, and what repo cartography system keeps AI model interactions fast as the Wheat codebase and git history grow?</p>
+  <p><strong>Status:</strong> Near-complete. 9 of 11 roadmap items DONE. Estimated 2-2.5 hours remaining.</p>
+  <div class="grid-4">
+    <div style="background:rgba(52,211,153,0.1);"><div class="num" style="color:var(--green);">74</div><div class="label">CLAIMS</div></div>
+    <div style="background:rgba(96,165,250,0.1);"><div class="num" style="color:var(--accent);">9</div><div class="label">TOPICS</div></div>
+    <div style="background:rgba(167,139,250,0.1);"><div class="num" style="color:var(--purple);">10</div><div class="label">PROTOTYPES</div></div>
+    <div style="background:rgba(251,191,36,0.1);"><div class="num" style="color:var(--orange);">0</div><div class="label">CONFLICTS</div></div>
+  </div>
+  <div style="margin-top: 24px; display: flex; gap: 6px; flex-wrap: wrap;">
+    <span class="tag tested">multi-session: tested</span>
+    <span class="tag tested">multi-sprint: tested</span>
+    <span class="tag tested">cartography: tested</span>
+    <span class="tag tested">security: tested</span>
+    <span class="tag tested">compatibility: tested</span>
+    <span class="tag tested">performance: tested</span>
+    <span class="tag tested">state-persistence: tested</span>
+  </div>
+</div>
+
+<!-- Slide 2: Key Findings -->
+<div class="slide">
+  <h2>Key Findings</h2>
+
+  <div class="card card-green">
+    <h3>Multi-Session <span class="claim-ref">p003</span></h3>
+    <p>Session-keyed <code>Map&lt;session_id, SessionState&gt;</code> with lazy initialization from hook payloads. Dashboard shows unified feed with session color-coding via hue-from-hash, pill-bar switcher for filtering. Heartbeat timeout (5min) handles crashed sessions.</p>
+  </div>
+
+  <div class="card card-green">
+    <h3>Multi-Sprint <span class="claim-ref">p004</span></h3>
+    <p>Sprint scanner reads <code>sprints/</code> directory with <code>fs.watchFile</code> hot-reload. <code>/api/sprints</code> endpoint serves sprint list. Cross-sprint references use <code>sprint-slug:claim-id</code> format. Backwards compatible with <code>--claims</code> flag.</p>
+  </div>
+
+  <div class="card card-green">
+    <h3>Repo Cartography <span class="claim-ref">p001</span> <span class="claim-ref">p007</span></h3>
+    <p>Compiler-generated <code>wheat-manifest.json</code> is a topic map (not file tree). A single <code>Read</code> call replaces 3-5 Glob/Grep calls. Generated in &lt;10ms (~6.7ms measured), ~5.8KB. Wired into compiler pipeline, non-fatal on failure.</p>
+  </div>
+
+  <div class="card card-accent">
+    <h3>Security Stack <span class="claim-ref">p005</span> <span class="claim-ref">p009</span> <span class="claim-ref">p010</span></h3>
+    <p>Cookie auth (HttpOnly, SameSite=Strict) with 302-redirect to clean URL. CORS restricted to request origin. WebSocket transport for CF tunnel compatibility. CSRF tokens with auto-rotation and configurable grace period. All zero-dependency.</p>
+  </div>
+
+  <div class="card card-accent">
+    <h3>State Persistence <span class="claim-ref">p008</span></h3>
+    <p>Atomic JSON writes (tmp+rename) to <code>.farmer-state.json</code>. Restores trust levels, session rules, activity logs on restart. Graceful shutdown via SIGTERM/SIGINT. 30s periodic auto-save. ~45 LOC.</p>
+  </div>
+</div>
+
+<!-- Slide 3: Architecture -->
+<div class="slide">
+  <h2>Architecture</h2>
+  <pre>
+Claude Code Session(s)
+    |
+    | HTTP hook payloads (include session_id UUID)
+    v
+server.mjs (Remote Farmer) ---- ~1000 LOC, zero npm deps
+    |
+    |-- SessionState Map (per-session state)
+    |-- Sprint scanner (hot-reload via fs.watchFile)
+    |-- .farmer-state.json (atomic persistence)
+    |-- Cookie auth + CSRF tokens
+    |
+    |-- SSE stream   (/api/stream)
+    |-- WebSocket     (/ws upgrade, CF tunnel safe)
+    |-- REST API      (/api/state, /api/sprints, /api/decide)
+    v
+dashboard.html (Browser)
+    |-- Session pill-bar switcher + color coding
+    |-- Sprint selector dropdown
+    |-- Transport cascade: WebSocket > SSE > 2s polling
+  </pre>
+
+  <h3>Transport Cascade</h3>
+  <table>
+    <tr><th>Layer</th><th>Protocol</th><th>Use case</th></tr>
+    <tr><td>Primary</td><td>WebSocket (ws.mjs, ~150 LOC)</td><td>Works through CF quick tunnels</td></tr>
+    <tr><td>Fallback</td><td>SSE (/api/stream)</td><td>Works local/direct, not through CF tunnels</td></tr>
+    <tr><td>Baseline</td><td>2s polling (/api/state)</td><td>Always active, universal compatibility</td></tr>
+  </table>
+
+  <h3>Data Flow</h3>
+  <p><code>claims.json</code> -> <code>wheat-compiler.js</code> (9-pass) -> <code>compilation.json</code> + <code>wheat-manifest.json</code> -> output artifacts</p>
+  <p>All output artifacts consume <code>compilation.json</code>, never <code>claims.json</code> directly. The manifest is a topic-map index for fast AI tool search.</p>
+</div>
+
+<!-- Slide 4: Roadmap Status -->
+<div class="slide">
+  <h2>Implementation Roadmap</h2>
+  <table>
+    <tr><th>#</th><th>Workstream</th><th>Status</th><th>Claim</th></tr>
+    <tr><td>1</td><td>Manifest generator</td><td><span class="tag done">DONE</span></td><td><span class="claim-ref">p001</span></td></tr>
+    <tr><td>2</td><td>Multi-session refactor</td><td><span class="tag done">DONE</span></td><td><span class="claim-ref">p003</span></td></tr>
+    <tr><td>3</td><td>Multi-sprint support</td><td><span class="tag done">DONE</span></td><td><span class="claim-ref">p004</span></td></tr>
+    <tr><td>4</td><td>Security hardening</td><td><span class="tag done">DONE</span></td><td><span class="claim-ref">p005</span></td></tr>
+    <tr><td>5</td><td>Backwards compat tests</td><td><span class="tag done">DONE</span></td><td><span class="claim-ref">p006</span></td></tr>
+    <tr><td>6</td><td>Compiler manifest integration</td><td><span class="tag done">DONE</span></td><td><span class="claim-ref">p007</span></td></tr>
+    <tr><td>7</td><td>State persistence</td><td><span class="tag done">DONE</span></td><td><span class="claim-ref">p008</span></td></tr>
+    <tr><td>8</td><td>WebSocket transport</td><td><span class="tag done">DONE</span></td><td><span class="claim-ref">p009</span></td></tr>
+    <tr><td>9</td><td>CSRF + token rotation</td><td><span class="tag done">DONE</span></td><td><span class="claim-ref">p010</span></td></tr>
+    <tr><td>10</td><td>Named CF tunnel (stable subdomain)</td><td><span class="tag todo">TODO</span></td><td><span class="claim-ref">r027</span> <span class="claim-ref">r036</span></td></tr>
+    <tr><td>11</td><td>Sprint pointer resolution</td><td><span class="tag todo">TODO</span></td><td><span class="claim-ref">f001</span></td></tr>
+  </table>
+  <p style="margin-top:16px;"><strong>Remaining effort: ~2.5 hours</strong> (2h named tunnel + 0.5h sprint pointer)</p>
+</div>
+
+<!-- Slide 5: Risks & Open Items -->
+<div class="slide">
+  <h2>Risks and Open Items</h2>
+
+  <div class="card card-orange">
+    <h3>Open Decision: Sprint Pointer (f001)</h3>
+    <p>Stakeholder feedback says config should not duplicate git-derivable state. The active sprint can be inferred from directory scanning or git log recency instead of an explicit <code>wheat.config.json</code> pointer. Original recommendations r020 and r025 are superseded. Needs resolution.</p>
+  </div>
+
+  <div class="card card-red">
+    <h3>High Severity</h3>
+    <ul>
+      <li><strong>SSE broken through CF quick tunnels</strong> <span class="claim-ref">r027</span> -- Mitigated by WebSocket fallback <span class="claim-ref">p009</span>. Named tunnel is the proper fix.</li>
+      <li><strong>Full compromise on token leak</strong> <span class="claim-ref">r031</span> -- Mitigated by cookie auth <span class="claim-ref">p005</span> + token rotation <span class="claim-ref">p010</span></li>
+    </ul>
+  </div>
+
+  <div class="card card-orange">
+    <h3>Medium Severity</h3>
+    <ul>
+      <li><strong>Approval confusion with concurrent sessions</strong> <span class="claim-ref">r006</span> -- Mitigated by session labels + colors</li>
+      <li><strong>/api/ask injection vector</strong> <span class="claim-ref">r032</span> -- Mitigated by CSRF tokens <span class="claim-ref">p010</span></li>
+      <li><strong>SessionStart fires on resume/clear/compact</strong> <span class="claim-ref">w001</span> -- Not just new sessions</li>
+      <li><strong>Lifecycle hooks are command-only, not HTTP</strong> <span class="claim-ref">w002</span> -- Requires curl wrapper</li>
+    </ul>
+  </div>
+
+  <h3>Compiler Warnings</h3>
+  <p><span class="tag risk">W_TYPE_MONOCULTURE</span> "reliability" topic has only risk claims. <span class="tag risk">W_TYPE_MONOCULTURE</span> "websocket-hardening" topic has only one factual claim.</p>
+</div>
+
+<!-- Slide 6: Key Files -->
+<div class="slide">
+  <h2>Key Files</h2>
+
+  <h3>Core Infrastructure</h3>
+  <table>
+    <tr><th>File</th><th>Purpose</th></tr>
+    <tr><td><code>CLAUDE.md</code></td><td>AI operating manual: intent router, claims system, all conventions</td></tr>
+    <tr><td><code>claims.json</code></td><td>Canonical data: 74 typed claims with evidence tiers and conflict tracking</td></tr>
+    <tr><td><code>compilation.json</code></td><td>Compiler output consumed by all artifacts (never edit directly)</td></tr>
+    <tr><td><code>wheat-compiler.js</code></td><td>9-pass compiler: validate, types, sort, conflicts, coverage, certificate</td></tr>
+    <tr><td><code>generate-manifest.js</code></td><td>Topic-map manifest generator (&lt;10ms)</td></tr>
+    <tr><td><code>wheat-manifest.json</code></td><td>Topic map: topics -> claims -> files for fast AI search</td></tr>
+    <tr><td><code>wheat.config.json</code></td><td>Sprint config: directory layout, compiler paths</td></tr>
+  </table>
+
+  <h3>Remote Farmer Prototype</h3>
+  <table>
+    <tr><th>File</th><th>Purpose</th></tr>
+    <tr><td><code>prototypes/remote-dashboard/server.mjs</code></td><td>Main server (~1000 LOC): multi-session, multi-sprint, auth, persistence, SSE, REST</td></tr>
+    <tr><td><code>prototypes/remote-dashboard/dashboard.html</code></td><td>Browser dashboard: sessions, sprints, permissions, real-time updates</td></tr>
+    <tr><td><code>prototypes/remote-dashboard/ws.mjs</code></td><td>WebSocket server (~150 LOC): RFC 6455, ping/pong, zero deps</td></tr>
+    <tr><td><code>prototypes/remote-dashboard/hooks-config.json</code></td><td>Example Claude Code hooks configuration</td></tr>
+  </table>
+
+  <h3>Output Artifacts</h3>
+  <table>
+    <tr><th>File</th><th>Purpose</th></tr>
+    <tr><td><code>output/brief.md</code> / <code>.html</code></td><td>Decision brief for stakeholders</td></tr>
+    <tr><td><code>output/dashboard.html</code></td><td>Sprint status dashboard</td></tr>
+    <tr><td><code>output/presentation.html</code></td><td>Dark scroll-snap presentation</td></tr>
+    <tr><td><code>output/handoff.md</code> / <code>.html</code></td><td>This handoff package</td></tr>
+  </table>
+</div>
+
+<!-- Slide 7: How to Continue -->
+<div class="slide">
+  <h2>How to Pick This Up</h2>
+
+  <div class="card card-accent">
+    <h3>Step 1: Verify the build</h3>
+    <pre>node wheat-compiler.js --summary
+# Should show: Status: READY, 74 claims, 9 topics</pre>
+  </div>
+
+  <div class="card card-accent">
+    <h3>Step 2: Read the context</h3>
+    <ol>
+      <li><code>CLAUDE.md</code> -- operating manual</li>
+      <li><code>output/brief.md</code> -- decision brief</li>
+      <li><code>wheat-manifest.json</code> -- topic map</li>
+      <li><code>output/handoff.md</code> -- full handoff (this document)</li>
+    </ol>
+  </div>
+
+  <div class="card card-accent">
+    <h3>Step 3: Run the prototype</h3>
+    <pre>node prototypes/remote-dashboard/server.mjs --port 9090
+# Opens with auth token URL. Configure Claude Code hooks per hooks-config.json</pre>
+  </div>
+
+  <div class="card card-green">
+    <h3>Step 4: Finish remaining items</h3>
+    <ul>
+      <li><strong>Named CF tunnel</strong> (~2h): Replace quick tunnel for stable subdomain + native SSE <span class="claim-ref">r027</span> <span class="claim-ref">r036</span></li>
+      <li><strong>Sprint pointer</strong> (~0.5h): Resolve f001 -- git-derived vs config pointer <span class="claim-ref">f001</span></li>
+    </ul>
+  </div>
+
+  <div class="card card-purple">
+    <h3>Step 5: Use Wheat commands</h3>
+    <p>All work routes through slash commands: <code>/research</code>, <code>/prototype</code>, <code>/challenge</code>, <code>/brief</code>, <code>/status</code></p>
+    <p>Each command appends claims to <code>claims.json</code> and triggers compilation. <code>git log --oneline claims.json</code> is the sprint event log.</p>
+  </div>
+</div>
+
+<!-- Slide 8: Wheat Framework Reference -->
+<div class="slide">
+  <h2>Wheat Framework Quick Reference</h2>
+
+  <div class="card card-accent">
+    <h3>Mental Model</h3>
+    <p><strong>Pipeline:</strong> question -> claims -> compiler -> compilation -> artifacts</p>
+    <p>Every step is traceable. The compilation certificate includes the claims hash for reproducibility.</p>
+  </div>
+
+  <h3>Claim Types</h3>
+  <table>
+    <tr><th>Type</th><th>Purpose</th><th>Count</th></tr>
+    <tr><td>factual</td><td>Verifiable statements about the world</td><td>23</td></tr>
+    <tr><td>risk</td><td>Potential failure modes, concerns</td><td>17</td></tr>
+    <tr><td>recommendation</td><td>Proposed courses of action</td><td>16</td></tr>
+    <tr><td>constraint</td><td>Hard requirements, non-negotiable</td><td>5</td></tr>
+    <tr><td>estimate</td><td>Projections, approximations</td><td>4</td></tr>
+    <tr><td>feedback</td><td>Stakeholder input, direction changes</td><td>1</td></tr>
+  </table>
+
+  <h3>Evidence Tiers (ascending)</h3>
+  <table>
+    <tr><th>Tier</th><th>Meaning</th><th>Count</th></tr>
+    <tr><td>stated</td><td>Stakeholder said it, no verification</td><td>10</td></tr>
+    <tr><td>web</td><td>Found online, not independently verified</td><td>3</td></tr>
+    <tr><td>documented</td><td>In source code, official docs, or ADRs</td><td>41</td></tr>
+    <tr><td>tested</td><td>Verified via prototype or benchmark</td><td>12</td></tr>
+    <tr><td>production</td><td>Measured from live systems</td><td>0</td></tr>
+  </table>
+
+  <div class="cert">
+    Generated by /handoff on 2026-03-12 | Claims hash: ddef041 | Compiler: wheat v0.2.0 | Claims: 74 (66 active, 2 superseded) | Status: ready
+  </div>
+</div>
+
+</body>
+</html>

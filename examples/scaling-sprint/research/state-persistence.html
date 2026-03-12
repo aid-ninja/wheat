@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>State Persistence — Remote Farmer Reliability</title>
+<style>
+  :root { --bg: #0f172a; --bg2: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --dim: #64748b; --accent: #60a5fa; --green: #34d399; --orange: #fbbf24; --red: #f87171; --purple: #a78bfa; --border: rgba(255,255,255,0.08); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.7; }
+  .slide { min-height: 100vh; scroll-snap-align: start; padding: 60px 32px; display: flex; flex-direction: column; justify-content: center; max-width: 800px; margin: 0 auto; }
+  .slide + .slide { border-top: 1px solid var(--border); }
+  h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(135deg, var(--orange), var(--red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; }
+  h2 { font-size: 20px; font-weight: 700; color: var(--accent); margin-bottom: 16px; }
+  h3 { font-size: 16px; font-weight: 600; color: var(--text); margin: 20px 0 8px; }
+  p, li { color: var(--muted); margin-bottom: 10px; }
+  strong { color: var(--text); }
+  code { font-family: 'SF Mono', monospace; font-size: 13px; background: rgba(96,165,250,0.1); padding: 1px 5px; border-radius: 3px; }
+  pre { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; margin: 12px 0; font-family: 'SF Mono', monospace; font-size: 13px; line-height: 1.5; color: var(--muted); }
+  .meta { font-size: 13px; color: var(--dim); margin-bottom: 24px; }
+  .claim-ref { font-family: 'SF Mono', monospace; font-size: 12px; color: var(--accent); background: rgba(96,165,250,0.1); padding: 1px 6px; border-radius: 3px; }
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+  .card-red { border-left: 3px solid var(--red); }
+  .card-orange { border-left: 3px solid var(--orange); }
+  .card-green { border-left: 3px solid var(--green); }
+  .card-accent { border-left: 3px solid var(--accent); }
+  .card-purple { border-left: 3px solid var(--purple); }
+  .severity { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 12px; }
+  .sev-high { background: rgba(248,113,113,0.2); color: var(--red); }
+  .sev-medium { background: rgba(251,191,36,0.2); color: var(--orange); }
+  .sev-low { background: rgba(52,211,153,0.2); color: var(--green); }
+  ul { padding-left: 20px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  th { color: var(--dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { color: var(--muted); }
+  @media (max-width: 640px) { .slide { padding: 40px 20px; } h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+
+<div class="slide">
+  <h1>State Persistence: Remote Farmer Reliability</h1>
+  <p class="meta">Research | 2026-03-12 | 5 claims | r038-r042</p>
+  <p>The Remote Farmer server stores <strong>all state in memory</strong>. A crash or restart means total loss: trust levels, session rules, activity audit trail, and agent tracking all vanish. This research maps what should be persisted, evaluates approaches within the zero-dependency constraint, and recommends a solution.</p>
+  <div style="margin-top:24px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center;">
+    <div style="padding:16px;background:rgba(248,113,113,0.1);border-radius:8px;"><div style="font-size:24px;font-weight:800;color:var(--red);">1</div><div style="font-size:11px;color:var(--dim);">RISK IDENTIFIED</div></div>
+    <div style="padding:16px;background:rgba(96,165,250,0.1);border-radius:8px;"><div style="font-size:24px;font-weight:800;color:var(--accent);">2</div><div style="font-size:11px;color:var(--dim);">RECOMMENDATIONS</div></div>
+    <div style="padding:16px;background:rgba(167,139,250,0.1);border-radius:8px;"><div style="font-size:24px;font-weight:800;color:var(--purple);">~40</div><div style="font-size:11px;color:var(--dim);">LINES TO FIX</div></div>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>The Risk: Total State Loss</h2>
+  <div class="card card-red">
+    <h3><span class="severity sev-high">HIGH</span> All State In Memory</h3>
+    <p>The <code>sessions</code> Map (line 76 of server.mjs) holds every piece of server state. On process death:</p>
+    <ul>
+      <li>Trust levels reset to <code>paranoid</code> (user must reconfigure)</li>
+      <li>Session rules wiped (auto-approve patterns lost)</li>
+      <li>Activity log gone (no audit trail)</li>
+      <li>Pending permissions silently dropped (no deny sent to Claude Code)</li>
+      <li>Agent tracking lost</li>
+    </ul>
+    <p><span class="claim-ref">r038</span></p>
+  </div>
+  <div class="card card-orange">
+    <h3><span class="severity sev-medium">MEDIUM</span> No Signal Handlers</h3>
+    <p>The server has no <code>SIGTERM</code> or <code>SIGINT</code> handlers. Even a graceful <code>Ctrl+C</code> or <code>kill</code> provides no opportunity to save state or deny pending requests cleanly. <span class="claim-ref">r041</span></p>
+  </div>
+  <div class="card card-accent">
+    <h3>Connection to Security (r034)</h3>
+    <p>The security research noted that token rotation requires a server restart, which "loses in-memory session state." State persistence directly reduces the cost of restarts, making token rotation and other security measures more practical.</p>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>State Classification</h2>
+  <p>Not all state deserves persistence. The key insight: <strong>pending permissions are ephemeral by nature</strong> (they hold HTTP response objects), while trust levels and rules are user configuration that should survive restarts. <span class="claim-ref">r040</span></p>
+  <table>
+    <tr><th>State</th><th>Persist?</th><th>Why</th></tr>
+    <tr><td><strong>Trust levels</strong></td><td style="color:var(--green);">Yes</td><td>User config, tedious to re-enter</td></tr>
+    <tr><td><strong>Session rules</strong></td><td style="color:var(--green);">Yes</td><td>Auto-approve patterns, same reasoning</td></tr>
+    <tr><td><strong>Activity log</strong></td><td style="color:var(--green);">Yes</td><td>Audit trail, compliance value</td></tr>
+    <tr><td><strong>Session metadata</strong></td><td style="color:var(--orange);">Optional</td><td>Auto-reconstructed from next hook payload</td></tr>
+    <tr><td><strong>Messages</strong></td><td style="color:var(--orange);">Optional</td><td>Bounded (50/session), low reconstruction cost</td></tr>
+    <tr><td><strong>Pending permissions</strong></td><td style="color:var(--red);">No</td><td>Contains HTTP res objects (not serializable)</td></tr>
+    <tr><td><strong>SSE connections</strong></td><td style="color:var(--red);">No</td><td>Transient sockets, clients auto-reconnect</td></tr>
+  </table>
+</div>
+
+<div class="slide">
+  <h2>Approach: JSON Snapshots</h2>
+  <p>The recommended solution uses <strong>only Node built-in modules</strong> (<code>fs</code>, <code>process</code>), satisfying the zero-deps constraint <span class="claim-ref">d004</span>. <span class="claim-ref">r039</span></p>
+  <div class="card card-green">
+    <h3>How It Works</h3>
+    <ul>
+      <li>Write recoverable state to <code>farmer-state.json</code> using <code>fs.writeFileSync</code></li>
+      <li>Atomic write via <strong>write-to-temp-then-rename</strong> pattern prevents corruption on crash mid-write</li>
+      <li>Trigger: on trust/rule changes + periodic 30s flush + graceful shutdown</li>
+      <li>On startup: load <code>farmer-state.json</code> to restore trust levels, rules, and activity</li>
+    </ul>
+  </div>
+  <pre>// Atomic write: temp file then rename
+const tmp = STATE_PATH + '.tmp';
+writeFileSync(tmp, JSON.stringify(state, null, 2));
+renameSync(tmp, STATE_PATH);
+
+// On startup
+if (existsSync(STATE_PATH)) {
+  const saved = JSON.parse(readFileSync(STATE_PATH, 'utf8'));
+  for (const s of saved.sessions) {
+    const session = getSession(s.id, s.cwd);
+    session.trustLevel = s.trustLevel;
+    session.sessionRules = s.sessionRules || [];
+    session.activity = s.activity || [];
+  }
+}</pre>
+  <div class="card card-accent">
+    <h3>Performance</h3>
+    <p>Full state is <strong>&lt;100KB</strong> (200 activity entries + rules + trust across 10 sessions). Write takes <strong>&lt;1ms on SSD</strong>. No measurable impact on request handling.</p>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>Graceful Shutdown</h2>
+  <p>Essential companion to persistence: handle <code>SIGTERM</code> and <code>SIGINT</code> to save state and cleanly deny pending requests. <span class="claim-ref">r041</span></p>
+  <pre>function gracefulShutdown(signal) {
+  // 1. Deny all pending permissions
+  for (const [sid, session] of sessions) {
+    for (const [reqId, entry] of session.pending) {
+      entry.resolve({
+        allow: false,
+        reason: `Server shutting down (${signal})`
+      });
+    }
+  }
+  // 2. Flush state to disk
+  saveState();
+  // 3. Notify dashboard clients
+  broadcast({ type: 'server_shutdown', data: { signal } });
+  // 4. Close server, force exit after 3s
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(1), 3000);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));</pre>
+</div>
+
+<div class="slide">
+  <h2>Why Not Event Sourcing?</h2>
+  <div class="card card-purple">
+    <h3>Append-Only Log: Over-Engineered Here</h3>
+    <p>An append-only event log (writing each state change as a JSON line) provides zero data loss. But the complexity cost is high: <span class="claim-ref">r042</span></p>
+    <ul>
+      <li>Requires log compaction to prevent unbounded growth</li>
+      <li>Startup replays the entire log to reconstruct state</li>
+      <li>Schema evolution is harder (every event format is permanent)</li>
+      <li>All this for &lt;100KB of state that writes &lt;1/sec</li>
+    </ul>
+    <p><strong>Verdict</strong>: JSON snapshots are sufficient. Consider event sourcing only if state exceeds 1MB or write frequency exceeds 10/sec. Neither is expected for a permission dashboard.</p>
+  </div>
+  <div class="card card-red">
+    <h3>SQLite: Disqualified</h3>
+    <p><code>better-sqlite3</code> would provide ACID transactions and query capability, but it is an npm dependency. <strong>Violates d004</strong> (zero npm deps constraint). Not considered further.</p>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>Implementation Plan</h2>
+  <div class="card card-green">
+    <h3>Phase 1: JSON Snapshots + Signal Handlers (~40 LOC)</h3>
+    <ul>
+      <li>Add <code>saveState()</code> and <code>loadState()</code> functions</li>
+      <li>Call <code>saveState()</code> in <code>handleTrustLevel</code>, <code>handleRules</code>, and on 30s interval</li>
+      <li>Call <code>loadState()</code> after <code>loadClaims()</code> on startup</li>
+      <li>Add SIGTERM/SIGINT handlers with <code>gracefulShutdown()</code></li>
+    </ul>
+  </div>
+  <div class="card card-accent">
+    <h3>Phase 2: Dashboard Indicator (optional)</h3>
+    <ul>
+      <li>Show "last saved: Xs ago" in dashboard footer</li>
+      <li>Add <code>--save-interval</code> CLI flag for configurable flush frequency</li>
+      <li>Broadcast <code>state_saved</code> SSE event for dashboard to display</li>
+    </ul>
+  </div>
+  <h3 style="margin-top:24px;">Data Loss Window</h3>
+  <p>Worst case: <strong>30 seconds of activity data</strong> lost on SIGKILL (hard crash). Trust levels and rules are saved immediately on change, so they are never lost except on SIGKILL during the write itself (mitigated by atomic rename). For a local development tool, this is acceptable.</p>
+</div>
+
+</body>
+</html>

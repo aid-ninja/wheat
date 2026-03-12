@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Security — Remote Farmer Attack Surface</title>
+<style>
+  :root { --bg: #0f172a; --bg2: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --dim: #64748b; --accent: #60a5fa; --green: #34d399; --orange: #fbbf24; --red: #f87171; --purple: #a78bfa; --border: rgba(255,255,255,0.08); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.7; }
+  .slide { min-height: 100vh; scroll-snap-align: start; padding: 60px 32px; display: flex; flex-direction: column; justify-content: center; max-width: 800px; margin: 0 auto; }
+  .slide + .slide { border-top: 1px solid var(--border); }
+  h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(135deg, #f87171, #ef4444, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; }
+  h2 { font-size: 20px; font-weight: 700; color: var(--accent); margin-bottom: 16px; }
+  h3 { font-size: 16px; font-weight: 600; color: var(--text); margin: 20px 0 8px; }
+  p, li { color: var(--muted); margin-bottom: 10px; }
+  strong { color: var(--text); }
+  code { font-family: 'SF Mono', monospace; font-size: 13px; background: rgba(96,165,250,0.1); padding: 1px 5px; border-radius: 3px; }
+  .meta { font-size: 13px; color: var(--dim); margin-bottom: 24px; }
+  .claim-ref { font-family: 'SF Mono', monospace; font-size: 12px; color: var(--accent); background: rgba(96,165,250,0.1); padding: 1px 6px; border-radius: 3px; }
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+  .card-red { border-left: 3px solid var(--red); }
+  .card-orange { border-left: 3px solid var(--orange); }
+  .card-green { border-left: 3px solid var(--green); }
+  .card-accent { border-left: 3px solid var(--accent); }
+  .severity { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 12px; }
+  .sev-high { background: rgba(248,113,113,0.2); color: var(--red); }
+  .sev-medium { background: rgba(251,191,36,0.2); color: var(--orange); }
+  .sev-low { background: rgba(52,211,153,0.2); color: var(--green); }
+  ul { padding-left: 20px; }
+  @media (max-width: 640px) { .slide { padding: 40px 20px; } h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+
+<div class="slide">
+  <h1>Security: Remote Farmer Attack Surface</h1>
+  <p class="meta">Research | 2026-03-12 | 11 claims | r027-r037</p>
+  <p>Remote Farmer exposes Claude Code's permission system to the internet via Cloudflare Tunnel. This analysis maps the attack surface: <strong>what can go wrong</strong>, <strong>how likely is it</strong>, and <strong>what to do about it</strong>.</p>
+  <p>Key finding: the authentication model (128-bit token in URL) is <strong>cryptographically strong but operationally weak</strong>. The token leaks through multiple browser and infrastructure channels <span class="claim-ref">r029</span>.</p>
+  <div style="margin-top:24px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center;">
+    <div style="padding:16px;background:rgba(248,113,113,0.1);border-radius:8px;"><div style="font-size:24px;font-weight:800;color:var(--red);">4</div><div style="font-size:11px;color:var(--dim);">HIGH SEVERITY</div></div>
+    <div style="padding:16px;background:rgba(251,191,36,0.1);border-radius:8px;"><div style="font-size:24px;font-weight:800;color:var(--orange);">3</div><div style="font-size:11px;color:var(--dim);">MEDIUM</div></div>
+    <div style="padding:16px;background:rgba(52,211,153,0.1);border-radius:8px;"><div style="font-size:24px;font-weight:800;color:var(--green);">2</div><div style="font-size:11px;color:var(--dim);">MITIGATIONS</div></div>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>Infrastructure: Quick Tunnels</h2>
+  <div class="card card-red">
+    <h3><span class="severity sev-high">HIGH</span> SSE Broken Through Quick Tunnels</h3>
+    <p>Cloudflare quick tunnels do not support Server-Sent Events. The Farmer's <code>/events</code> real-time stream fails through the tunnel. Dashboard falls back to 2s polling only <span class="claim-ref">r027</span>.</p>
+  </div>
+  <div class="card card-orange">
+    <h3><span class="severity sev-medium">MEDIUM</span> Quick Tunnels Are Dev-Only</h3>
+    <p>Quick tunnels have a 200 concurrent request limit, no SLA, and Cloudflare explicitly marks them for "testing and development only." The random subdomain changes on every restart <span class="claim-ref">r028</span>.</p>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>Authentication: Token Leakage</h2>
+  <div class="card card-red">
+    <h3><span class="severity sev-high">HIGH</span> Token-in-URL Leaks</h3>
+    <p>The auth token appears in <code>?token=</code> query parameter, leaking through:</p>
+    <ul>
+      <li>Browser history and address bar</li>
+      <li><code>Referer</code> headers on any outbound navigation</li>
+      <li>Proxy and CDN access logs (including Cloudflare's)</li>
+      <li>Page source (embedded via <code>html.replace('{{TOKEN}}', token)</code>) <span class="claim-ref">r037</span></li>
+    </ul>
+    <p><span class="claim-ref">r029</span></p>
+  </div>
+  <div class="card card-orange">
+    <h3><span class="severity sev-medium">MEDIUM</span> No Token Rotation</h3>
+    <p>Token is static for the server's entire lifetime. No expiry, no rotation. Only fix for a leak is full server restart, losing all in-memory state <span class="claim-ref">r034</span>.</p>
+  </div>
+  <div class="card card-accent">
+    <h3>Positive: Brute Force Infeasible</h3>
+    <p>128-bit entropy with <code>timingSafeEqual</code> makes brute force impossible (2^128 search space). However, no rate limiting exists on auth failures <span class="claim-ref">r033</span>.</p>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>API: Abuse Vectors</h2>
+  <div class="card card-red">
+    <h3><span class="severity sev-high">HIGH</span> Full Compromise on Token Leak</h3>
+    <p>If URL+token leak, an attacker can:</p>
+    <ul>
+      <li>Approve arbitrary tool executions (including <code>rm -rf</code>, <code>sudo</code>)</li>
+      <li>Set trust level to <code>autonomous</code></li>
+      <li>Inject responses to <code>/api/ask</code> questions</li>
+      <li>Read all session activity data</li>
+    </ul>
+    <p><span class="claim-ref">r031</span></p>
+  </div>
+  <div class="card card-red">
+    <h3><span class="severity sev-high">HIGH</span> CORS Wildcard</h3>
+    <p><code>Access-Control-Allow-Origin: *</code> on all endpoints means any website can make authenticated API calls if it obtains the token. Combined with Referer leakage, a malicious page the user visits could call <code>/api/decide</code> <span class="claim-ref">r030</span>.</p>
+  </div>
+  <div class="card card-orange">
+    <h3><span class="severity sev-medium">MEDIUM</span> /api/ask Injection</h3>
+    <p><code>/api/decide</code> is internet-accessible with token. An attacker who can observe the SSE stream can see pending request IDs and respond to <code>/api/ask</code> questions before the real user, injecting arbitrary instructions into the Claude Code session <span class="claim-ref">r032</span>.</p>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>Recommended Mitigations</h2>
+  <div class="card card-green">
+    <h3>Phase 1: Quick Wins</h3>
+    <ul>
+      <li>Add <code>Referrer-Policy: no-referrer</code> header</li>
+      <li>Restrict CORS to tunnel origin only (not <code>*</code>)</li>
+      <li>Migrate token from URL query to <code>HttpOnly, Secure, SameSite=Strict</code> cookie</li>
+      <li>Add CSRF tokens for state-changing endpoints</li>
+    </ul>
+    <p><span class="claim-ref">r035</span></p>
+  </div>
+  <div class="card card-green">
+    <h3>Phase 2: Infrastructure</h3>
+    <ul>
+      <li>Replace quick tunnel with named Cloudflare tunnel (supports SSE, Cloudflare Access for OAuth, stable subdomain)</li>
+      <li>Or: replace SSE with WebSocket (quick tunnels support WS)</li>
+      <li>Add token rotation on a timer or on-demand</li>
+    </ul>
+    <p><span class="claim-ref">r036</span></p>
+  </div>
+</div>
+
+</body>
+</html>

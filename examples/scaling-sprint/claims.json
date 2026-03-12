@@ -1,0 +1,2027 @@
+{
+  "meta": {
+    "question": "How should we scale Remote Farmer for multi-session and multi-sprint support, and what repo cartography system keeps AI model interactions fast as the Wheat codebase and git history grow?",
+    "initiated": "2026-03-12",
+    "audience": [
+      "solo developer",
+      "team leads"
+    ],
+    "phase": "archived",
+    "closed": "2026-03-12",
+    "connectors": []
+  },
+  "claims": [
+    {
+      "id": "d001",
+      "type": "constraint",
+      "topic": "multi-session",
+      "content": "Must support multiple concurrent Claude Code sessions in a single Farmer dashboard — each session identifiable, filterable, and independently approvable.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "sessions",
+        "dashboard"
+      ]
+    },
+    {
+      "id": "d002",
+      "type": "constraint",
+      "topic": "multi-sprint",
+      "content": "Dashboard must support viewing and switching between multiple Wheat sprints — each sprint's claims, compilation status, and output artifacts accessible from the remote UI.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "sprints",
+        "dashboard"
+      ]
+    },
+    {
+      "id": "d003",
+      "type": "constraint",
+      "topic": "cartography",
+      "content": "Repo must be self-describing — new Claude Code sessions should understand the repo structure without full-tree Glob/Grep scans. A manifest or index system must point AI models to the right files quickly.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "cartography",
+        "performance"
+      ]
+    },
+    {
+      "id": "d004",
+      "type": "constraint",
+      "topic": "compatibility",
+      "content": "Zero npm dependencies. Build on existing Remote Farmer prototype. Must not break single-session workflow.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "stack",
+        "backwards-compat"
+      ]
+    },
+    {
+      "id": "d005",
+      "type": "constraint",
+      "topic": "performance",
+      "content": "AI model search and context usage must be measurably faster with cartography than without. Sprint structure must scale to 10+ sprints and 500+ claims without degrading model response time.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "performance",
+        "scale"
+      ]
+    },
+    {
+      "id": "r001",
+      "type": "factual",
+      "topic": "multi-session",
+      "content": "Every Claude Code hook payload includes session_id (UUID format), transcript_path, cwd, and hook_event_name as common fields. The session_id is a stable UUID assigned at session creation and persists across resume/continue. This is the natural routing key for multi-session Farmer — no custom identification needed.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "https://code.claude.com/docs/en/hooks",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "session_id",
+        "hooks",
+        "routing"
+      ]
+    },
+    {
+      "id": "r002",
+      "type": "factual",
+      "topic": "multi-session",
+      "content": "Claude Code supports SessionStart and SessionEnd lifecycle hooks. SessionStart fires on new sessions and resumes (with source field: 'startup', 'resume', 'clear', 'compact'). SessionEnd fires on session termination but cannot block it. These provide explicit session lifecycle signals — no need to infer session boundaries from tool-use gaps.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "https://code.claude.com/docs/en/hooks",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "lifecycle",
+        "SessionStart",
+        "SessionEnd"
+      ]
+    },
+    {
+      "id": "r003",
+      "type": "recommendation",
+      "topic": "multi-session",
+      "content": "Use single-server, session-keyed state architecture: one Map<session_id, SessionState> where SessionState holds pending permissions, activity log, trust level, and session rules independently. This is the simplest path that satisfies d001 without breaking d004 (zero deps, backwards compat). Multiple server instances add port management complexity with no benefit for a localhost dashboard.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "architecture",
+        "state-management",
+        "Map"
+      ]
+    },
+    {
+      "id": "r004",
+      "type": "recommendation",
+      "topic": "multi-session",
+      "content": "The current server stores global singletons (pending, activity, messages, trustLevel, sessionRules) that must become per-session. Minimal refactor: create a sessions Map, and a getSession(id) function that lazily initializes SessionState on first hook from a new session_id. The SSE broadcast should tag every message with session_id so the dashboard can filter/route client-side.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "refactor",
+        "state",
+        "SSE"
+      ]
+    },
+    {
+      "id": "r005",
+      "type": "recommendation",
+      "topic": "multi-session",
+      "content": "Dashboard UX should use a session-aware unified feed as default view, with session color-coding (assign each session_id a stable hue via hash). Add a session switcher pill bar at top for filtering to one session. Avoid split-view on mobile — phone screen real estate is too limited. Permission cards already show truncated session_id (first 8 chars); extend this with color dots and cwd-derived labels (e.g., 'wheat', 'api-server').",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/dashboard.html",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "UX",
+        "dashboard",
+        "mobile"
+      ]
+    },
+    {
+      "id": "r006",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Concurrent permission requests from multiple sessions create phone-UX pressure: if two sessions both need approval within seconds, the user must context-switch between unrelated tool calls. Risk of approving the wrong session's action. Mitigation: permission cards must prominently display session label + cwd, and use distinct session colors. Consider audio/haptic differentiation per session.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "risk",
+        "UX",
+        "permissions",
+        "concurrent"
+      ]
+    },
+    {
+      "id": "r007",
+      "type": "factual",
+      "topic": "multi-session",
+      "content": "Session lifecycle detection: SessionStart hook fires with source='startup' for new sessions and source='resume' for continued ones. SessionEnd hook fires on termination but cannot block it. For sessions that crash without firing SessionEnd, implement a heartbeat timeout (e.g., 5 minutes with no hook activity = session marked stale). The server already has a 120s timeout for individual permissions; session-level staleness needs a longer window.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "https://code.claude.com/docs/en/hooks",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "lifecycle",
+        "heartbeat",
+        "cleanup"
+      ]
+    },
+    {
+      "id": "r008",
+      "type": "estimate",
+      "topic": "multi-session",
+      "content": "Refactoring server.mjs from global state to session-keyed Maps is a ~100-line change (add SessionState class, getSession helper, update 6 handler functions to pass session context). Dashboard HTML changes are larger (~200 lines) for session switcher UI and color-coding. Total estimated effort: 2-4 hours for a working multi-session prototype, assuming SessionStart/SessionEnd hooks are configured to POST to new /hooks/lifecycle endpoint.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "effort",
+        "estimate",
+        "prototype"
+      ]
+    },
+    {
+      "id": "r010",
+      "type": "factual",
+      "topic": "cartography",
+      "content": "Claude Code automatically loads CLAUDE.md from the project root and from any subdirectory the user is working in. This makes CLAUDE.md files the highest-bandwidth zero-cost channel for repo cartography — anything in CLAUDE.md is in context before the first tool call. Per-directory CLAUDE.md files enable layered discovery without a central mega-file.",
+      "source": {
+        "origin": "documentation",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "claude-md",
+        "context-loading",
+        "discovery"
+      ]
+    },
+    {
+      "id": "r011",
+      "type": "recommendation",
+      "topic": "cartography",
+      "content": "Maintain a single machine-readable manifest file (wheat-manifest.json) at the repo root that maps topics to file paths, claim ID ranges to sprints, and prototype names to directories. Claude Code can Read this one file (~1-2KB) to know where everything is, replacing multi-step Glob+Grep discovery. The manifest should be auto-regenerated by the wheat compiler on every compilation so it never drifts.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "manifest",
+        "index",
+        "compiler-integration"
+      ]
+    },
+    {
+      "id": "r012",
+      "type": "factual",
+      "topic": "performance",
+      "content": "Claude Code's Read tool costs one tool call regardless of file size (up to 2000 lines). Glob and Grep each cost one call but may require multiple rounds. A pre-computed index consumed in a single Read eliminates the iterative Glob->Read->Grep->Read pattern that costs 3-5 tool calls per lookup. At 10+ sprints (~300-500 files) the difference becomes significant.",
+      "source": {
+        "origin": "documentation",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "tool-calls",
+        "search-cost",
+        "scaling"
+      ]
+    },
+    {
+      "id": "r013",
+      "type": "recommendation",
+      "topic": "cartography",
+      "content": "Add a sprint-index section to compilation.json (or separate sprints-index.json) listing all sprints — current and archived in examples/ — with question, phase, claim count, date range, and file paths. Lets Claude Code answer 'which sprint dealt with X?' with a single Read instead of scanning examples/*/claims.json.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "sprint-index",
+        "multi-sprint",
+        "compiler"
+      ]
+    },
+    {
+      "id": "r014",
+      "type": "recommendation",
+      "topic": "cartography",
+      "content": "Extend commit message conventions with topic tags in brackets: 'wheat: /research [cartography] summary — r010-r012'. Makes git log --grep='[cartography]' instant. Combined with existing 'git log --oneline claims.json' pattern, gives two fast search axes: by topic and by file.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "git-history",
+        "commit-conventions",
+        "search"
+      ]
+    },
+    {
+      "id": "r015",
+      "type": "risk",
+      "topic": "cartography",
+      "content": "Per-directory CLAUDE.md files create maintenance burden: they must stay synchronized with actual directory contents. If a CLAUDE.md claims 'this directory contains X' but X was moved, it actively misleads the AI — worse than no index. Mitigation: generate per-directory CLAUDE.md content from the manifest automatically, or use manifest as single source of truth and keep CLAUDE.md for behavioral instructions only.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "maintenance",
+        "staleness",
+        "claude-md"
+      ]
+    },
+    {
+      "id": "r016",
+      "type": "estimate",
+      "topic": "performance",
+      "content": "At current scale (80 files, 5 claims, 1 sprint), cartography adds overhead without measurable benefit — Glob/Grep return results in <1s. Crossover point where a manifest saves net time: ~150-200 files or 3+ sprints, when Glob results become noisy enough to require follow-up filtering.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "scaling-threshold",
+        "cost-benefit",
+        "timing"
+      ]
+    },
+    {
+      "id": "r017",
+      "type": "recommendation",
+      "topic": "cartography",
+      "content": "Structure the manifest as a topic map rather than a file tree. AI agents search by concept ('where is the SSE prototype?', 'what claims about security?'), not by directory path. Map topic -> {claims: [id range], files: [paths], sprint: name} so a Read of the manifest directly answers conceptual queries.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "topic-map",
+        "semantic-index",
+        "ai-friendly"
+      ]
+    },
+    {
+      "id": "x001",
+      "type": "factual",
+      "topic": "performance",
+      "content": "r016 states '80 files' but the repo actually contains 157 files (excluding .git). The repo has already crossed into r016's own predicted crossover zone of 150-200 files. The baseline measurement is wrong, which invalidates the 'overhead without measurable benefit' conclusion — the benefit zone is NOW, not future.",
+      "source": {
+        "origin": "measurement",
+        "artifact": "find . -type f -not -path '*/.git/*' | wc -l => 157",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "challenges": "r016",
+      "tags": [
+        "file-count",
+        "baseline-error",
+        "crossover"
+      ]
+    },
+    {
+      "id": "x002",
+      "type": "factual",
+      "topic": "performance",
+      "content": "r016 frames the crossover as file-count-driven, but the real cost driver is result noise from structural duplication. At 157 files, 'dashboard.html' matches 10 files across examples/*/output, prototypes/*, and templates/. Grepping 'claims.json' returns 71 file matches. Grepping 'createServer' returns 5 hits across 3 near-identical copies. The examples/ directory alone holds 62 files that mirror active sprint files. This duplication means the noise problem is already acute — a manifest that says 'the current sprint's server is prototypes/remote-dashboard/server.mjs, ignore examples/' would eliminate 40-60% of false hits TODAY, not at some future scale.",
+      "source": {
+        "origin": "measurement",
+        "artifact": "Grep 'dashboard.html' => 40 files; Grep 'claims.json' => 71 files; examples/ = 62 files",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "challenges": "r016",
+      "tags": [
+        "duplication",
+        "noise",
+        "examples-dir",
+        "false-positives"
+      ]
+    },
+    {
+      "id": "x003",
+      "type": "risk",
+      "topic": "performance",
+      "content": "r016 measures cost as wall-clock Glob/Grep time (<1s) but ignores the dominant cost: context window pollution. When Grep returns 71 results for 'claims.json', the AI must process all paths in its context window to determine which is relevant. Each noisy tool result consumes ~500-2000 tokens of context. Over a multi-step research session with 20+ tool calls, noisy results can waste 10-40K tokens — equivalent to 5-20% of the context window. The crossover point for cartography is not about I/O latency, it is about context budget efficiency, and that threshold is much lower than r016 estimates because even one noisy result triggers follow-up tool calls that compound the cost.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "challenges": "r016",
+      "tags": [
+        "context-window",
+        "token-cost",
+        "hidden-cost",
+        "compounding"
+      ]
+    },
+    {
+      "id": "w001",
+      "type": "factual",
+      "topic": "multi-session",
+      "content": "Official Claude Code docs (code.claude.com/docs/en/hooks) confirm SessionStart and SessionEnd are supported hook event types. SessionStart input includes a `source` field with values 'startup', 'resume', 'clear', 'compact' — exactly as r002 states. SessionEnd cannot block termination (no decision control). SessionStart stdout is injected as context for Claude; only `type: \"command\"` hooks are supported for SessionStart. SessionEnd receives a `reason` field (not `source`) with values: 'clear', 'logout', 'prompt_input_exit', 'bypass_permissions_disabled', 'other'.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "https://code.claude.com/docs/en/hooks",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "witness",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "SessionStart",
+        "SessionEnd",
+        "lifecycle",
+        "hooks-reference"
+      ],
+      "corroborates": "r002"
+    },
+    {
+      "id": "w002",
+      "type": "factual",
+      "topic": "multi-session",
+      "content": "Claude Code supports at least 17 hook event types beyond SessionStart/SessionEnd: PreToolUse, PostToolUse, PostToolUseFailure, Notification, UserPromptSubmit, Stop, SubagentStart, SubagentStop, PreCompact, PermissionRequest, Setup, TeammateIdle, TaskCompleted, ConfigChange, WorktreeCreate, WorktreeRemove, InstructionsLoaded. Four hook handler types exist: command, http, prompt, and agent — but SessionStart and SessionEnd only support 'command' type. This is a design constraint for multi-session Farmer: SessionStart/SessionEnd hooks cannot use HTTP POST directly; they require a shell command wrapper (e.g., curl) to notify the Farmer server.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "https://code.claude.com/docs/en/hooks",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "witness",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "hook-types",
+        "handler-types",
+        "command-only-limitation"
+      ],
+      "corroborates": "r002"
+    },
+    {
+      "id": "r020",
+      "type": "recommendation",
+      "topic": "multi-sprint",
+      "content": "Use a sprints/ directory with one subdirectory per sprint (e.g., sprints/remote-farmer/, sprints/scaling-cartography/). Each subdirectory is a self-contained sprint with its own claims.json, compilation.json, research/, prototypes/, output/, and evidence/. The current active sprint is symlinked from the repo root: claims.json -> sprints/current-sprint/claims.json. This preserves backwards compatibility (d004) — all existing tools that read ./claims.json continue working unchanged. The examples/ directory becomes unnecessary; archived sprints live in sprints/ alongside active ones, distinguished only by their meta.phase field. Use wheat.config.json currentSprint field as canonical pointer (not symlinks) per r025 portability concern. Symlinks optional as local convenience only, not committed to git.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "wheat.config.json, wheat-compiler.js, examples/remote-farmer-sprint/",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "superseded",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "f001"
+      ],
+      "resolved_by": "f001",
+      "tags": [
+        "directory-structure",
+        "symlink",
+        "backwards-compat",
+        "sprint-layout"
+      ]
+    },
+    {
+      "id": "r021",
+      "type": "recommendation",
+      "topic": "multi-sprint",
+      "content": "Add a --sprints-dir flag to the Farmer server (default: './sprints'). On startup, scan the directory for subdirectories containing claims.json, load each as a named sprint. Use fs.watchFile on each sprint's claims.json and compilation.json for hot-reload. The existing --claims flag becomes shorthand for single-sprint mode (backwards compat with d004). New SSE event type 'sprints_list' broadcasts the available sprints with {slug, question, phase, claimCount, lastModified} on client connect and whenever the list changes.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "server",
+        "hot-reload",
+        "sprints-dir",
+        "SSE",
+        "backwards-compat"
+      ]
+    },
+    {
+      "id": "r022",
+      "type": "recommendation",
+      "topic": "multi-sprint",
+      "content": "Dashboard sprint switcher should use a collapsible card list (not tabs, not dropdown). Each card shows: sprint question (truncated), phase badge (define/research/prototype/evaluate), claim count, and last-modified timestamp. Tapping a card loads that sprint's claims and compilation into the existing dashboard views. The card list collapses to a single-line header showing the active sprint name when not switching, preserving mobile screen real estate. This satisfies d002 without requiring UI redesign of the claims/activity views.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/dashboard.html",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "UX",
+        "dashboard",
+        "mobile",
+        "sprint-switcher",
+        "card-list"
+      ]
+    },
+    {
+      "id": "r023",
+      "type": "recommendation",
+      "topic": "multi-sprint",
+      "content": "Sprint lifecycle: (1) /init creates a new subdirectory under sprints/ with the standard structure, updates the root symlink to point to it, and registers it in wheat-manifest.json. (2) Active sprints have meta.phase in {define, research, prototype, evaluate}. (3) Archiving sets meta.phase to 'archived' — no file moves needed, the sprint stays in sprints/ but the dashboard sorts it below active sprints. (4) The root symlink always points to the most recently active sprint, updated by /init or a new 'wheat switch <slug>' command. This avoids the current pattern of manually copying sprints to examples/ which loses git history.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "wheat-init.js, examples/remote-farmer-sprint/",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "lifecycle",
+        "init",
+        "archive",
+        "symlink",
+        "git-history"
+      ]
+    },
+    {
+      "id": "r024",
+      "type": "recommendation",
+      "topic": "multi-sprint",
+      "content": "Cross-sprint claim references use the format 'sprint-slug:claim-id' (e.g., 'remote-farmer:r003'). The conflicts_with and resolved_by fields already accept string IDs — extending to qualified IDs requires no schema change. The compiler should resolve cross-sprint references by loading the referenced sprint's claims.json on demand. This enables /merge to create cross-sprint dependency links rather than duplicating claims, and lets /challenge reference claims from a different sprint without copying them.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "wheat-compiler.js",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "cross-sprint",
+        "claim-references",
+        "merge",
+        "compiler"
+      ]
+    },
+    {
+      "id": "r025",
+      "type": "risk",
+      "topic": "multi-sprint",
+      "content": "Symlinks for the 'current sprint' create a git portability issue: symlinks are stored in git but may not resolve correctly on Windows (requires developer mode or admin privileges). For a solo-developer Mac/Linux setup this is fine, but scaling to team use (per sprint question's audience) could hit this. Mitigation: use a wheat.config.json 'currentSprint' field as the canonical pointer, and only create symlinks as a convenience layer that the tooling does not depend on. The compiler and server should read the config field, not follow symlinks.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "superseded",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "f001"
+      ],
+      "resolved_by": "f001",
+      "tags": [
+        "symlink",
+        "portability",
+        "windows",
+        "git",
+        "team-use"
+      ]
+    },
+    {
+      "id": "r026",
+      "type": "estimate",
+      "topic": "multi-sprint",
+      "content": "Server changes for multi-sprint support: ~60 lines to add sprint scanning, per-sprint state (Map<slug, {claims, compilation}>), and the sprints_list SSE event. Dashboard changes: ~120 lines for the sprint switcher card list UI. wheat-init.js changes: ~40 lines to create under sprints/ and update config. wheat-compiler.js changes: ~30 lines for cross-sprint reference resolution. Total: ~250 lines across 4 files, estimated 3-5 hours. The bulk of effort is in the dashboard UI, not the data model.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs, wheat-init.js, wheat-compiler.js",
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "effort",
+        "estimate",
+        "line-count",
+        "prototype"
+      ]
+    },
+    {
+      "id": "p001",
+      "type": "factual",
+      "topic": "cartography",
+      "content": "wheat-manifest.json generator produces a topic map in <10ms from claims.json + directory scan. File is ~5KB with 33 claims and 15 topic-mapped files across 3 sprints, readable in a single Read tool call. Implements r011 (single manifest) and r017 (topic-map structure).",
+      "source": {
+        "origin": "prototype",
+        "artifact": "generate-manifest.js",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "manifest",
+        "prototype",
+        "tested",
+        "topic-map",
+        "performance"
+      ]
+    },
+    {
+      "id": "p002",
+      "type": "recommendation",
+      "topic": "multi-session",
+      "content": "Multi-session server refactor plan specifies: SessionState class with per-session pending/activity/messages/trustLevel/sessionRules, getSession(id) lazy initializer with default fallback for backwards compat, SSE broadcasts tagged with session_id, curl-based SessionStart/SessionEnd hooks (w002 command-only constraint), and pill-bar session switcher with hue-from-hash color coding. Estimated ~300 lines across server.mjs and dashboard.html.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/MULTI-SESSION-PLAN.md",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "multi-session",
+        "plan",
+        "architecture",
+        "SessionState",
+        "prototype"
+      ]
+    },
+    {
+      "id": "p003",
+      "type": "factual",
+      "content": "Multi-session server refactor implemented: SessionState class, session-keyed Maps, getSession(id) lazy init, SSE tagged with session_id, dashboard session pills with hue-from-hash. Backwards compatible with single-session via 'default' fallback.",
+      "evidence": "tested",
+      "topic": "multi-session",
+      "tags": [
+        "prototype",
+        "tested",
+        "SessionState"
+      ],
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs multi-session refactor"
+      },
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "status": "active",
+      "conflicts_with": [],
+      "resolved_by": null
+    },
+    {
+      "id": "p004",
+      "type": "factual",
+      "content": "Multi-sprint server support implemented: --sprints-dir flag, sprint scanning, /api/sprints endpoint, hot-reload via fs.watchFile, backwards compatible with --claims.",
+      "evidence": "tested",
+      "topic": "multi-sprint",
+      "tags": [
+        "prototype",
+        "tested",
+        "sprint-switching"
+      ],
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs multi-sprint support"
+      },
+      "phase_added": "prototype",
+      "status": "active",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null
+    },
+    {
+      "id": "r027",
+      "type": "factual",
+      "topic": "security",
+      "content": "Cloudflare quick tunnels explicitly do not support Server-Sent Events (SSE). The Farmer dashboard relies on SSE (/events endpoint) for real-time updates. This means the core real-time functionality is broken when exposed via `cloudflared tunnel --url`. Documented at developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/.",
+      "source": {
+        "origin": "cloudflare-docs",
+        "artifact": "https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "cloudflare",
+        "SSE",
+        "quick-tunnel",
+        "blocking"
+      ]
+    },
+    {
+      "id": "r028",
+      "type": "factual",
+      "topic": "security",
+      "content": "Cloudflare quick tunnels are officially 'intended for testing and development only' with no SLA or uptime guarantee. They have a hard limit of 200 concurrent in-flight requests (HTTP 429 on exceed). Quick tunnels are used to test new Cloudflare features before production deployment, meaning behavior may change without notice.",
+      "source": {
+        "origin": "cloudflare-docs",
+        "artifact": "https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "cloudflare",
+        "quick-tunnel",
+        "reliability"
+      ]
+    },
+    {
+      "id": "r029",
+      "type": "risk",
+      "topic": "security",
+      "content": "Auth token is passed as URL query parameter (?token=). Per OWASP, this exposes the token in: browser history, Referer headers (if user clicks any external link from the dashboard), server/proxy logs (including Cloudflare's infrastructure), browser cache, and shoulder surfing. HTTPS does not mitigate these vectors. The login page form also redirects to /?token=<value>, permanently embedding the secret in browser history.",
+      "source": {
+        "origin": "OWASP",
+        "artifact": "https://owasp.org/www-community/vulnerabilities/Information_exposure_through_query_strings_in_url",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "token",
+        "OWASP",
+        "query-param",
+        "referer-leak"
+      ]
+    },
+    {
+      "id": "r030",
+      "type": "risk",
+      "topic": "security",
+      "content": "CORS is set to Access-Control-Allow-Origin: * on all endpoints (server.mjs line 289). This means any website the user has open can make authenticated requests to the Farmer API if it knows the token. Combined with token-in-URL (visible in Referer headers), a malicious page could extract the token from document.referrer and then call /api/decide to approve dangerous tool executions or /api/trust-level to set autonomous mode.",
+      "source": {
+        "origin": "code-review",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "CORS",
+        "CSRF",
+        "XSS",
+        "blast-radius"
+      ]
+    },
+    {
+      "id": "r031",
+      "type": "risk",
+      "topic": "security",
+      "content": "If an attacker obtains the tunnel URL + token, blast radius is full control of Claude Code sessions: approve any tool execution (including rm -rf, git push --force, sudo), deny legitimate requests to disrupt work, set trust level to 'autonomous' to auto-approve all future operations, add session rules to whitelist dangerous tools, and read all activity/claims/compilation data via /api/state. The token is static for the server lifetime with no rotation mechanism.",
+      "source": {
+        "origin": "code-review",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "blast-radius",
+        "token-compromise",
+        "trust-level"
+      ]
+    },
+    {
+      "id": "r032",
+      "type": "risk",
+      "topic": "security",
+      "content": "The /api/ask endpoint is localhost-only (remoteAddress check at line 422-425), but the /api/decide endpoint is token-authenticated and accessible from the internet. An attacker with the token can respond to any pending /api/ask question with arbitrary content, potentially injecting malicious instructions into Claude Code sessions via the question-response flow. The requestId is a random 8-byte hex, but pending requests are enumerable if the attacker connects to the SSE stream.",
+      "source": {
+        "origin": "code-review",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "api-ask",
+        "api-decide",
+        "prompt-injection"
+      ]
+    },
+    {
+      "id": "r033",
+      "type": "factual",
+      "topic": "security",
+      "content": "The 128-bit hex token (32 chars, randomBytes(16)) has 2^128 entropy, making brute force computationally infeasible. The timing-safe comparison (timingSafeEqual at line 297) prevents timing side-channel attacks. However, there is no rate limiting on failed auth attempts — an attacker could make unlimited guesses against the token endpoint. With 200 concurrent request limit on quick tunnels, this is self-limiting but not by design.",
+      "source": {
+        "origin": "code-review",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "brute-force",
+        "token-entropy",
+        "rate-limit"
+      ]
+    },
+    {
+      "id": "r034",
+      "type": "risk",
+      "topic": "security",
+      "content": "No token rotation or session expiry exists. The token is generated once at server start and remains valid until the process is killed. If the token leaks (via Referer, logs, screen share, browser history), the only remediation is restarting the server to generate a new token, which also disconnects all legitimate clients and loses in-memory session state.",
+      "source": {
+        "origin": "code-review",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "token-rotation",
+        "session-management"
+      ]
+    },
+    {
+      "id": "r035",
+      "type": "recommendation",
+      "topic": "security",
+      "content": "Migrate from query-param token to: (1) POST-based login that sets an HttpOnly, Secure, SameSite=Strict cookie, eliminating Referer/history/log leakage. (2) Add Referrer-Policy: no-referrer header to all responses as defense-in-depth. (3) Restrict CORS to the specific tunnel origin instead of wildcard *. (4) Add CSRF token for state-changing POST endpoints (/api/decide, /api/trust-level, /api/rules).",
+      "source": {
+        "origin": "OWASP-best-practices",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "recommendation",
+        "cookie-auth",
+        "CSRF",
+        "CORS"
+      ]
+    },
+    {
+      "id": "r036",
+      "type": "recommendation",
+      "topic": "security",
+      "content": "Replace Cloudflare quick tunnel with a named Cloudflare tunnel for production use. Named tunnels support SSE (fixing the r027 blocker), offer Cloudflare Access integration for additional auth layer (OAuth/OIDC), provide stable subdomains, and have no 200-request concurrency limit. Alternatively, switch to WebSocket transport which quick tunnels do support, replacing the SSE /events endpoint.",
+      "source": {
+        "origin": "cloudflare-docs",
+        "artifact": "https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "recommendation",
+        "cloudflare",
+        "named-tunnel",
+        "WebSocket",
+        "SSE"
+      ]
+    },
+    {
+      "id": "r037",
+      "type": "risk",
+      "topic": "security",
+      "content": "The dashboardPage() function (line 967-971) injects the raw TOKEN into the HTML template via string replacement: html.replace('{{TOKEN}}', token). If an attacker could control the template content (e.g., via path traversal on /output/ or if dashboard.html were compromised), they could extract the token. Additionally, the token is embedded in the served HTML, meaning it is visible in the page source and browser DevTools to anyone who can view the page.",
+      "source": {
+        "origin": "code-review",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "token-exposure",
+        "template-injection"
+      ]
+    },
+    {
+      "id": "r038",
+      "type": "risk",
+      "topic": "state-persistence",
+      "content": "All server state is held in memory with zero persistence: the sessions Map (SessionState objects including pending permissions, activity logs, messages, trust levels, session rules, and agent tracking) is lost on crash, restart, or SIGKILL. A server restart requires all Claude Code sessions to reconnect, all pending permission requests are silently dropped (no deny response sent), all audit trail activity is lost, and user-configured trust levels and session rules reset to defaults. The server has no SIGTERM/SIGINT handlers for graceful shutdown.",
+      "source": {
+        "origin": "code-review",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "state-persistence",
+        "reliability",
+        "in-memory",
+        "crash-recovery"
+      ]
+    },
+    {
+      "id": "r039",
+      "type": "recommendation",
+      "topic": "state-persistence",
+      "content": "Implement JSON file snapshots for recoverable state using only Node built-in fs module (satisfies d004 zero-deps constraint). Strategy: (1) Persist trust levels, session rules, and activity log to a farmer-state.json file on every state-changing event (trust change, rule add/remove) and on a periodic flush (every 30s). (2) Pending permissions are ephemeral by nature (the HTTP response objects cannot be serialized) — do NOT persist them. (3) On server start, load farmer-state.json if it exists to restore trust levels, rules, and activity history. (4) Use writeFileSync for simplicity since state changes are infrequent (<1/sec) and the file is small (<100KB). Atomic write via write-to-temp-then-rename pattern prevents corruption on crash mid-write.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "state-persistence",
+        "recommendation",
+        "json-snapshot",
+        "zero-deps"
+      ]
+    },
+    {
+      "id": "r040",
+      "type": "factual",
+      "topic": "state-persistence",
+      "content": "Server state divides into three persistence categories: (A) Must persist — trust levels and session rules (user configuration, tedious to re-enter), activity log (audit trail, compliance value). (B) Should not persist — pending permissions (contain unresializable HTTP response objects and become stale after restart; Claude Code will re-send permission requests on reconnect), SSE client connections (transient socket references). (C) Optional — session metadata (label, color, cwd) is useful for continuity but auto-reconstructed from the next hook payload, messages buffer (last 50 per session) has moderate value for context but is bounded and reconstruction cost is low.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "state-persistence",
+        "state-classification",
+        "ephemeral-vs-durable"
+      ]
+    },
+    {
+      "id": "r041",
+      "type": "recommendation",
+      "topic": "state-persistence",
+      "content": "Add process signal handlers for graceful shutdown: (1) Listen for SIGTERM and SIGINT to flush state to disk before exit. (2) On shutdown, deny all pending permissions with a clear reason ('server shutting down') so Claude Code sessions get an explicit deny rather than a timeout. (3) Close the HTTP server with server.close() to stop accepting new connections. (4) Optionally broadcast a 'server_shutdown' SSE event so dashboard clients can show a reconnection UI. Implementation is ~20 lines using process.on('SIGTERM', ...) and process.on('SIGINT', ...) — zero dependencies required.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "state-persistence",
+        "graceful-shutdown",
+        "signal-handling",
+        "recommendation"
+      ]
+    },
+    {
+      "id": "r042",
+      "type": "estimate",
+      "topic": "state-persistence",
+      "content": "Append-only event log (event sourcing lite) is an alternative to JSON snapshots but is over-engineered for this use case. The full state is small (<100KB for 200 activity entries + rules + trust levels across 10 sessions). JSON snapshot write takes <1ms on SSD. Event sourcing adds complexity (log compaction, replay on startup, schema evolution) without meaningful benefit at this scale. Recommendation: start with JSON snapshots, only move to append-only log if the state file exceeds 1MB or write frequency exceeds 10/sec — neither is expected for a permission dashboard.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "state-persistence",
+        "event-sourcing",
+        "trade-off",
+        "estimate"
+      ]
+    },
+    {
+      "id": "p005",
+      "type": "factual",
+      "topic": "security",
+      "content": "Security hardening implemented: (1) Cookie-based auth — first visit with ?token= sets HttpOnly/SameSite=Strict cookie and 302-redirects to clean URL, removing token from address bar and browser history. (2) CORS restricted from wildcard * to request origin with credentials support. (3) Referrer-Policy: no-referrer header on all responses prevents token leakage via Referer. (4) X-Content-Type-Options: nosniff added. Dashboard API calls use cookie auth; SSE retains token param as fallback for cross-origin EventSource.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs security hardening"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "cookie-auth",
+        "cors",
+        "referrer-policy",
+        "prototype"
+      ]
+    },
+    {
+      "id": "p006",
+      "type": "factual",
+      "topic": "compatibility",
+      "content": "Backwards compatibility verified via 10-test automated suite (prototypes/compatibility-test/test.sh). All single-session workflows survive multi-session refactor: (1) Token-in-URL auth returns 302 + Set-Cookie for initial login. (2) Dashboard renders with cookie auth. (3) /api/state returns valid JSON with sessions and pending arrays. (4) Hook payloads without session_id fall back to 'default' session. (5) Named session_id creates distinct session. (6) --claims flag serves claims data correctly. (7) Trust level change without session_id applies globally. (8) SSE /events endpoint accepts token auth and returns text/event-stream. (9) Unauthenticated / shows login page. (10) /api/state rejects without auth (401). Zero regressions detected.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/compatibility-test/test.sh — 10/10 tests passed against live server"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "compatibility",
+        "backwards-compat",
+        "single-session",
+        "regression-test",
+        "prototype"
+      ]
+    },
+    {
+      "id": "f001",
+      "type": "feedback",
+      "topic": "multi-sprint",
+      "content": "wheat.config.json should not duplicate data derivable from git history or directory structure. The 'currentSprint' pointer is redundant — the active sprint can be determined by scanning sprints/ for the one with meta.phase !== 'archived', or by git log recency. Config files that mirror derivable state create drift risk (config says sprint-A is active, but sprint-B was actually last edited). Only store truly disjoint state: user preferences, runtime settings, things that have no other source of truth. This conflicts with r020 and r025 which propose config-as-canonical-pointer.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "r020",
+        "r025"
+      ],
+      "resolved_by": null,
+      "tags": [
+        "config",
+        "derivable-state",
+        "single-source-of-truth",
+        "DRY"
+      ]
+    },
+    {
+      "id": "p007",
+      "type": "factual",
+      "topic": "cartography",
+      "content": "generate-manifest.js wired into wheat-compiler.js — topic-map manifest (wheat-manifest.json) auto-generates on every compilation via child_process.execFileSync. Non-fatal: manifest failure warns but does not block compilation. Measured at 6.7ms on current repo (7 topics, 16 files, 3 sprints, 5.8KB output). Zero new dependencies added.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "wheat-compiler.js generateManifest() — spawns generate-manifest.js after compilation.json write"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "cartography",
+        "manifest",
+        "compiler-integration",
+        "topic-map",
+        "prototype"
+      ]
+    },
+    {
+      "id": "p008",
+      "type": "factual",
+      "topic": "state-persistence",
+      "content": "JSON file persistence implemented in server.mjs — atomic writes (tmp+rename) to .farmer-state.json, restores trust levels, session rules, and activity logs on restart. Graceful shutdown (SIGTERM/SIGINT) denies pending permissions and flushes state. Periodic 30s auto-save catches activity between explicit saves. Ephemeral state (pending permissions, SSE connections) correctly excluded. ~45 LOC, zero new dependencies. Verified: state survives full stop/start cycle.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs — saveState(), loadState(), gracefulShutdown()"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "state-persistence",
+        "json-snapshots",
+        "graceful-shutdown",
+        "prototype"
+      ]
+    },
+    {
+      "id": "p009",
+      "type": "factual",
+      "topic": "security",
+      "content": "WebSocket transport added to Remote Farmer server alongside existing SSE. Implements RFC 6455 handshake and frame encoding/decoding using raw HTTP upgrade event (~120 LOC, zero dependencies, Node 20 compatible). Dashboard uses cascade fallback: WebSocket first (works through Cloudflare quick tunnels), SSE second (works on local/direct connections), 2s polling baseline always active. Auth via token query parameter with timing-safe comparison. 30s ping/pong heartbeat detects dead connections. Broadcast function sends to both SSE and WebSocket clients simultaneously. SSE endpoint preserved for backwards compatibility. Verified: 101 upgrade with valid token, 401 rejection with invalid token, SSE still functional alongside WebSocket.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs — handleWsUpgrade(), wsEncodeFrame(), wsDecodeFrame(); dashboard.html — tryWebSocket(), trySSE()"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "websocket",
+        "cloudflare-tunnel",
+        "transport",
+        "realtime",
+        "fallback",
+        "prototype"
+      ]
+    },
+    {
+      "id": "p010",
+      "type": "factual",
+      "topic": "security",
+      "content": "CSRF protection and auth token rotation added to Remote Farmer. Per-session CSRF tokens are generated server-side (crypto.randomBytes, 24h TTL) and delivered to the dashboard via init payloads (SSE, WebSocket) and /api/state polling responses. All mutating dashboard endpoints (POST /api/decide, /api/trust-level, /api/rules, /api/admin/rotate-token) validate X-CSRF-Token header, returning 403 on mismatch. Hook endpoints (localhost-only) are exempt. Token rotation supports configurable auto-rotation (--token-rotation-interval) and on-demand rotation via POST /api/admin/rotate-token. Retired tokens have a configurable grace period (--token-grace-period, default 60s) using timing-safe comparison. Dashboard auto-updates cookie on rotation via broadcast event. Zero dependencies, ~80 LOC added.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs — generateCsrfToken(), validateCsrfToken(), rotateToken(), csrfOk(); dashboard.html — postJSON(), csrfToken handling in handleMessage()"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "csrf",
+        "token-rotation",
+        "security",
+        "auth",
+        "prototype"
+      ]
+    },
+    {
+      "id": "x004",
+      "type": "risk",
+      "topic": "security",
+      "content": "WebSocket upgrade handler (handleWsUpgrade) performs no Origin header validation. HTTP routes apply CORS origin reflection, but the upgrade path skips it entirely. A malicious page that knows the token can open a WebSocket cross-origin. Mitigated partially by token secrecy, but weakened by x005 (token in URL). Fix: validate req.headers.origin against an allowlist or reject if origin doesn't match the served dashboard origin.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:419-467 — handleWsUpgrade() checks token but not Origin header"
+      },
+      "evidence": "tested",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p009"
+      ],
+      "resolved_by": "p011 — Added Origin header check in handleWsUpgrade(), allows same-origin and localhost only",
+      "tags": [
+        "websocket",
+        "security",
+        "origin-validation",
+        "cross-origin"
+      ]
+    },
+    {
+      "id": "x005",
+      "type": "risk",
+      "topic": "security",
+      "content": "Auth token is transmitted in the WebSocket URL query string (?token=...). Query strings are logged by proxies, CDNs (Cloudflare tunnel logs), browser history, and server access logs. This is a credential leakage vector that undermines the timing-safe comparison and token rotation features. RFC 6455 Section 10.5 warns against sensitive data in URLs. Fix: send token in the first WebSocket message after upgrade, or use a short-lived upgrade ticket obtained via an authenticated POST.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:428-441 (token from query), dashboard.html:740 (token in wsUrl)"
+      },
+      "evidence": "tested",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p009"
+      ],
+      "resolved_by": "p011 — Token removed from WS URL. Client sends {type:'auth',token} as first message; server validates before sending state",
+      "tags": [
+        "websocket",
+        "security",
+        "token-exposure",
+        "cloudflare-tunnel"
+      ]
+    },
+    {
+      "id": "x006",
+      "type": "risk",
+      "topic": "reliability",
+      "content": "WebSocket receive buffer (client.buffer) grows without bound. Buffer.concat appends every incoming chunk, but nothing enforces a maximum size. A slow-drip attacker (or a buggy client sending oversized frames) can grow the buffer until the Node process runs out of memory. Fix: enforce a MAX_WS_BUFFER_SIZE (e.g., 1MB) and destroy the socket if exceeded.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:496 — client.buffer = Buffer.concat([client.buffer, chunk]) with no size check"
+      },
+      "evidence": "tested",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p009"
+      ],
+      "resolved_by": "p011 — Added MAX_WS_BUFFER_SIZE (1MB) check; socket destroyed if exceeded",
+      "tags": [
+        "websocket",
+        "reliability",
+        "memory-leak",
+        "dos"
+      ]
+    },
+    {
+      "id": "x007",
+      "type": "risk",
+      "topic": "compatibility",
+      "content": "WebSocket frame decoder ignores the FIN bit — it reads opcode from firstByte but never checks (firstByte & 0x80). RFC 6455 allows fragmented messages (FIN=0 on non-final frames, opcode=0x00 for continuation frames). While browsers rarely fragment small JSON payloads, proxies and WebSocket intermediaries (including Cloudflare) may re-fragment frames. Fragmented messages will be silently misinterpreted or dropped. Fix: accumulate continuation frames until FIN=1, or reject fragmented frames explicitly with a close frame.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:385-416 — wsDecodeFrame() reads opcode but ignores FIN bit and continuation frames"
+      },
+      "evidence": "tested",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p009"
+      ],
+      "resolved_by": "p011 — wsDecodeFrame now returns fin bit; frame loop accumulates continuation fragments until FIN=1",
+      "tags": [
+        "websocket",
+        "compatibility",
+        "rfc6455",
+        "fragmentation",
+        "cloudflare-tunnel"
+      ]
+    },
+    {
+      "id": "x008",
+      "type": "risk",
+      "topic": "compatibility",
+      "content": "Close frame handling violates RFC 6455: when the server receives opcode 0x08 (close), it responds with wsEncodeFrame('') which sends a text frame (opcode 0x81) instead of a close frame (opcode 0x88). RFC 6455 Section 5.5.1 requires responding with a close frame. Some browsers or proxies may flag this as a protocol violation and report errors. Fix: send a proper close frame (first byte 0x88, then length 0x00) before destroying the socket.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:502-507 — close frame handler sends text frame via wsEncodeFrame('')"
+      },
+      "evidence": "tested",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p009"
+      ],
+      "resolved_by": "p011 — Close frame response now uses opcode 0x88 (Buffer [0x88, 0x00]) instead of wsEncodeFrame('')",
+      "tags": [
+        "websocket",
+        "compatibility",
+        "rfc6455",
+        "close-frame"
+      ]
+    },
+    {
+      "id": "x009",
+      "type": "risk",
+      "topic": "reliability",
+      "content": "Client-side WebSocket has no reconnection logic. When the WebSocket closes (ws.onclose), the client falls through to SSE and never retries WebSocket. A transient network blip permanently degrades the session to the inferior SSE transport for the lifetime of the page. This contradicts the 'WebSocket preferred' design. Fix: implement exponential backoff reconnection for WebSocket before falling back to SSE, or periodically attempt WebSocket upgrade while on SSE.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "dashboard.html:758-764 — ws.onclose calls trySSE() without scheduling WebSocket retry"
+      },
+      "evidence": "tested",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p009"
+      ],
+      "resolved_by": "p011 — Added exponential backoff retry (5 attempts, 1s-16s) before SSE fallback; reset on success",
+      "tags": [
+        "websocket",
+        "reliability",
+        "reconnection",
+        "fallback",
+        "client"
+      ]
+    },
+    {
+      "id": "x010",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Abandoned sessions are never garbage-collected. The staleness detector (setInterval every 60s) marks sessions as 'stale' but never removes them from the sessions Map. Over hours/days of use, dead sessions accumulate unboundedly — each carrying up to 200 activity entries, 50 messages, and an agents array. This is a slow memory leak proportional to session churn. Fix: add a reaper that deletes sessions in 'stale' or 'ended' status after a configurable TTL (e.g. 1 hour), persisting them to disk first if needed.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:612-619 — staleness detector sets status but never prunes; sessions Map grows monotonically"
+      },
+      "evidence": "documented",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p003"
+      ],
+      "resolved_by": "p012",
+      "tags": [
+        "multi-session",
+        "memory-leak",
+        "gc",
+        "sessions"
+      ]
+    },
+    {
+      "id": "x011",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "No cap on session count. getSession() lazily creates a new SessionState for any session_id it hasn't seen. A buggy or malicious localhost process sending hooks with randomized session_ids can create thousands of sessions, exhausting server memory. Fix: enforce a MAX_SESSIONS limit (e.g. 50) and reject new session creation once the cap is reached, or evict the oldest stale session.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:190-201 — getSession() has no size guard on sessions Map"
+      },
+      "evidence": "documented",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p003"
+      ],
+      "resolved_by": "p012",
+      "tags": [
+        "multi-session",
+        "denial-of-service",
+        "resource-exhaustion"
+      ]
+    },
+    {
+      "id": "x012",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Session ID spoofing allows session hijacking. Any localhost process can send a hook with an arbitrary session_id and getSession() will return the existing SessionState for that ID. There is no proof-of-ownership: a second process can inject activity, trigger permission decisions, or change trust levels for a session it didn't create. Fix: assign a per-session secret on session_start and require it on subsequent hooks, or bind sessions to a source identifier (PID, socket).",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:190-201 — getSession() trusts caller-provided session_id without verification"
+      },
+      "evidence": "documented",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p003"
+      ],
+      "resolved_by": "p014",
+      "tags": [
+        "multi-session",
+        "security",
+        "spoofing",
+        "session-hijack"
+      ]
+    },
+    {
+      "id": "x013",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Hooks without session_id silently conflate into 'default' session. When a Claude Code instance sends hooks with no session_id field, getSession(undefined) falls back to 'default'. If multiple session-less sources exist (older Claude Code versions, custom scripts), their activity merges into a single bucket with no way to distinguish origin. This makes the 'default' session's activity feed misleading and its trust level changes affect all session-less traffic. Fix: log a warning when session_id is missing and consider assigning synthetic IDs based on source IP+port or rejecting sessionless hooks when multi-session is active.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:190 — getSession(sessionId) where sessionId is undefined/null/empty triggers 'default' fallback"
+      },
+      "evidence": "documented",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p003"
+      ],
+      "resolved_by": "p014",
+      "tags": [
+        "multi-session",
+        "backwards-compat",
+        "data-integrity",
+        "default-session"
+      ]
+    },
+    {
+      "id": "x014",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Out-of-order lifecycle events cause silent data loss. handleLifecycle 'session_end' does sessions.get(session_id) and silently no-ops if the session doesn't exist. If session_end arrives before session_start (due to network reordering or server restart), the end event is lost — pending permissions are never denied, and the session later appears as 'active' when the delayed start arrives. Fix: if session_end arrives for an unknown session, create a tombstone entry that prevents a subsequent session_start from treating it as new, or queue out-of-order events.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:1190-1202 — session_end silently ignores unknown session_id"
+      },
+      "evidence": "documented",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p003"
+      ],
+      "resolved_by": "p014",
+      "tags": [
+        "multi-session",
+        "lifecycle",
+        "ordering",
+        "data-loss"
+      ]
+    },
+    {
+      "id": "x015",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "State persistence races under concurrent mutation. saveState() serializes the sessions Map by iterating it, but hook handlers concurrently mutate session properties (activity, pending, trustLevel) on the same tick via HTTP handlers. Node is single-threaded so there's no data corruption, but the periodic 30s saveState timer can fire mid-handler between two related mutations, producing a snapshot with inconsistent cross-session state. More critically, if saveState() is called explicitly from handleTrustLevel/handleRules at nearly the same time as the periodic timer, two writes race on the tmp/rename sequence. Fix: debounce saveState() calls so only one runs per tick, or use a dirty flag checked by a single timer.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:94-111,609,1130,1173 — saveState() called from multiple paths without coordination"
+      },
+      "evidence": "documented",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p003"
+      ],
+      "resolved_by": "p014",
+      "tags": [
+        "multi-session",
+        "persistence",
+        "race-condition",
+        "state"
+      ]
+    },
+    {
+      "id": "x016",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Dashboard UX degrades with many concurrent sessions. allPending(), allActivity(), allMessages(), allAgents() aggregate across all sessions with O(n*m) iteration on every SSE init and /api/state request. The init payload grows linearly with session count. The dashboard has no pagination, virtual scrolling, or session filtering — at 10+ sessions the permission queue becomes unusable, and at 20+ the SSE init payload may exceed mobile proxy buffer limits. Fix: add server-side session filtering (?session_id=X query param), paginate activity, and cap the init payload size.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:244-292 — allPending/allActivity/allMessages/allAgents iterate all sessions; SSE init sends everything"
+      },
+      "evidence": "documented",
+      "status": "resolved",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [
+        "p003"
+      ],
+      "resolved_by": "p014",
+      "tags": [
+        "multi-session",
+        "ux",
+        "scalability",
+        "dashboard",
+        "performance"
+      ]
+    },
+    {
+      "id": "p011",
+      "type": "factual",
+      "topic": "websocket-hardening",
+      "content": "Patched 6 WebSocket risks identified by /challenge p009: (1) Origin header validation rejects cross-origin upgrades (x004), (2) token sent as first WS message instead of URL query string (x005), (3) 1MB max buffer with forced disconnect on overflow (x006), (4) FIN bit + continuation frame accumulation for RFC 6455 fragmentation (x007), (5) close frame response uses opcode 0x88 per RFC 6455 (x008), (6) client-side exponential backoff reconnect (5 attempts, 1s-16s) before SSE fallback (x009). All fixes maintain zero-dep constraint.",
+      "source": {
+        "type": "code-review",
+        "origin": "prototype",
+        "detail": "server.mjs (handleWsUpgrade, wsDecodeFrame, frame loop) + dashboard.html (tryWebSocket, scheduleWsRetry)"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "websocket",
+        "security",
+        "reliability",
+        "rfc6455",
+        "prototype"
+      ]
+    },
+    {
+      "id": "p012",
+      "type": "factual",
+      "topic": "multi-session",
+      "content": "Implemented session garbage collection in server.mjs: (1) MAX_SESSIONS guard (default 50) on getSession() — evicts oldest ended/stale session when cap reached, rejects with 503 if all active. (2) Periodic reaper (every 60s) prunes ended sessions after 5 min TTL and stale sessions after 30 min TTL. (3) Broadcasts 'session_removed' event so dashboard UI stays in sync. All null-guard call sites return 503. Fixes x010 (memory leak from monotonically growing sessions Map) and x011 (no cap on session count). Zero npm deps maintained.",
+      "source": {
+        "type": "code-review",
+        "origin": "prototype",
+        "detail": "server.mjs — evictSession(), getSession() MAX_SESSIONS guard, reaper setInterval, null guards at 6 call sites"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "multi-session",
+        "gc",
+        "memory-leak",
+        "resource-exhaustion",
+        "prototype"
+      ]
+    },
+    {
+      "id": "p013",
+      "type": "factual",
+      "topic": "multi-sprint",
+      "content": "detect-sprints.js determines the active sprint purely from filesystem + git — no config pointer needed. Scans for claims.json files (root + examples/), reads meta.phase for archived status, queries git log for last commit date and commit count per claims.json, then ranks candidates: non-archived > most recent git activity > most recent initiated date > highest claim count. Outputs human-readable, JSON, or --active (path only) modes. Measured at ~150ms for 3 sprints. Correctly identifies root sprint as active (71 git commits, 74 claims) over 2 example sprints. Validates f001: config should not duplicate git-derivable state. Zero npm dependencies.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "detect-sprints.js — detectSprints(), analyzeSprint(), findSprintRoots(); uses git log + git rev-list via child_process.execFileSync"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "multi-sprint",
+        "git-detection",
+        "no-config",
+        "sprint-discovery",
+        "prototype"
+      ]
+    },
+    {
+      "id": "p014",
+      "type": "factual",
+      "topic": "multi-session",
+      "content": "Session hardening: fixed 5 multi-session risks (x012-x016). (1) Session binding via source fingerprint prevents session ID spoofing — subsequent requests from a different source are rejected (x012). (2) Missing session_id generates a unique derived ID instead of merging into default (x013). (3) Out-of-order lifecycle events are buffered — session_end before session_start is queued and replayed when start arrives, with 30s TTL cleanup (x014). (4) State persistence uses dirty flag + 2s debounce to prevent write races; force-save on shutdown (x015). (5) Dashboard session bar shows max 5 sessions with expand/collapse toggle, priority sorting (pending first), and session count indicator (x016).",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "server.mjs — sourceFingerprint(), deriveSessionId(), lifecycleBuffer, markDirty()/saveState(force), dashboard renderSessionBar() pagination"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "multi-session",
+        "session-hardening",
+        "security",
+        "lifecycle",
+        "persistence",
+        "ux",
+        "prototype"
+      ]
+    },
+    {
+      "id": "p015",
+      "type": "factual",
+      "topic": "cartography",
+      "content": "wheat-compiler.js now runs detect-sprints.js on every compilation, adding a 'sprints' array to compilation.json with summary entries for all detected sprints (name, path, status, phase, claims_count, active_claims, git activity). The active sprint is compiled fully as before; other sprints get summary entries only. generate-manifest.js also delegates to detect-sprints.js for git-aware sprint detection (with naive fallback). Multi-sprint awareness is automatic — no config pointer needed. Non-fatal: if sprint detection fails, compilation proceeds without sprint data.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "Wired detect-sprints.js into wheat-compiler.js compile() and generate-manifest.js detectSprints(); require('./detect-sprints.js') in compiler, execFileSync --json in manifest generator"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "cartography",
+        "compiler",
+        "multi-sprint",
+        "sprint-detection",
+        "prototype"
+      ]
+    },
+    {
+      "id": "cal001",
+      "type": "estimate",
+      "topic": "calibration",
+      "content": "CALIBRATION: r008 estimated ~100 LOC server change for multi-session refactor. Actual: 407 insertions / 112 deletions in server.mjs (ec11c69..a499719), net +295 lines. r008 also estimated ~200 LOC dashboard changes; actual: 310 insertions / 112 deletions, net +198 lines. Server estimate was 3x low; dashboard estimate was roughly accurate. r008 estimated 2-4 hours total; actual wall-clock from first research commit (01:30) to working multi-session prototype (02:12) was ~42 minutes — but this understates effort since intermediate commits (multi-sprint, UX fixes) were interleaved. Score: PARTIAL — dashboard LOC close, server LOC significantly underestimated, time estimate hard to verify due to interleaved work.",
+      "source": {
+        "origin": "calibration",
+        "artifact": "git diff --stat ec11c69..a499719",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "calibrate",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "calibration",
+        "r008",
+        "multi-session",
+        "loc-estimate"
+      ]
+    },
+    {
+      "id": "cal002",
+      "type": "estimate",
+      "topic": "calibration",
+      "content": "CALIBRATION: r039 recommended JSON snapshots with ~40 LOC estimate. p008 self-reported ~45 LOC for the persistence core (saveState, loadState, gracefulShutdown). Actual diff for persistence commit (eba3e97..957caec): 278 insertions in server.mjs. However, the 278 includes WebSocket prep and other changes bundled in the same commit window. The core persistence functions (saveState, loadState, graceful shutdown, periodic flush) are plausibly ~45-60 LOC. Score: HIT — the ~40 LOC estimate for the core persistence logic was accurate within 50%; the recommendation to use JSON snapshots over event sourcing was validated.",
+      "source": {
+        "origin": "calibration",
+        "artifact": "git diff --stat eba3e97..957caec; p008 claim",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "calibrate",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "calibration",
+        "r039",
+        "state-persistence",
+        "loc-estimate"
+      ]
+    },
+    {
+      "id": "cal003",
+      "type": "estimate",
+      "topic": "calibration",
+      "content": "CALIBRATION: r042 estimated event sourcing would be over-engineered for this use case, predicting state file <100KB. Actual .farmer-state.json is 368KB — 3.7x the estimate. The file grew larger than predicted because activity logs accumulated across many sessions and prototyping iterations. However, the core conclusion holds: JSON snapshots work fine at this scale, write time is negligible, and event sourcing complexity was correctly avoided. The 1MB threshold for reconsidering was not reached. Score: PARTIAL — size estimate was 3.7x low, but the architectural recommendation (avoid event sourcing) was correct.",
+      "source": {
+        "origin": "calibration",
+        "artifact": "ls -lh .farmer-state.json (368KB vs predicted <100KB)",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "calibrate",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "calibration",
+        "r042",
+        "state-persistence",
+        "size-estimate"
+      ]
+    },
+    {
+      "id": "cal004",
+      "type": "estimate",
+      "topic": "calibration",
+      "content": "CALIBRATION: r026 estimated ~250 LOC across 4 files for multi-sprint support (60 server + 120 dashboard + 40 init + 30 compiler). Actual multi-sprint commit (ec11c69..6036ebf): 196 insertions in server.mjs, 143 in dashboard.html = 339 LOC in just 2 files, plus a 274-line MULTI-SESSION-PLAN.md. The server and dashboard LOC were each ~2x the estimate. However, the multi-sprint prototype was later superseded by git-based sprint detection (p013, p015), changing the approach entirely. Score: MISS — LOC underestimated by ~2x per file, and the implementation approach was later replaced.",
+      "source": {
+        "origin": "calibration",
+        "artifact": "git diff --stat ec11c69..6036ebf",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "calibrate",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "calibration",
+        "r026",
+        "multi-sprint",
+        "loc-estimate"
+      ]
+    },
+    {
+      "id": "cal005",
+      "type": "estimate",
+      "topic": "calibration",
+      "content": "CALIBRATION: r016 estimated the cartography crossover point at ~150-200 files or 3+ sprints. The repo now has 171 files and 78 claims across 1 active sprint. The generate-manifest.js (273 LOC) was built and wired into the compiler (p007, p015), and sprint detection was implemented. The file count is now within the predicted crossover range. However, no formal measurement of 'AI search time improvement' was conducted — the sprint's done-criteria ('measured improvement in AI search time') was not rigorously validated. Score: PARTIAL — crossover threshold prediction was reasonable (we're at 171 files, within range), but the benefit was never measured.",
+      "source": {
+        "origin": "calibration",
+        "artifact": "find repo -type f | wc -l = 171; generate-manifest.js = 273 LOC",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "calibrate",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "calibration",
+        "r016",
+        "cartography",
+        "performance"
+      ]
+    },
+    {
+      "id": "cal006",
+      "type": "estimate",
+      "topic": "calibration",
+      "content": "CALIBRATION: Security risk predictions (r029-r037) — all 9 security risks identified in research were confirmed and addressed in subsequent prototypes: p005 (initial hardening), p010 (CSRF tokens + rotation), p011 (WebSocket hardening for x004-x009), p012 (session GC for x011), p014 (session hardening for x012-x016). Risk prediction accuracy was excellent — every identified vulnerability was real and exploitable. The /challenge commands (x004-x016) independently rediscovered and expanded on the research risks, validating them. Score: HIT — risk identification was comprehensive and accurate; all predicted risks materialized during challenge testing.",
+      "source": {
+        "origin": "calibration",
+        "artifact": "r029-r037 -> p005, p010, p011, p012, p014",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "calibrate",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "calibration",
+        "security",
+        "risk-prediction"
+      ]
+    },
+    {
+      "id": "cal007",
+      "type": "estimate",
+      "topic": "calibration",
+      "content": "CALIBRATION SUMMARY — Sprint prediction scorecard across 6 calibrated items: 2 HIT (r039 JSON snapshot LOC, r029-r037 security risks), 3 PARTIAL (r008 multi-session LOC, r042 state file size, r016 cartography crossover), 1 MISS (r026 multi-sprint LOC). Key pattern: LOC estimates were systematically low by 2-3x — the sprint consistently underestimated implementation complexity. Architectural recommendations (JSON snapshots, session-keyed Maps, avoid event sourcing) were accurate. Risk predictions were the most reliable category at 100% accuracy. Calibration lesson: multiply LOC estimates by 2.5x for future sprints; trust architectural judgments; risk analysis is well-calibrated.",
+      "source": {
+        "origin": "calibration",
+        "artifact": "cal001-cal006 synthesis",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "calibrate",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "calibration",
+        "summary",
+        "prediction-accuracy",
+        "meta"
+      ]
+    },
+    {
+      "id": "p016",
+      "type": "recommendation",
+      "topic": "security",
+      "content": "Named Cloudflare tunnel setup guide created at prototypes/remote-dashboard/setup-tunnel.sh. Named tunnels fix the r027 SSE blocker, provide stable subdomains, remove the 200-request concurrency limit, and enable Cloudflare Access (OAuth/OIDC) as an additional auth layer. Server gains --trust-proxy flag (off by default) that trusts X-Forwarded-For headers from cloudflared for accurate client IP in sourceFingerprint and logging. The flag is opt-in to prevent header spoofing when not behind a trusted proxy. Hook endpoints remain localhost-only regardless of --trust-proxy since Claude Code calls them directly.",
+      "source": {
+        "type": "prototype",
+        "origin": "cloudflare-docs",
+        "detail": "setup-tunnel.sh — interactive setup for cloudflared tunnel create/route/config; server.mjs — TRUST_PROXY flag, clientAddr() helper"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "cloudflare-tunnel",
+        "named-tunnel",
+        "SSE",
+        "proxy-trust",
+        "setup-guide"
+      ]
+    }
+  ]
+}
