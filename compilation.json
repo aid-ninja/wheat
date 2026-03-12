@@ -1,9 +1,18 @@
 {
-  "compiled_at": "2026-03-12T06:36:46.580Z",
-  "claims_hash": "25a3918",
+  "compiled_at": "2026-03-12T06:47:24.360Z",
+  "claims_hash": "1c17f40",
   "compiler_version": "0.2.0",
-  "status": "ready",
-  "errors": [],
+  "status": "blocked",
+  "errors": [
+    {
+      "code": "E_CONFLICT",
+      "message": "Unresolved conflict between r020 and r025 (topic: multi-sprint) — same_evidence_tier: both documented",
+      "claims": [
+        "r020",
+        "r025"
+      ]
+    }
+  ],
   "warnings": [
     {
       "code": "W_CONSTRAINT_ONLY",
@@ -17,20 +26,6 @@
       "message": "Topic \"compatibility\" has only 1 claim type(s): constraint. Missing: factual, estimate, risk, recommendation, feedback",
       "claims": [
         "d004"
-      ]
-    },
-    {
-      "code": "W_CONSTRAINT_ONLY",
-      "message": "Topic \"multi-sprint\" is constraint-dominated (1/1 claims are constraints/feedback) — stated-level evidence is expected",
-      "claims": [
-        "d002"
-      ]
-    },
-    {
-      "code": "W_TYPE_MONOCULTURE",
-      "message": "Topic \"multi-sprint\" has only 1 claim type(s): constraint. Missing: factual, estimate, risk, recommendation, feedback",
-      "claims": [
-        "d002"
       ]
     }
   ],
@@ -610,11 +605,136 @@
         "command-only-limitation"
       ],
       "corroborates": "r002"
+    },
+    {
+      "id": "r021",
+      "type": "recommendation",
+      "topic": "multi-sprint",
+      "content": "Add a --sprints-dir flag to the Farmer server (default: './sprints'). On startup, scan the directory for subdirectories containing claims.json, load each as a named sprint. Use fs.watchFile on each sprint's claims.json and compilation.json for hot-reload. The existing --claims flag becomes shorthand for single-sprint mode (backwards compat with d004). New SSE event type 'sprints_list' broadcasts the available sprints with {slug, question, phase, claimCount, lastModified} on client connect and whenever the list changes.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "server",
+        "hot-reload",
+        "sprints-dir",
+        "SSE",
+        "backwards-compat"
+      ]
+    },
+    {
+      "id": "r022",
+      "type": "recommendation",
+      "topic": "multi-sprint",
+      "content": "Dashboard sprint switcher should use a collapsible card list (not tabs, not dropdown). Each card shows: sprint question (truncated), phase badge (define/research/prototype/evaluate), claim count, and last-modified timestamp. Tapping a card loads that sprint's claims and compilation into the existing dashboard views. The card list collapses to a single-line header showing the active sprint name when not switching, preserving mobile screen real estate. This satisfies d002 without requiring UI redesign of the claims/activity views.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/dashboard.html",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "UX",
+        "dashboard",
+        "mobile",
+        "sprint-switcher",
+        "card-list"
+      ]
+    },
+    {
+      "id": "r023",
+      "type": "recommendation",
+      "topic": "multi-sprint",
+      "content": "Sprint lifecycle: (1) /init creates a new subdirectory under sprints/ with the standard structure, updates the root symlink to point to it, and registers it in wheat-manifest.json. (2) Active sprints have meta.phase in {define, research, prototype, evaluate}. (3) Archiving sets meta.phase to 'archived' — no file moves needed, the sprint stays in sprints/ but the dashboard sorts it below active sprints. (4) The root symlink always points to the most recently active sprint, updated by /init or a new 'wheat switch <slug>' command. This avoids the current pattern of manually copying sprints to examples/ which loses git history.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "wheat-init.js, examples/remote-farmer-sprint/",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "lifecycle",
+        "init",
+        "archive",
+        "symlink",
+        "git-history"
+      ]
+    },
+    {
+      "id": "r024",
+      "type": "recommendation",
+      "topic": "multi-sprint",
+      "content": "Cross-sprint claim references use the format 'sprint-slug:claim-id' (e.g., 'remote-farmer:r003'). The conflicts_with and resolved_by fields already accept string IDs — extending to qualified IDs requires no schema change. The compiler should resolve cross-sprint references by loading the referenced sprint's claims.json on demand. This enables /merge to create cross-sprint dependency links rather than duplicating claims, and lets /challenge reference claims from a different sprint without copying them.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "wheat-compiler.js",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "cross-sprint",
+        "claim-references",
+        "merge",
+        "compiler"
+      ]
+    },
+    {
+      "id": "r026",
+      "type": "estimate",
+      "topic": "multi-sprint",
+      "content": "Server changes for multi-sprint support: ~60 lines to add sprint scanning, per-sprint state (Map<slug, {claims, compilation}>), and the sprints_list SSE event. Dashboard changes: ~120 lines for the sprint switcher card list UI. wheat-init.js changes: ~40 lines to create under sprints/ and update config. wheat-compiler.js changes: ~30 lines for cross-sprint reference resolution. Total: ~250 lines across 4 files, estimated 3-5 hours. The bulk of effort is in the dashboard UI, not the data model.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs, wheat-init.js, wheat-compiler.js",
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "effort",
+        "estimate",
+        "line-count",
+        "prototype"
+      ]
     }
   ],
   "conflict_graph": {
     "resolved": [],
-    "unresolved": []
+    "unresolved": [
+      {
+        "claimA": "r020",
+        "claimB": "r025",
+        "topic": "multi-sprint",
+        "reason": "same_evidence_tier: both documented"
+      }
+    ]
   },
   "coverage": {
     "cartography": {
@@ -710,26 +830,32 @@
       ]
     },
     "multi-sprint": {
-      "claims": 1,
-      "max_evidence": "stated",
-      "status": "weak",
+      "claims": 6,
+      "max_evidence": "documented",
+      "status": "moderate",
       "types": [
-        "constraint"
+        "constraint",
+        "estimate",
+        "recommendation"
       ],
       "claim_ids": [
-        "d002"
+        "d002",
+        "r021",
+        "r022",
+        "r023",
+        "r024",
+        "r026"
       ],
       "constraint_count": 1,
       "source_origins": [
+        "analysis",
         "stakeholder"
       ],
-      "source_count": 1,
-      "type_diversity": 1,
+      "source_count": 2,
+      "type_diversity": 3,
       "missing_types": [
         "factual",
-        "estimate",
         "risk",
-        "recommendation",
         "feedback"
       ]
     },
@@ -792,7 +918,14 @@
     "x002": 0,
     "x003": 0,
     "w001": 0,
-    "w002": 0
+    "w002": 0,
+    "r020": 0,
+    "r021": 0,
+    "r022": 0,
+    "r023": 0,
+    "r024": 0,
+    "r025": 0,
+    "r026": 0
   },
   "phase_summary": {
     "define": {
@@ -800,7 +933,7 @@
       "complete": true
     },
     "research": {
-      "claims": 16,
+      "claims": 23,
       "complete": true
     },
     "prototype": {
@@ -824,14 +957,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 26,
-    "active_claims": 26,
-    "conflicted_claims": 0,
+    "total_claims": 33,
+    "active_claims": 31,
+    "conflicted_claims": 2,
     "superseded_claims": 0,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:25a3918fe3d30232c202ee5067f015161eed034c5196530e2cca3119673e28f3",
+    "input_hash": "sha256:1c17f408094ecbd1b4c450a8795ca56c44e80cae5d50ca5b9f177d18efad7a9c",
     "compiler_version": "0.2.0",
     "deterministic": true
   }
