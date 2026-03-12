@@ -867,16 +867,22 @@ async function decide(requestId, allow) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ requestId, allow, reason: allow ? 'Approved remotely' : 'Denied remotely' }),
   });
+  state.pending = state.pending.filter(p => p.requestId !== requestId);
+  render();
 }
 
 async function respondToQuestion(requestId) {
   const input = document.getElementById('question-input-' + requestId);
   if (!input) return;
+  const val = input.value || 'Approved remotely';
+  input.blur();
   await fetch(API('/api/decide'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ requestId, allow: true, reason: input.value || 'Approved remotely', response: input.value }),
+    body: JSON.stringify({ requestId, allow: true, reason: val, response: val }),
   });
+  state.pending = state.pending.filter(p => p.requestId !== requestId);
+  render();
 }
 
 let sprintSwitcherOpen = false;
