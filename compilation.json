@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T08:32:07.742Z",
-  "claims_hash": "fd11e53",
+  "compiled_at": "2026-03-12T08:47:02.560Z",
+  "claims_hash": "e502002",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -596,7 +596,9 @@
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
-      "conflicts_with": [],
+      "conflicts_with": [
+        "f001"
+      ],
       "resolved_by": "r025",
       "tags": [
         "directory-structure",
@@ -714,7 +716,9 @@
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
-      "conflicts_with": [],
+      "conflicts_with": [
+        "f001"
+      ],
       "resolved_by": "r020",
       "tags": [
         "symlink",
@@ -1260,7 +1264,18 @@
     }
   ],
   "conflict_graph": {
-    "resolved": [],
+    "resolved": [
+      {
+        "winner": "r020",
+        "loser": "f001",
+        "reason": "evidence_tier: documented (3) > stated (1)"
+      },
+      {
+        "winner": "r025",
+        "loser": "f001",
+        "reason": "evidence_tier: documented (3) > stated (1)"
+      }
+    ],
     "unresolved": []
   },
   "coverage": {
@@ -1573,8 +1588,8 @@
       "complete": false
     },
     "feedback": {
-      "claims": 0,
-      "complete": false
+      "claims": 1,
+      "complete": true
     }
   },
   "sprint_meta": {
@@ -1585,14 +1600,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 55,
+    "total_claims": 56,
     "active_claims": 55,
     "conflicted_claims": 0,
-    "superseded_claims": 0,
+    "superseded_claims": 1,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:fd11e538f52f8ed1e699e34caa1d93cb31ee4cf5c11c1eca7582582335dd0cee",
+    "input_hash": "sha256:e502002a5834ffffcf8a66b379c2d85ed562e87d5e83dc1ef387b188918ecd89",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

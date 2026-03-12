@@ -600,7 +600,7 @@
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
-      "conflicts_with": [],
+      "conflicts_with": ["f001"],
       "resolved_by": "r025",
       "tags": [
         "directory-structure",
@@ -718,7 +718,7 @@
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
-      "conflicts_with": [],
+      "conflicts_with": ["f001"],
       "resolved_by": "r020",
       "tags": [
         "symlink",
@@ -1150,6 +1150,24 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["compatibility", "backwards-compat", "single-session", "regression-test", "prototype"]
+    },
+    {
+      "id": "f001",
+      "type": "feedback",
+      "topic": "multi-sprint",
+      "content": "wheat.config.json should not duplicate data derivable from git history or directory structure. The 'currentSprint' pointer is redundant — the active sprint can be determined by scanning sprints/ for the one with meta.phase !== 'archived', or by git log recency. Config files that mirror derivable state create drift risk (config says sprint-A is active, but sprint-B was actually last edited). Only store truly disjoint state: user preferences, runtime settings, things that have no other source of truth. This conflicts with r020 and r025 which propose config-as-canonical-pointer.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "feedback",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": ["r020", "r025"],
+      "resolved_by": null,
+      "tags": ["config", "derivable-state", "single-source-of-truth", "DRY"]
     }
   ]
 }
