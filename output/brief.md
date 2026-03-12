@@ -1,17 +1,17 @@
 # Remote Farmer — Architecture Recommendation
 
 > Remote permission dashboard for Claude Code
-> Claims hash: 51751a2 | 50 claims | 10 topics | ~550 LOC prototype
+> Claims hash: 473da3f | 56 claims | 10 topics | ~650 LOC prototype
 
 ---
 
 ## Executive Summary
 
-Remote Farmer is a zero-dependency Node.js server that intercepts Claude Code's permission requests via HTTP hooks and relays them to a browser dashboard over SSE. A remote user approves or denies each tool call from their phone or laptop, with the decision relayed back synchronously before Claude Code proceeds. [r001] [p001]
+Remote Farmer is a zero-dependency Node.js server that intercepts Claude Code's permission requests via HTTP hooks and relays them to a browser dashboard. A remote user approves or denies each tool call from their phone, with the decision relayed back synchronously before Claude Code proceeds. [r001] [p001]
 
-No patching, no forking, no subprocess wrapping. The hook system is the entire integration surface — and the prototype proves it works exactly as documented. [d001] [r014]
+No patching, no forking, no subprocess wrapping. The hook system is the entire integration surface — and the prototype proves it works end-to-end, including remote access from an iPhone via Cloudflare Tunnel. [d001] [p007] [p012]
 
-**Key numbers:** 50 claims, 10 topics, ~550 LOC prototype [p003]
+**Key numbers:** 56 claims, 10 topics, ~650 LOC prototype, 0 npm dependencies [p003]
 
 ---
 
@@ -22,13 +22,14 @@ No patching, no forking, no subprocess wrapping. The hook system is the entire i
 ```
 Claude Code CLI
   │
-  ├── PermissionRequest hook ──POST──► localhost:9090/hooks/permission
-  ├── PostToolUse hook ────────POST──► localhost:9090/hooks/activity
-  └── PostToolUseFailure hook ─POST──► localhost:9090/hooks/activity
+  ├── PreToolUse hook ───────POST──► localhost:9090/hooks/permission
+  ├── PostToolUse hook ──────POST──► localhost:9090/hooks/activity
+  ├── PostToolUseFailure ────POST──► localhost:9090/hooks/activity
+  └── Notification hook ─────POST──► localhost:9090/hooks/notification
                                               │
                                     Remote Farmer Server (Node.js)
                                               │
-                                         SSE push
+                                    SSE push + polling fallback
                                               │
                                        Browser Dashboard
                                     (approve / deny / monitor)
@@ -36,16 +37,16 @@ Claude Code CLI
 
 ### Permission Flow
 
-1. Claude Code fires a `PermissionRequest` hook POST to `localhost:9090` [r001]
-2. Server holds the HTTP response open in a pending map [p002]
-3. SSE pushes the request to all connected browsers [p004]
+1. Claude Code fires a `PreToolUse` hook POST to `localhost:9090` [r001]
+2. Server checks trust tier — auto-approves if rules match [p009]
+3. If not auto-approved, holds HTTP response and pushes to browser [p002]
 4. User taps Approve or Deny on the dashboard
-5. Server responds to the held request with allow/deny JSON [r002]
+5. Server responds with allow/deny JSON [r002]
 6. Claude Code proceeds (or halts) based on the decision
 
-### Activity Feed
+### Connectivity
 
-`PostToolUse` and `PostToolUseFailure` hooks fire after every tool execution — success or failure. These are non-blocking, so they feed a real-time activity stream without any performance impact on Claude Code. [r006]
+SSE (Server-Sent Events) for local connections. Cloudflare and other reverse proxies buffer SSE, so the dashboard auto-detects this and falls back to polling `/api/state` every 2 seconds. State diff prevents UI flash on re-render. [p007] [p011]
 
 ---
 
@@ -53,38 +54,66 @@ Claude Code CLI
 
 ### Fail-Deny on Timeout [x001] [x008]
 
-Empty JSON `{}` on 2xx means auto-allow in Claude Code. The original timeout handler would have silently granted every timed-out permission. **Fixed:** timeout now returns an explicit deny decision. This is the single most important security property of the system.
+Empty JSON `{}` on 2xx means auto-allow in Claude Code. The timeout handler returns an explicit deny decision. This is the single most important security property of the system.
 
 ### Fail-Open on Server Crash [x002]
 
-If the Remote Farmer server crashes or the network drops, non-2xx / timeout = non-blocking error = Claude Code proceeds as if no hook exists. This is **unfixable from the dashboard side** — it is Claude Code's design choice.
+If the server crashes or network drops, non-2xx / timeout = Claude Code proceeds as if no hook exists. **Unfixable from dashboard side** — it is Claude Code's design choice. Mitigate with a local command hook that checks server health. [x010]
 
-### Hybrid Hook Mitigation [x010]
+### Hardening [p010]
 
-HTTP hook for the dashboard UI, plus a local **command hook** that checks if the dashboard server is alive before allowing any tool call. Command hooks with exit code 2 *are* blocking errors, unlike HTTP hooks. This closes the fail-open gap.
+- Hook endpoints restricted to localhost (remoteAddress check)
+- Request body capped at 1MB
+- Token comparison uses `crypto.timingSafeEqual`
+- Regex patterns escape special chars (ReDoS prevention)
+- Dangerous Bash patterns flagged visually in dashboard
 
 ### Auth Layers [p005] [r009]
 
-- **Inner layer:** Random 16-byte hex token generated on startup, required for dashboard and SSE access.
-- **Outer layer:** Tunnel auth (ngrok basic auth or Cloudflare Zero Trust email OTP).
+- **Inner:** Random hex token (or `--token` flag), required for all dashboard/API access
+- **Outer:** Tunnel auth (Cloudflare Zero Trust email OTP, or ngrok basic auth)
 
 ---
 
-## Trust Tiers [r030]
+## Trust Tiers [p009]
 
 | Tier | Behavior | Best For |
 |------|----------|----------|
-| **Paranoid** | Approve everything manually | Security-sensitive ops, unfamiliar codebases |
-| **Standard** | Auto-approve reads (Read, Grep, Glob, WebSearch), require approval for writes | Daily development — good balance of speed and safety [r028] |
-| **Autonomous** | Auto-approve all except dangerous Bash (`rm`, `git push`, `curl\|sh`) | Trusted codebases, maximum speed [r032] |
+| **Paranoid** | Approve everything manually | Security-sensitive ops |
+| **Standard** | Auto-approve Read/Grep/Glob/WebSearch/WebFetch | Daily development |
+| **Autonomous** | Auto-approve all except dangerous Bash | Trusted codebases, max speed |
 
-### Batch Approval [r028] [r031]
+Standard mode eliminates approval fatigue for safe read-only tools while keeping write/execute under remote control. Autonomous mode was tested live — only `rm`, `git push`, `sudo`, `curl|sh`, and similar patterns require approval. [r030] [r032]
 
-`PreToolUse` hooks fire before every tool call regardless of permission status. Server maintains an in-memory allow-list with regex matching. Dashboard exposes a rules panel with category checkboxes and file-path patterns.
+### Session Rules
 
-### Persistent Rules [r029]
+Dashboard exposes checkbox rules by tool category. Users can also add per-tool rules from "Quick Rules" dropdown on each permission card. Rules persist in server memory for the session. [r028] [r031]
 
-`updatedPermissions` in `PermissionRequest` responses persists "always allow" rules into Claude Code's own permission system — survives session restarts.
+---
+
+## Tested Findings
+
+### Cloudflare Tunnel [p007] [p012]
+
+- `cloudflared tunnel --url http://localhost:9090` works with no account
+- SSE is **buffered** by Cloudflare despite `X-Accel-Buffering: no` headers
+- Polling fallback required — auto-detected after 4s SSE silence
+- Tunnel URL changes on each `cloudflared` restart (use named tunnels for persistence)
+- Quick tunnels have no SLA but work fine for dev sessions
+
+### iOS Safari [p008]
+
+- `Notification` API does not exist — `typeof Notification === 'undefined'`
+- All references must be guarded or dashboard JS crashes silently
+- `env(safe-area-inset-top)` needed for iPhone Dynamic Island
+- `viewport-fit=cover` required in meta viewport
+
+### Hook Behavior [r004] [x001]
+
+- HTTP hooks are fail-open by design (non-2xx = proceed)
+- Empty JSON `{}` on 2xx = auto-allow (critical security footgun)
+- `PreToolUse` fires before every tool regardless of permission config
+- Notification hooks are non-blocking (fire and forget, can't relay user input)
 
 ---
 
@@ -92,49 +121,44 @@ HTTP hook for the dashboard UI, plus a local **command hook** that checks if the
 
 ### No Remote Text Input [r023] [r024]
 
-Hooks cannot inject user prompts or answer AskUserQuestion dialogs. `AskUserQuestion` triggers a Notification hook (observe-only, cannot respond). The question is visible on the dashboard but unanswerable.
-
-**Workaround:** Detect the dialog via Notification hook, collect the answer on the dashboard, inject it via `additionalContext` on the next hook response as "[Remote user answered: ...]". Not seamless, but functional. [r025] [r026]
-
-### No Hot-Reload [r007]
-
-Hook JSON config is loaded at session startup. Mid-session changes require `/hooks` menu interaction or session restart. The dashboard cannot dynamically reconfigure which tools need approval without restarting Claude Code.
+Hooks cannot answer `AskUserQuestion` prompts. Questions are visible on dashboard but unanswerable — the Notification hook is fire-and-forget. Text conversation must stay in the terminal.
 
 ### Fail-Open Is Unfixable [x002]
 
-If the dashboard server is unreachable, permissions are silently granted. The hybrid command hook mitigation [x010] is the best available workaround, but cannot be enforced from the dashboard alone.
+Server crash = permissions silently granted. Hybrid command hook is the best workaround. [x010]
+
+### No Hot-Reload [r007]
+
+Hook config loaded at session startup. Changes require session restart.
 
 ---
 
-## Tunneling Options
+## Tunneling
 
-| Option | Auth | Trust Model | Setup | Free Tier | Best For |
-|--------|------|-------------|-------|-----------|----------|
-| **ngrok** | Basic auth via `--basic-auth` [r017] | Traffic routes through ngrok infra | ~1 min | 1 GB/mo, interstitial page [r016] | Quick one-off demos |
-| **Cloudflare Tunnel** | Zero Trust Access, email OTP [r019] | Your own CF account | ~5 min | Free for 50 users [r018] | Recurring sessions |
-| **Tailscale Funnel** | ACL-based, no built-in auth [r020] | P2P WireGuard mesh | ~5 min | Free for personal use | Both endpoints yours |
+| Option | Auth | Setup | Free Tier | Tested |
+|--------|------|-------|-----------|--------|
+| **Cloudflare Tunnel** | Zero Trust email OTP [r019] | ~2 min | Free/50 users | Yes [p007] [p012] |
+| **ngrok** | `--basic-auth` [r017] | ~1 min | 1 GB/mo + interstitial [r016] | No |
+| **Tailscale Funnel** | ACL-based [r020] | ~5 min | Free personal | No |
 
-**Recommendation:** Cloudflare Tunnel + Access for recurring use (email OTP second factor, free tier, no third-party trust dependency). ngrok for quick one-off demos. Tailscale simplest if already installed but lacks its own auth layer beyond the dashboard token. [r010] [r022]
-
-**Caveat:** Tunneling evidence is web-sourced only — no tested-tier claims. Verify before production deployment.
+**Recommendation:** Cloudflare Tunnel for sessions. Requires polling fallback but otherwise works well. Named tunnel + Zero Trust Access for recurring use. [r022]
 
 ---
 
-## Next Steps
+## Recommendation
 
-### Build Now
+**Ship the prototype.** The 650-line Node.js server with self-contained HTML dashboard covers the core use case: remote permission approval from a phone over a tunneled connection. Trust tiers solve the approval fatigue problem. Polling fallback handles proxy compatibility.
 
-- **Trust tier UI** — radio toggle for Paranoid / Standard / Autonomous in the dashboard. Wire to PreToolUse auto-approve logic. [r030] [r031]
-- **Hybrid fail-safe hook** — add a local command hook that checks `curl -sf localhost:9090/health` before allowing tool calls. Exit code 2 = blocking deny. Closes the fail-open gap. [x010]
-- **Notification hooks** — subscribe to Notification events for AskUserQuestion dialogs, session lifecycle, and error alerts. Display on dashboard even if not actionable yet. [r024]
-- **updatedInput sandboxing** — strip `--force` flags or add `--dry-run` to Bash commands in Autonomous mode. [r032]
+**What to build next:**
+1. Hybrid fail-safe command hook (closes fail-open gap) [x010]
+2. Named Cloudflare tunnel with stable URL
+3. `updatedInput` sandboxing for Autonomous mode [r032]
 
-### Wait For
-
-- **Claude Code API for text injection** — multiple GitHub issues request the ability to answer AskUserQuestion remotely (#13830, #15872, #20169). Until this ships, the additionalContext workaround is the best option. [r023]
-- **Hot-reloadable hook config** — currently requires session restart to change which hooks are active. [r007]
-- **Fail-closed HTTP hook mode** — a Claude Code setting to treat non-2xx as blocking errors rather than non-blocking. Would eliminate the need for the hybrid hook workaround. [x002]
+**What to wait for:**
+- Claude Code API for remote text injection [r023]
+- Fail-closed HTTP hook mode [x002]
+- Hot-reloadable hook config [r007]
 
 ---
 
-*Claims hash 51751a2 — Compiled by Wheat*
+*Claims hash 473da3f — Compiled by Wheat*

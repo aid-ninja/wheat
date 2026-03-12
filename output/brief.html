@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Remote Farmer — Architecture Recommendation</title>
+<title>Remote Farmer — Architecture Brief</title>
 <style>
   :root {
     --bg-dark: #0f172a;
@@ -27,393 +27,73 @@
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html, body {
-    height: 100%;
-    margin: 0;
-    scroll-behavior: smooth;
-  }
-
-  html {
-    overflow-y: scroll;
-    scroll-snap-type: y mandatory;
-  }
-
+  html, body { height: 100%; margin: 0; scroll-behavior: smooth; }
+  html { overflow-y: scroll; scroll-snap-type: y mandatory; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
-    background: var(--bg-dark);
-    color: var(--text);
-    font-size: 11pt;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-    overflow-y: scroll;
-    scroll-snap-type: y mandatory;
+    background: var(--bg-dark); color: var(--text); font-size: 11pt; line-height: 1.5;
+    -webkit-font-smoothing: antialiased; overflow-y: scroll; scroll-snap-type: y mandatory;
   }
 
   .slide {
-    width: 100%;
-    height: 100vh;
-    padding: 60px 80px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-    scroll-snap-align: start;
+    width: 100%; min-height: 100vh; padding: 60px 80px;
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative; overflow: hidden; scroll-snap-align: start;
   }
-
   .slide::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 40%;
-    height: 100%;
+    content: ''; position: absolute; top: 0; right: 0; width: 40%; height: 100%;
     background: radial-gradient(ellipse at top right, rgba(59,130,246,0.08) 0%, transparent 70%);
     pointer-events: none;
   }
 
-  h1 {
-    font-size: 42pt;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-    margin-bottom: 16px;
-    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  h2 {
-    font-size: 32pt;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.15;
-    margin-bottom: 24px;
-    color: #fff;
-  }
-
-  h3 {
-    font-size: 14pt;
-    font-weight: 600;
-    color: var(--accent-light);
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  h4 {
-    font-size: 13pt;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 8px;
-  }
-
-  p {
-    font-size: 14pt;
-    color: var(--text-muted);
-    line-height: 1.6;
-    margin-bottom: 12px;
-    text-align: left;
-    font-weight: 400;
-    max-width: 85%;
-  }
-
-  .subtitle {
-    font-size: 18pt;
-    color: var(--text-muted);
-    font-weight: 300;
-    max-width: 70%;
-  }
-
-  .label {
-    display: inline-block;
-    font-size: 9pt;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent-light);
-    background: rgba(59,130,246,0.12);
-    padding: 4px 12px;
-    border-radius: 4px;
-    margin-bottom: 16px;
-  }
-
+  h1 { font-size: 42pt; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 16px;
+    background: linear-gradient(135deg, #f0a030, #fbbf24, #f59e0b); -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; background-clip: text; }
+  h2 { font-size: 28pt; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 24px; color: #fff; }
+  h3 { font-size: 13pt; font-weight: 600; color: var(--accent-light); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+  p { font-size: 13pt; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px; max-width: 85%; }
+  .subtitle { font-size: 16pt; color: var(--text-muted); font-weight: 300; max-width: 70%; }
+  .label { display: inline-block; font-size: 9pt; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent-light); background: rgba(59,130,246,0.12); padding: 4px 12px; border-radius: 4px; margin-bottom: 16px; }
   .label.green { color: var(--green); background: var(--green-dim); }
   .label.orange { color: var(--orange); background: var(--orange-dim); }
   .label.red { color: var(--red); background: var(--red-dim); }
-  .label.purple { color: var(--purple); background: var(--purple-dim); }
-  .label.pink { color: var(--pink); background: var(--pink-dim); }
-
-  .divider {
-    width: 60px;
-    height: 3px;
-    background: var(--accent);
-    border-radius: 2px;
-    margin: 16px 0 24px 0;
-  }
-
-  .two-col {
-    display: flex;
-    gap: 60px;
-    align-items: flex-start;
-  }
-
+  .divider { width: 60px; height: 3px; background: var(--accent); border-radius: 2px; margin: 16px 0 24px 0; }
+  .two-col { display: flex; gap: 40px; align-items: flex-start; }
   .two-col > div { flex: 1; }
-
-  .three-col {
-    display: flex;
-    gap: 24px;
-    align-items: stretch;
-  }
-
+  .three-col { display: flex; gap: 20px; align-items: stretch; }
   .three-col > div { flex: 1; }
-
-  .card {
-    background: var(--bg-card);
-    border-radius: 16px;
-    padding: 32px;
-    border: 1px solid rgba(255,255,255,0.06);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: var(--accent);
-    border-radius: 4px 0 0 4px;
-  }
-
+  .card { background: var(--bg-card); border-radius: 16px; padding: 28px; border: 1px solid rgba(255,255,255,0.06); position: relative; overflow: hidden; }
+  .card::after { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent); border-radius: 4px 0 0 4px; }
   .card.green::after { background: var(--green); }
   .card.orange::after { background: var(--orange); }
   .card.red::after { background: var(--red); }
-  .card.purple::after { background: var(--purple); }
-  .card.pink::after { background: var(--pink); }
-
-  .card-label {
-    font-size: 9pt;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--accent-light);
-    margin-bottom: 8px;
-  }
-
+  .card-label { font-size: 9pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-light); margin-bottom: 8px; }
   .card.green .card-label { color: var(--green); }
   .card.orange .card-label { color: var(--orange); }
   .card.red .card-label { color: var(--red); }
-  .card.purple .card-label { color: var(--purple); }
+  .card-text { font-size: 14pt; color: var(--text); line-height: 1.5; font-weight: 500; }
+  .card-detail { font-size: 11pt; color: var(--text-muted); line-height: 1.5; margin-top: 10px; }
+  .claim-ref { font-size: 8pt; color: var(--text-dim); font-family: monospace; }
 
-  .card-text {
-    font-size: 16pt;
-    color: var(--text);
-    line-height: 1.5;
-    font-weight: 500;
-  }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 11pt; }
+  th { text-align: left; padding: 10px 16px; background: var(--bg-card); color: var(--accent-light); font-weight: 600; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 2px solid rgba(59,130,246,0.3); }
+  td { padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); color: var(--text-muted); }
+  tr:hover td { background: rgba(255,255,255,0.02); }
 
-  .card-detail {
-    font-size: 12pt;
-    color: var(--text-muted);
-    line-height: 1.5;
-    margin-top: 12px;
-  }
+  pre { background: var(--bg-card); padding: 20px; border-radius: 12px; font-size: 10pt; color: var(--accent-light); line-height: 1.6; overflow-x: auto; border: 1px solid rgba(255,255,255,0.06); }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 16px 0;
-    font-size: 11pt;
-  }
-
-  th {
-    text-align: left;
-    padding: 10px 16px;
-    background: var(--bg-card);
-    color: var(--accent-light);
-    font-weight: 600;
-    font-size: 9pt;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border-bottom: 2px solid rgba(59,130,246,0.3);
-  }
-
-  td {
-    padding: 10px 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    color: var(--text-muted);
-  }
-
-  tr:hover td {
-    background: rgba(255,255,255,0.02);
-  }
-
-  code {
-    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-    font-size: 0.9em;
-    background: rgba(255,255,255,0.06);
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
-
-  .claim-ref {
-    font-size: 8pt;
-    color: var(--text-dim);
-    font-family: monospace;
-  }
-
-  .slide-nav {
-    position: fixed;
-    right: 24px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    z-index: 100;
-  }
-
-  .slide-nav a {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--text-dim);
-    display: block;
-    transition: all 0.2s;
-    text-decoration: none;
-  }
-
-  .slide-nav a:hover,
-  .slide-nav a.active {
-    background: var(--accent);
-    transform: scale(1.5);
-  }
-
-  @keyframes fadeInUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  .fade-in {
-    animation: fadeInUp 0.6s ease-out forwards;
-  }
-
-  .wheat-footer {
-    position: absolute;
-    bottom: 24px;
-    right: 40px;
-    font-size: 8pt;
-    color: var(--text-dim);
-    letter-spacing: 0.05em;
-  }
-
-  .stat-row {
-    display: flex;
-    gap: 32px;
-    margin-top: 32px;
-  }
-
-  .stat {
-    text-align: center;
-  }
-
-  .stat-num {
-    font-size: 36pt;
-    font-weight: 800;
-    color: var(--accent-light);
-    line-height: 1;
-  }
-
-  .stat-label {
-    font-size: 10pt;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-top: 4px;
-  }
-
-  ul.brief-list {
-    list-style: none;
-    padding: 0;
-    margin: 8px 0;
-  }
-
-  ul.brief-list li {
-    font-size: 13pt;
-    color: var(--text-muted);
-    line-height: 1.7;
-    padding-left: 20px;
-    position: relative;
-    margin-bottom: 12px;
-  }
-
-  ul.brief-list li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 11px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-  }
-
-  ul.brief-list li.red-dot::before { background: var(--red); }
-  ul.brief-list li.green-dot::before { background: var(--green); }
-  ul.brief-list li.orange-dot::before { background: var(--orange); }
-
-  .flow-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 24px 0;
-    flex-wrap: wrap;
-  }
-
-  .flow-node {
-    background: var(--bg-card);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 10px;
-    padding: 14px 20px;
-    font-size: 11pt;
-    font-weight: 500;
-    color: var(--text);
-    white-space: nowrap;
-  }
-
-  .flow-node.accent {
-    border-color: var(--accent);
-    background: rgba(59,130,246,0.08);
-  }
-
-  .flow-node.green-border {
-    border-color: var(--green);
-    background: rgba(34,197,94,0.06);
-  }
-
-  .flow-arrow {
-    color: var(--text-dim);
-    font-size: 16pt;
-    font-weight: 300;
-  }
+  .slide-nav { position: fixed; right: 24px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+  .slide-nav a { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); display: block; transition: all 0.2s; }
+  .slide-nav a:hover, .slide-nav a.active { background: var(--accent); transform: scale(1.5); }
+  .wheat-footer { position: absolute; bottom: 24px; right: 40px; font-size: 8pt; color: var(--text-dim); letter-spacing: 0.05em; }
 
   @media (max-width: 768px) {
-    .slide { padding: 32px 24px; }
+    .slide { padding: 40px 24px; }
     h1 { font-size: 28pt; }
     h2 { font-size: 22pt; }
-    p { max-width: 100%; font-size: 12pt; }
-    .subtitle { font-size: 14pt; max-width: 100%; }
-    .two-col, .three-col { flex-direction: column; gap: 16px; }
-    .stat-row { gap: 16px; flex-wrap: wrap; }
-    .stat-num { font-size: 28pt; }
-    .flow-row { gap: 8px; }
-    .flow-node { padding: 10px 14px; font-size: 10pt; }
-    table { font-size: 9pt; }
-    th, td { padding: 6px 8px; }
+    .two-col, .three-col { flex-direction: column; }
+    pre { font-size: 8pt; }
     .slide-nav { display: none; }
   }
 </style>
@@ -421,326 +101,233 @@
 <body>
 
 <nav class="slide-nav">
-  <a href="#title" title="Title"></a>
-  <a href="#summary" title="Executive Summary"></a>
-  <a href="#architecture" title="How It Works"></a>
-  <a href="#security" title="Security Model"></a>
-  <a href="#trust" title="Trust Tiers"></a>
-  <a href="#limitations" title="Limitations"></a>
-  <a href="#tunneling" title="Tunneling"></a>
-  <a href="#next" title="Next Steps"></a>
+  <a href="#s1"></a><a href="#s2"></a><a href="#s3"></a><a href="#s4"></a>
+  <a href="#s5"></a><a href="#s6"></a><a href="#s7"></a><a href="#s8"></a>
 </nav>
 
 <!-- Slide 1: Title -->
-<div class="slide" id="title">
-  <span class="label">Wheat Architecture Brief</span>
+<div class="slide" id="s1">
+  <span class="label">Wheat Research Sprint</span>
   <h1>Remote Farmer</h1>
-  <p class="subtitle">Architecture recommendation for a remote permission dashboard for Claude Code</p>
-  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
-</div>
-
-<!-- Slide 2: Executive Summary -->
-<div class="slide" id="summary">
-  <span class="label green">Executive Summary</span>
-  <h2>Claude Code's HTTP hooks are the native integration surface for remote permission control</h2>
-  <div class="divider"></div>
-  <p>Remote Farmer is a zero-dependency Node.js server that intercepts Claude Code's permission requests via HTTP hooks and relays them to a browser dashboard over SSE. A remote user approves or denies each tool call from their phone or laptop, with the decision relayed back synchronously before Claude Code proceeds. <span class="claim-ref">[r001]</span> <span class="claim-ref">[p001]</span></p>
-  <p>No patching, no forking, no subprocess wrapping. The hook system is the entire integration surface &mdash; and the prototype proves it works exactly as documented. <span class="claim-ref">[d001]</span> <span class="claim-ref">[r014]</span></p>
-  <div class="stat-row">
-    <div class="stat">
-      <div class="stat-num">50</div>
-      <div class="stat-label">Claims</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num">10</div>
-      <div class="stat-label">Topics</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num">~550</div>
-      <div class="stat-label">LOC Prototype</div>
-    </div>
+  <p class="subtitle">Architecture recommendation for a remote permission and monitoring dashboard for Claude Code</p>
+  <div style="margin-top:24px;display:flex;gap:16px;">
+    <span class="label green">56 claims</span>
+    <span class="label">10 topics</span>
+    <span class="label orange">~650 LOC</span>
+    <span class="label green">0 dependencies</span>
   </div>
-  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
+  <div class="wheat-footer">Claims hash 473da3f — Compiled by Wheat</div>
 </div>
 
-<!-- Slide 3: How It Works -->
-<div class="slide" id="architecture">
-  <span class="label">Architecture</span>
+<!-- Slide 2: How It Works -->
+<div class="slide" id="s2">
   <h2>How It Works</h2>
   <div class="divider"></div>
-
-  <div class="flow-row">
-    <div class="flow-node">Claude Code CLI</div>
-    <div class="flow-arrow">&rarr;</div>
-    <div class="flow-node accent">HTTP Hook POST</div>
-    <div class="flow-arrow">&rarr;</div>
-    <div class="flow-node green-border">Remote Farmer Server</div>
-    <div class="flow-arrow">&rarr;</div>
-    <div class="flow-node accent">SSE Push</div>
-    <div class="flow-arrow">&rarr;</div>
-    <div class="flow-node">Browser Dashboard</div>
+  <pre>
+Claude Code CLI
+  |
+  |-- PreToolUse hook ----------POST--&gt; localhost:9090/hooks/permission
+  |-- PostToolUse hook ---------POST--&gt; localhost:9090/hooks/activity
+  |-- PostToolUseFailure -------POST--&gt; localhost:9090/hooks/activity
+  '-- Notification hook --------POST--&gt; localhost:9090/hooks/notification
+                                              |
+                                    Remote Farmer Server (Node.js)
+                                              |
+                                    SSE push + polling fallback
+                                              |
+                                       Browser Dashboard
+                                    (approve / deny / monitor)
+  </pre>
+  <div style="margin-top:24px;">
+    <p>Server holds the HTTP response open. Browser shows Allow/Deny. Decision relays back synchronously. Claude Code proceeds or halts. <span class="claim-ref">[r001] [p002]</span></p>
+    <p>Cloudflare buffers SSE — dashboard auto-detects and falls back to polling every 2s. State diff prevents UI flash. <span class="claim-ref">[p007] [p011]</span></p>
   </div>
-
-  <div class="two-col" style="margin-top: 24px;">
-    <div class="card">
-      <div class="card-label">Permission Flow</div>
-      <div class="card-detail">
-        <strong>1.</strong> Claude Code fires a <code>PermissionRequest</code> hook POST to <code>localhost:9090</code> <span class="claim-ref">[r001]</span><br>
-        <strong>2.</strong> Server holds the HTTP response open in a pending map <span class="claim-ref">[p002]</span><br>
-        <strong>3.</strong> SSE pushes the request to all connected browsers <span class="claim-ref">[p004]</span><br>
-        <strong>4.</strong> User taps Approve or Deny on the dashboard<br>
-        <strong>5.</strong> Server responds to the held request with allow/deny JSON <span class="claim-ref">[r002]</span><br>
-        <strong>6.</strong> Claude Code proceeds (or halts) based on the decision
-      </div>
-    </div>
-    <div class="card green">
-      <div class="card-label">Activity Feed</div>
-      <div class="card-detail">
-        <code>PostToolUse</code> and <code>PostToolUseFailure</code> hooks fire after every tool execution &mdash; success or failure. These are non-blocking, so they feed a real-time activity stream without any performance impact on Claude Code. <span class="claim-ref">[r006]</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
 </div>
 
-<!-- Slide 4: Security Model -->
-<div class="slide" id="security">
-  <span class="label red">Security</span>
-  <h2>Security Model</h2>
-  <div class="divider"></div>
-
-  <div class="two-col">
-    <div>
-      <div class="card red" style="margin-bottom: 20px;">
-        <div class="card-label">Fail-Deny on Timeout</div>
-        <div class="card-text">Timeout = explicit deny</div>
-        <div class="card-detail">
-          Empty JSON <code>{}</code> on 2xx means auto-allow in Claude Code. The original timeout handler would have silently granted every timed-out permission. Fixed: timeout now returns an explicit deny decision. This is the single most important security property. <span class="claim-ref">[x001]</span> <span class="claim-ref">[x008]</span>
-        </div>
-      </div>
-      <div class="card orange">
-        <div class="card-label">Fail-Open on Server Crash</div>
-        <div class="card-text">Architectural limit of HTTP hooks</div>
-        <div class="card-detail">
-          If the Remote Farmer server crashes or the network drops, non-2xx / timeout = non-blocking error = Claude Code proceeds as if no hook exists. This is unfixable from the dashboard side &mdash; it is Claude Code's design choice. <span class="claim-ref">[x002]</span>
-        </div>
-      </div>
-    </div>
-    <div>
-      <div class="card purple" style="margin-bottom: 20px;">
-        <div class="card-label">Hybrid Hook Mitigation</div>
-        <div class="card-text">Command hook as fail-safe</div>
-        <div class="card-detail">
-          HTTP hook for the dashboard UI, plus a local <strong>command hook</strong> that checks if the dashboard server is alive before allowing any tool call. Command hooks with exit code 2 <em>are</em> blocking errors, unlike HTTP hooks. This closes the fail-open gap. <span class="claim-ref">[x010]</span>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-label">Auth Layers</div>
-        <div class="card-text">Token + Tunnel</div>
-        <div class="card-detail">
-          Random 16-byte hex token generated on startup, required for dashboard and SSE access. Tunnel auth (ngrok basic auth or Cloudflare Zero Trust email OTP) provides the outer security layer. <span class="claim-ref">[p005]</span> <span class="claim-ref">[r009]</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
-</div>
-
-<!-- Slide 5: Trust Tiers -->
-<div class="slide" id="trust">
-  <span class="label purple">Batch Permissions</span>
+<!-- Slide 3: Trust Tiers -->
+<div class="slide" id="s3">
   <h2>Trust Tiers</h2>
   <div class="divider"></div>
-
   <div class="three-col">
     <div class="card red">
       <div class="card-label">Paranoid</div>
-      <div class="card-text">Approve everything manually</div>
-      <div class="card-detail">
-        Every tool call requires explicit approval. Maximum control, highest latency. Best for security-sensitive operations or unfamiliar codebases. <span class="claim-ref">[r030]</span>
-      </div>
+      <div class="card-text">Approve everything</div>
+      <div class="card-detail">Every tool call requires manual approval. Maximum control for security-sensitive operations.</div>
     </div>
-    <div class="card">
+    <div class="card orange">
       <div class="card-label">Standard</div>
-      <div class="card-text">Auto-approve reads, approve writes</div>
-      <div class="card-detail">
-        Read, Grep, Glob, WebSearch auto-approved via <code>PreToolUse</code> hook. Write tools (Edit, Write, Bash) require manual approval. Good balance of speed and safety. <span class="claim-ref">[r028]</span> <span class="claim-ref">[r030]</span>
-      </div>
+      <div class="card-text">Auto-approve reads</div>
+      <div class="card-detail">Read, Grep, Glob, WebSearch, WebFetch pass through. Writes and execution need approval.</div>
     </div>
     <div class="card green">
       <div class="card-label">Autonomous</div>
-      <div class="card-text">Auto-approve all except dangerous ops</div>
-      <div class="card-detail">
-        Only dangerous Bash commands (<code>rm</code>, <code>git push</code>, <code>curl|sh</code>) require approval. Near-zero latency for normal development. <span class="claim-ref">[r030]</span> <span class="claim-ref">[r032]</span>
-      </div>
+      <div class="card-text">Auto-approve all (safe)</div>
+      <div class="card-detail">Everything auto-approved except dangerous Bash: rm -rf, git push, sudo, curl|sh. <span class="claim-ref">[p009]</span></div>
     </div>
   </div>
-
-  <div class="two-col" style="margin-top: 24px;">
-    <div class="card">
-      <div class="card-label">Batch Approval</div>
-      <div class="card-detail">
-        <code>PreToolUse</code> hooks fire before every tool call regardless of permission status. Server maintains an in-memory allow-list with regex matching. Dashboard exposes a rules panel with category checkboxes and file-path patterns. <span class="claim-ref">[r028]</span> <span class="claim-ref">[r031]</span>
-      </div>
-    </div>
-    <div class="card green">
-      <div class="card-label">Persistent Rules</div>
-      <div class="card-detail">
-        <code>updatedPermissions</code> in <code>PermissionRequest</code> responses persists "always allow" rules into Claude Code's own permission system &mdash; survives session restarts. <span class="claim-ref">[r029]</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
+  <p style="margin-top:24px;">Session rules via checkbox UI. Quick Rules dropdown on each permission card. Eliminates approval fatigue from ~120s/call to zero for safe tools. <span class="claim-ref">[r028] [r031]</span></p>
 </div>
 
-<!-- Slide 6: Limitations -->
-<div class="slide" id="limitations">
-  <span class="label orange">Limitations</span>
-  <h2>Known Limitations</h2>
+<!-- Slide 4: Security -->
+<div class="slide" id="s4">
+  <h2>Security Model</h2>
   <div class="divider"></div>
-
-  <div class="three-col">
-    <div class="card red">
-      <div class="card-label">No Remote Text Input</div>
-      <div class="card-text">Cannot answer AskUserQuestion remotely</div>
-      <div class="card-detail">
-        Hooks cannot inject user prompts or answer dialogs. <code>AskUserQuestion</code> triggers a Notification hook (observe-only, cannot respond). The question is visible on the dashboard but unanswerable. <span class="claim-ref">[r023]</span> <span class="claim-ref">[r024]</span><br><br>
-        <strong>Workaround:</strong> Detect the dialog via Notification hook, collect the answer on the dashboard, inject it via <code>additionalContext</code> on the next hook response as "[Remote user answered: ...]". Not seamless, but functional. <span class="claim-ref">[r025]</span> <span class="claim-ref">[r026]</span>
+  <div class="two-col">
+    <div>
+      <div class="card red" style="margin-bottom:20px;">
+        <div class="card-label">Critical Fix</div>
+        <div class="card-text">Fail-deny on timeout</div>
+        <div class="card-detail">Empty JSON {} on 2xx = auto-allow in Claude Code. Timeout now returns explicit deny. <span class="claim-ref">[x001] [x008]</span></div>
+      </div>
+      <div class="card orange">
+        <div class="card-label">Known Limitation</div>
+        <div class="card-text">Fail-open on crash</div>
+        <div class="card-detail">Server crash = permissions silently granted. Unfixable from dashboard side. Mitigate with local command hook. <span class="claim-ref">[x002] [x010]</span></div>
       </div>
     </div>
-    <div class="card orange">
-      <div class="card-label">No Hot-Reload</div>
-      <div class="card-text">Hook config loaded at session start</div>
-      <div class="card-detail">
-        Hook JSON config is loaded at session startup. Mid-session changes require <code>/hooks</code> menu interaction or session restart. The dashboard cannot dynamically reconfigure which tools need approval without restarting Claude Code. <span class="claim-ref">[r007]</span>
-      </div>
-    </div>
-    <div class="card red">
-      <div class="card-label">Fail-Open Is Unfixable</div>
-      <div class="card-text">HTTP hooks fail silently by design</div>
-      <div class="card-detail">
-        If the dashboard server is unreachable, permissions are silently granted. This is Claude Code's design choice, not a bug. The hybrid command hook mitigation <span class="claim-ref">[x010]</span> is the best available workaround, but cannot be enforced from the dashboard alone. <span class="claim-ref">[x002]</span>
+    <div>
+      <h3>Hardening</h3>
+      <p>Hook endpoints: localhost only <span class="claim-ref">[p010]</span></p>
+      <p>Body size: 1MB cap</p>
+      <p>Token: timing-safe comparison</p>
+      <p>Patterns: regex-escaped (no ReDoS)</p>
+      <p>Dangerous commands: red visual flag</p>
+      <div style="margin-top:20px;">
+        <h3>Auth Layers</h3>
+        <p><strong>Inner:</strong> Hex token on all API/SSE access</p>
+        <p><strong>Outer:</strong> Cloudflare Zero Trust email OTP</p>
       </div>
     </div>
   </div>
-
-  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
 </div>
 
-<!-- Slide 7: Tunneling -->
-<div class="slide" id="tunneling">
-  <span class="label">Tunneling</span>
+<!-- Slide 5: Tested Findings -->
+<div class="slide" id="s5">
+  <h2>Tested Findings</h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <h3>Cloudflare Tunnel</h3>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-text">SSE buffered by proxy</div>
+        <div class="card-detail">Despite X-Accel-Buffering:no headers, Cloudflare buffers SSE data. Dashboard auto-falls back to polling. <span class="claim-ref">[p007]</span></div>
+      </div>
+      <div class="card green">
+        <div class="card-text">End-to-end verified</div>
+        <div class="card-detail">Quick tunnel to iPhone, remote approve/deny from phone, live activity feed — all working. <span class="claim-ref">[p012]</span></div>
+      </div>
+    </div>
+    <div>
+      <h3>iOS Safari</h3>
+      <div class="card orange" style="margin-bottom:16px;">
+        <div class="card-text">No Notification API</div>
+        <div class="card-detail">typeof Notification === 'undefined'. All references must be guarded. <span class="claim-ref">[p008]</span></div>
+      </div>
+      <div class="card">
+        <div class="card-text">Dynamic Island safe area</div>
+        <div class="card-detail">env(safe-area-inset-top) + viewport-fit=cover required for proper header positioning.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 6: Tunneling -->
+<div class="slide" id="s6">
   <h2>Tunneling Options</h2>
   <div class="divider"></div>
-
   <table>
     <thead>
-      <tr>
-        <th>Option</th>
-        <th>Auth</th>
-        <th>Trust Model</th>
-        <th>Setup</th>
-        <th>Free Tier</th>
-        <th>Best For</th>
-      </tr>
+      <tr><th>Option</th><th>Auth</th><th>Setup</th><th>Free Tier</th><th>Tested</th></tr>
     </thead>
     <tbody>
       <tr>
-        <td style="color: var(--text); font-weight: 500;">ngrok</td>
-        <td>Basic auth via <code>--basic-auth</code> <span class="claim-ref">[r017]</span></td>
-        <td>Traffic routes through ngrok infra</td>
+        <td><strong>Cloudflare Tunnel</strong></td>
+        <td>Zero Trust email OTP</td>
+        <td>~2 min</td>
+        <td>Free / 50 users</td>
+        <td style="color:var(--green);">Yes</td>
+      </tr>
+      <tr>
+        <td>ngrok</td>
+        <td>--basic-auth</td>
         <td>~1 min</td>
-        <td>1 GB/mo, interstitial page <span class="claim-ref">[r016]</span></td>
-        <td style="color: var(--green);">Quick one-off demos</td>
+        <td>1 GB/mo + interstitial</td>
+        <td style="color:var(--text-dim);">No</td>
       </tr>
       <tr>
-        <td style="color: var(--text); font-weight: 500;">Cloudflare Tunnel</td>
-        <td>Zero Trust Access, email OTP <span class="claim-ref">[r019]</span></td>
-        <td>Your own CF account</td>
+        <td>Tailscale Funnel</td>
+        <td>ACL-based</td>
         <td>~5 min</td>
-        <td>Free for 50 users <span class="claim-ref">[r018]</span></td>
-        <td style="color: var(--green);">Recurring sessions</td>
-      </tr>
-      <tr>
-        <td style="color: var(--text); font-weight: 500;">Tailscale Funnel</td>
-        <td>ACL-based, no built-in auth <span class="claim-ref">[r020]</span></td>
-        <td>P2P WireGuard mesh</td>
-        <td>~5 min</td>
-        <td>Free for personal use</td>
-        <td style="color: var(--green);">Both endpoints yours</td>
+        <td>Free personal</td>
+        <td style="color:var(--text-dim);">No</td>
       </tr>
     </tbody>
   </table>
-
-  <div class="two-col" style="margin-top: 24px;">
-    <div class="card green">
-      <div class="card-label">Recommendation</div>
-      <div class="card-detail">
-        <strong>Cloudflare Tunnel + Access</strong> for recurring use: email OTP second factor, free tier, no third-party trust dependency. <strong>ngrok</strong> for quick one-off demos where the interstitial warning is acceptable. Tailscale simplest if already installed but lacks its own auth layer beyond the dashboard token. <span class="claim-ref">[r010]</span> <span class="claim-ref">[r022]</span>
-      </div>
-    </div>
-    <div class="card orange">
-      <div class="card-label">Caveat</div>
-      <div class="card-detail">
-        Tunneling evidence is web-sourced only &mdash; no tested-tier claims. Vendor pricing and features may have changed since research. Verify before production deployment. <span class="claim-ref">[r016]</span>&ndash;<span class="claim-ref">[r022]</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
+  <p style="margin-top:16px;"><strong>Recommendation:</strong> Cloudflare Tunnel for sessions. Requires polling fallback but works well. Named tunnel + Zero Trust Access for recurring use. <span class="claim-ref">[r022] [p012]</span></p>
 </div>
 
-<!-- Slide 8: Next Steps -->
-<div class="slide" id="next">
-  <span class="label green">What's Next</span>
-  <h2>Next Steps</h2>
+<!-- Slide 7: Limitations -->
+<div class="slide" id="s7">
+  <h2>Limitations</h2>
   <div class="divider"></div>
+  <div class="three-col">
+    <div class="card red">
+      <div class="card-label">Blocked</div>
+      <div class="card-text">No remote text input</div>
+      <div class="card-detail">Hooks can't answer AskUserQuestion prompts. Text conversation stays in terminal. <span class="claim-ref">[r023]</span></div>
+    </div>
+    <div class="card orange">
+      <div class="card-label">Unfixable</div>
+      <div class="card-text">Fail-open on crash</div>
+      <div class="card-detail">Server down = Claude Code proceeds freely. Command hook is best workaround. <span class="claim-ref">[x002]</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Waiting</div>
+      <div class="card-text">No hot-reload</div>
+      <div class="card-detail">Hook config loaded at startup. Changes require session restart. <span class="claim-ref">[r007]</span></div>
+    </div>
+  </div>
+</div>
 
+<!-- Slide 8: Recommendation -->
+<div class="slide" id="s8">
+  <h2>Recommendation</h2>
+  <div class="divider"></div>
+  <div class="card green" style="margin-bottom:24px;">
+    <div class="card-label">Ship It</div>
+    <div class="card-text">The 650-line prototype covers the core use case</div>
+    <div class="card-detail">Remote permission approval from a phone over a tunneled connection. Trust tiers solve approval fatigue. Polling fallback handles proxy compatibility. Zero npm dependencies.</div>
+  </div>
   <div class="two-col">
     <div>
-      <h3>Build Now</h3>
-      <ul class="brief-list">
-        <li class="green-dot"><strong>Trust tier UI</strong> &mdash; radio toggle for Paranoid / Standard / Autonomous in the dashboard. Wire to PreToolUse auto-approve logic. <span class="claim-ref">[r030]</span> <span class="claim-ref">[r031]</span></li>
-        <li class="green-dot"><strong>Hybrid fail-safe hook</strong> &mdash; add a local command hook that checks <code>curl -sf localhost:9090/health</code> before allowing tool calls. Exit code 2 = blocking deny. Closes the fail-open gap. <span class="claim-ref">[x010]</span></li>
-        <li class="green-dot"><strong>Notification hooks</strong> &mdash; subscribe to Notification events for AskUserQuestion dialogs, session lifecycle, and error alerts. Display on dashboard even if not actionable yet. <span class="claim-ref">[r024]</span></li>
-        <li class="green-dot"><strong>updatedInput sandboxing</strong> &mdash; strip <code>--force</code> flags or add <code>--dry-run</code> to Bash commands in Autonomous mode. <span class="claim-ref">[r032]</span></li>
-      </ul>
+      <h3>Build Next</h3>
+      <p>1. Hybrid fail-safe command hook <span class="claim-ref">[x010]</span></p>
+      <p>2. Named Cloudflare tunnel (stable URL)</p>
+      <p>3. updatedInput sandboxing for Autonomous mode <span class="claim-ref">[r032]</span></p>
     </div>
     <div>
       <h3>Wait For</h3>
-      <ul class="brief-list">
-        <li class="orange-dot"><strong>Claude Code API for text injection</strong> &mdash; multiple GitHub issues request the ability to answer AskUserQuestion remotely (#13830, #15872, #20169). Until this ships, the additionalContext workaround is the best option. <span class="claim-ref">[r023]</span></li>
-        <li class="orange-dot"><strong>Hot-reloadable hook config</strong> &mdash; currently requires session restart to change which hooks are active. <span class="claim-ref">[r007]</span></li>
-        <li class="orange-dot"><strong>Fail-closed HTTP hook mode</strong> &mdash; a Claude Code setting to treat non-2xx as blocking errors rather than non-blocking. Would eliminate the need for the hybrid hook workaround. <span class="claim-ref">[x002]</span></li>
-      </ul>
+      <p>1. Claude Code API for remote text injection <span class="claim-ref">[r023]</span></p>
+      <p>2. Fail-closed HTTP hook mode <span class="claim-ref">[x002]</span></p>
+      <p>3. Hot-reloadable hook config <span class="claim-ref">[r007]</span></p>
     </div>
   </div>
-
-  <div class="wheat-footer">Claims hash 51751a2 &middot; Compiled by Wheat</div>
+  <div class="wheat-footer">Claims hash 473da3f — Compiled by Wheat</div>
 </div>
 
 <script>
-(function() {
   const nav = document.querySelector('.slide-nav');
   const dots = nav.querySelectorAll('a');
   const slides = document.querySelectorAll('.slide');
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const id = entry.target.id;
-        dots.forEach(d => d.classList.remove('active'));
-        const active = nav.querySelector('a[href="#' + id + '"]');
-        if (active) active.classList.add('active');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const idx = [...slides].indexOf(e.target);
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
       }
     });
   }, { threshold: 0.5 });
-
-  slides.forEach(s => observer.observe(s));
-})();
+  slides.forEach(s => obs.observe(s));
 </script>
 
 </body>
