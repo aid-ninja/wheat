@@ -1,7 +1,7 @@
 {
-  "generated": "2026-03-12T10:23:07.889Z",
+  "generated": "2026-03-12T10:30:59.245Z",
   "generator": "generate-manifest.js",
-  "claims_hash": "b15eb2f",
+  "claims_hash": "6d6eaa7",
   "topics": {
     "multi-session": {
       "claims": [
@@ -75,7 +75,8 @@
         "r015",
         "r017",
         "p001",
-        "p007"
+        "p007",
+        "p015"
       ],
       "files": [
         "docs/index.html",
@@ -174,23 +175,35 @@
     }
   },
   "sprints": {
-    "current": {
+    "how-should-we-scale": {
       "question": "How should we scale Remote Farmer for multi-session and multi-sprint support, and what repo cartography system keeps AI model interactions fast as the Wheat codebase and git history grow?",
       "phase": "research",
-      "claims_count": 76,
-      "path": "."
+      "claims_count": 77,
+      "active_claims": 67,
+      "path": ".",
+      "status": "active",
+      "last_git_activity": "2026-03-12T05:23:14-05:00",
+      "git_commit_count": 73
     },
     "remote-farmer-sprint": {
       "question": "How should we build a remote permission and monitoring dashboard for Claude Code — a web UI that receives permission requests, shows live activity, and lets users approve/deny tool calls remotely over tunneled connections?",
       "phase": "prototype",
       "claims_count": 56,
-      "path": "examples/remote-farmer-sprint"
+      "active_claims": 54,
+      "path": "examples/remote-farmer-sprint",
+      "status": "example",
+      "last_git_activity": "2026-03-12T00:17:05-05:00",
+      "git_commit_count": 1
     },
     "self-referential-sprint": {
       "question": "How can we build a live visualization of Wheat that teaches the framework by showing itself in action?",
       "phase": "evaluate",
       "claims_count": 165,
-      "path": "examples/self-referential-sprint"
+      "active_claims": 156,
+      "path": "examples/self-referential-sprint",
+      "status": "example",
+      "last_git_activity": "2026-03-11T06:49:59-05:00",
+      "git_commit_count": 1
     }
   },
   "files": {

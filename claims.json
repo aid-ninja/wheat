@@ -1528,6 +1528,24 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["multi-sprint", "git-detection", "no-config", "sprint-discovery", "prototype"]
+    },
+    {
+      "id": "p015",
+      "type": "factual",
+      "topic": "cartography",
+      "content": "wheat-compiler.js now runs detect-sprints.js on every compilation, adding a 'sprints' array to compilation.json with summary entries for all detected sprints (name, path, status, phase, claims_count, active_claims, git activity). The active sprint is compiled fully as before; other sprints get summary entries only. generate-manifest.js also delegates to detect-sprints.js for git-aware sprint detection (with naive fallback). Multi-sprint awareness is automatic — no config pointer needed. Non-fatal: if sprint detection fails, compilation proceeds without sprint data.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "Wired detect-sprints.js into wheat-compiler.js compile() and generate-manifest.js detectSprints(); require('./detect-sprints.js') in compiler, execFileSync --json in manifest generator"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["cartography", "compiler", "multi-sprint", "sprint-detection", "prototype"]
     }
   ]
 }

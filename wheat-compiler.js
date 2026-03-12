@@ -19,6 +19,9 @@ const crypto = require('crypto');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
+// Sprint detection — git-based, no config pointer needed (p013/f001)
+const { detectSprints } = require('./detect-sprints.js');
+
 // ─── Configuration ──────────────────────────────────────────────────────────
 /** @returns {{ dirs: Object<string, string>, compiler: Object<string, string> }} Merged config from wheat.config.json with defaults */
 function loadConfig() {
@@ -577,6 +580,28 @@ function compile(inputPath, outputPath) {
   // Determine current phase from meta or infer from claims
   const currentPhase = meta.phase || inferPhase(phaseSummary);
 
+  // ── Sprint detection (git-based, non-fatal) ──────────────────────────────
+  let sprintsInfo = { active: null, sprints: [] };
+  try {
+    sprintsInfo = detectSprints();
+  } catch (err) {
+    // Non-fatal: sprint detection failure should not block compilation
+    console.error(`Warning: sprint detection failed — ${err.message}`);
+  }
+
+  // Build sprint summaries: active sprint gets full compilation, others get summary entries
+  const sprintSummaries = sprintsInfo.sprints.map(s => ({
+    name: s.name,
+    path: s.path,
+    status: s.status,
+    phase: s.phase,
+    question: s.question,
+    claims_count: s.claims_count,
+    active_claims: s.active_claims,
+    last_git_activity: s.last_git_activity,
+    git_commit_count: s.git_commit_count,
+  }));
+
   const compilation = {
     compiled_at: new Date().toISOString(),  // Non-deterministic metadata (excluded from certificate)
     claims_hash: certificate.input_hash.slice(7, 14),
@@ -589,6 +614,7 @@ function compile(inputPath, outputPath) {
     coverage: coverageResult.coverage,
     corroboration: coverageResult.corroboration,
     phase_summary: phaseSummary,
+    sprints: sprintSummaries,
     sprint_meta: {
       question: meta.question || '',
       audience: meta.audience || [],
@@ -749,6 +775,14 @@ if (args.includes('--summary')) {
   console.log(`Phase:  ${c.sprint_meta.phase}`);
   console.log(`Status: ${statusIcon} ${c.status.toUpperCase()}`);
   console.log(`Claims: ${c.sprint_meta.total_claims} total, ${c.sprint_meta.active_claims} active, ${c.sprint_meta.conflicted_claims} conflicted`);
+
+  if (c.sprints && c.sprints.length > 0) {
+    console.log(`Sprints: ${c.sprints.length} detected`);
+    c.sprints.forEach(s => {
+      const icon = s.status === 'active' ? '>>' : '  ';
+      console.log(`  ${icon} [${s.status.toUpperCase().padEnd(8)}] ${s.name} (${s.phase}, ${s.claims_count} claims)`);
+    });
+  }
   console.log();
 
   if (Object.keys(c.coverage).length > 0) {
@@ -1070,5 +1104,5 @@ function computeNextActions(comp) {
 
 // Export for use as a library
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { compile, diffCompilations, computeNextActions, generateManifest, loadConfig, EVIDENCE_TIERS, VALID_TYPES };
+  module.exports = { compile, diffCompilations, computeNextActions, generateManifest, loadConfig, detectSprints, EVIDENCE_TIERS, VALID_TYPES };
 }

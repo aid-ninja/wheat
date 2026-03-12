@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T10:23:07.840Z",
-  "claims_hash": "b15eb2f",
+  "compiled_at": "2026-03-12T10:30:59.033Z",
+  "claims_hash": "6d6eaa7",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -1621,6 +1621,30 @@
         "sprint-discovery",
         "prototype"
       ]
+    },
+    {
+      "id": "p015",
+      "type": "factual",
+      "topic": "cartography",
+      "content": "wheat-compiler.js now runs detect-sprints.js on every compilation, adding a 'sprints' array to compilation.json with summary entries for all detected sprints (name, path, status, phase, claims_count, active_claims, git activity). The active sprint is compiled fully as before; other sprints get summary entries only. generate-manifest.js also delegates to detect-sprints.js for git-aware sprint detection (with naive fallback). Multi-sprint awareness is automatic — no config pointer needed. Non-fatal: if sprint detection fails, compilation proceeds without sprint data.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "Wired detect-sprints.js into wheat-compiler.js compile() and generate-manifest.js detectSprints(); require('./detect-sprints.js') in compiler, execFileSync --json in manifest generator"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "cartography",
+        "compiler",
+        "multi-sprint",
+        "sprint-detection",
+        "prototype"
+      ]
     }
   ],
   "conflict_graph": {
@@ -1655,7 +1679,7 @@
   },
   "coverage": {
     "cartography": {
-      "claims": 9,
+      "claims": 10,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -1673,7 +1697,8 @@
         "r015",
         "r017",
         "p001",
-        "p007"
+        "p007",
+        "p015"
       ],
       "constraint_count": 1,
       "source_origins": [
@@ -2021,7 +2046,8 @@
     "x011": 0,
     "p011": 0,
     "p012": 0,
-    "p013": 0
+    "p013": 0,
+    "p015": 0
   },
   "phase_summary": {
     "define": {
@@ -2033,7 +2059,7 @@
       "complete": true
     },
     "prototype": {
-      "claims": 13,
+      "claims": 14,
       "complete": true
     },
     "evaluate": {
@@ -2045,6 +2071,41 @@
       "complete": true
     }
   },
+  "sprints": [
+    {
+      "name": "how-should-we-scale",
+      "path": ".",
+      "status": "active",
+      "phase": "research",
+      "question": "How should we scale Remote Farmer for multi-session and multi-sprint support, and what repo cartography system keeps AI model interactions fast as the Wheat codebase and git history grow?",
+      "claims_count": 77,
+      "active_claims": 67,
+      "last_git_activity": "2026-03-12T05:23:14-05:00",
+      "git_commit_count": 73
+    },
+    {
+      "name": "remote-farmer-sprint",
+      "path": "examples/remote-farmer-sprint",
+      "status": "example",
+      "phase": "prototype",
+      "question": "How should we build a remote permission and monitoring dashboard for Claude Code — a web UI that receives permission requests, shows live activity, and lets users approve/deny tool calls remotely over tunneled connections?",
+      "claims_count": 56,
+      "active_claims": 54,
+      "last_git_activity": "2026-03-12T00:17:05-05:00",
+      "git_commit_count": 1
+    },
+    {
+      "name": "self-referential-sprint",
+      "path": "examples/self-referential-sprint",
+      "status": "example",
+      "phase": "evaluate",
+      "question": "How can we build a live visualization of Wheat that teaches the framework by showing itself in action?",
+      "claims_count": 165,
+      "active_claims": 156,
+      "last_git_activity": "2026-03-11T06:49:59-05:00",
+      "git_commit_count": 1
+    }
+  ],
   "sprint_meta": {
     "question": "How should we scale Remote Farmer for multi-session and multi-sprint support, and what repo cartography system keeps AI model interactions fast as the Wheat codebase and git history grow?",
     "audience": [
@@ -2053,14 +2114,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 76,
-    "active_claims": 61,
+    "total_claims": 77,
+    "active_claims": 62,
     "conflicted_claims": 0,
     "superseded_claims": 7,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:b15eb2f385b387398aa2c22f0235eacc121376d7bf8e464bd515d43ca4cd4feb",
+    "input_hash": "sha256:6d6eaa7fb5d950841a783cfa6e8bad3d7ca691e6bf3f5e4f519fdfec5525572c",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

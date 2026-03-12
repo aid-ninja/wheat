@@ -14,6 +14,8 @@
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, relative, basename, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = __dirname;
@@ -74,11 +76,41 @@ function highestEvidence(claims) {
   return tiers[max];
 }
 
-/** Detect sprints: current + any in examples/. */
+/**
+ * Detect sprints using detect-sprints.js (git-based, no config pointer).
+ * Falls back to a minimal scan if detect-sprints.js is unavailable.
+ */
 function detectSprints() {
-  const sprints = {};
+  // Try to use detect-sprints.js via --json for full git-aware detection
+  const detectScript = join(ROOT, 'detect-sprints.js');
+  if (existsSync(detectScript)) {
+    try {
+      const result = execFileSync(process.execPath, [detectScript, '--json'], {
+        cwd: ROOT, timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'],
+      });
+      const parsed = JSON.parse(result.toString().trim());
+      // Convert from detect-sprints format to manifest format (keyed by name)
+      const sprints = {};
+      for (const s of (parsed.sprints || [])) {
+        sprints[s.name] = {
+          question: s.question || '',
+          phase: s.phase || 'unknown',
+          claims_count: s.claims_count || 0,
+          active_claims: s.active_claims || 0,
+          path: s.path,
+          status: s.status,
+          last_git_activity: s.last_git_activity,
+          git_commit_count: s.git_commit_count,
+        };
+      }
+      return sprints;
+    } catch {
+      // Fall through to naive fallback
+    }
+  }
 
-  // Current sprint
+  // Fallback: minimal scan without git info
+  const sprints = {};
   const currentClaims = loadJSON(join(ROOT, 'claims.json'));
   if (currentClaims) {
     sprints['current'] = {
@@ -88,8 +120,6 @@ function detectSprints() {
       path: '.'
     };
   }
-
-  // Example/archived sprints
   const examplesDir = join(ROOT, 'examples');
   if (existsSync(examplesDir)) {
     for (const entry of readdirSync(examplesDir, { withFileTypes: true })) {
@@ -105,7 +135,6 @@ function detectSprints() {
       }
     }
   }
-
   return sprints;
 }
 
