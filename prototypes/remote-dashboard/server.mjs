@@ -180,16 +180,25 @@ function handlePermission(data, res) {
   broadcast({ type: 'permission_request', data: event });
 
   const timeout = setTimeout(() => {
-    if (pending.has(requestId)) {
+    if (pending.has(requestId) && !resolved) {
+      resolved = true;
       pending.delete(requestId);
       broadcast({ type: 'permission_expired', data: { requestId } });
+      // CRITICAL: must explicitly deny on timeout — empty JSON = auto-allow (x001)
+      const hookEvent = data.hook_event_name || 'PermissionRequest';
+      const denyBody = hookEvent === 'PreToolUse'
+        ? { hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: 'Remote approval timed out after 120s' } }
+        : { hookSpecificOutput: { hookEventName: 'PermissionRequest', decision: { behavior: 'deny', message: 'Remote approval timed out after 120s' } } };
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({}));
+      res.end(JSON.stringify(denyBody));
     }
   }, 120_000);
 
+  let resolved = false; // guard against timeout/decide race (x005)
   pending.set(requestId, {
     resolve: (decision) => {
+      if (resolved) return;
+      resolved = true;
       clearTimeout(timeout);
       pending.delete(requestId);
 
