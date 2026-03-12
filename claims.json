@@ -1026,6 +1026,96 @@
       "tags": ["security", "token-exposure", "template-injection"]
     },
     {
+      "id": "r038",
+      "type": "risk",
+      "topic": "state-persistence",
+      "content": "All server state is held in memory with zero persistence: the sessions Map (SessionState objects including pending permissions, activity logs, messages, trust levels, session rules, and agent tracking) is lost on crash, restart, or SIGKILL. A server restart requires all Claude Code sessions to reconnect, all pending permission requests are silently dropped (no deny response sent), all audit trail activity is lost, and user-configured trust levels and session rules reset to defaults. The server has no SIGTERM/SIGINT handlers for graceful shutdown.",
+      "source": {
+        "origin": "code-review",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["state-persistence", "reliability", "in-memory", "crash-recovery"]
+    },
+    {
+      "id": "r039",
+      "type": "recommendation",
+      "topic": "state-persistence",
+      "content": "Implement JSON file snapshots for recoverable state using only Node built-in fs module (satisfies d004 zero-deps constraint). Strategy: (1) Persist trust levels, session rules, and activity log to a farmer-state.json file on every state-changing event (trust change, rule add/remove) and on a periodic flush (every 30s). (2) Pending permissions are ephemeral by nature (the HTTP response objects cannot be serialized) — do NOT persist them. (3) On server start, load farmer-state.json if it exists to restore trust levels, rules, and activity history. (4) Use writeFileSync for simplicity since state changes are infrequent (<1/sec) and the file is small (<100KB). Atomic write via write-to-temp-then-rename pattern prevents corruption on crash mid-write.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["state-persistence", "recommendation", "json-snapshot", "zero-deps"]
+    },
+    {
+      "id": "r040",
+      "type": "factual",
+      "topic": "state-persistence",
+      "content": "Server state divides into three persistence categories: (A) Must persist — trust levels and session rules (user configuration, tedious to re-enter), activity log (audit trail, compliance value). (B) Should not persist — pending permissions (contain unresializable HTTP response objects and become stale after restart; Claude Code will re-send permission requests on reconnect), SSE client connections (transient socket references). (C) Optional — session metadata (label, color, cwd) is useful for continuity but auto-reconstructed from the next hook payload, messages buffer (last 50 per session) has moderate value for context but is bounded and reconstruction cost is low.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["state-persistence", "state-classification", "ephemeral-vs-durable"]
+    },
+    {
+      "id": "r041",
+      "type": "recommendation",
+      "topic": "state-persistence",
+      "content": "Add process signal handlers for graceful shutdown: (1) Listen for SIGTERM and SIGINT to flush state to disk before exit. (2) On shutdown, deny all pending permissions with a clear reason ('server shutting down') so Claude Code sessions get an explicit deny rather than a timeout. (3) Close the HTTP server with server.close() to stop accepting new connections. (4) Optionally broadcast a 'server_shutdown' SSE event so dashboard clients can show a reconnection UI. Implementation is ~20 lines using process.on('SIGTERM', ...) and process.on('SIGINT', ...) — zero dependencies required.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["state-persistence", "graceful-shutdown", "signal-handling", "recommendation"]
+    },
+    {
+      "id": "r042",
+      "type": "estimate",
+      "topic": "state-persistence",
+      "content": "Append-only event log (event sourcing lite) is an alternative to JSON snapshots but is over-engineered for this use case. The full state is small (<100KB for 200 activity entries + rules + trust levels across 10 sessions). JSON snapshot write takes <1ms on SSD. Event sourcing adds complexity (log compaction, replay on startup, schema evolution) without meaningful benefit at this scale. Recommendation: start with JSON snapshots, only move to append-only log if the state file exceeds 1MB or write frequency exceeds 10/sec — neither is expected for a permission dashboard.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["state-persistence", "event-sourcing", "trade-off", "estimate"]
+    },
+    {
       "id": "p005",
       "type": "factual",
       "topic": "security",
@@ -1042,6 +1132,24 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["security", "cookie-auth", "cors", "referrer-policy", "prototype"]
+    },
+    {
+      "id": "p006",
+      "type": "factual",
+      "topic": "compatibility",
+      "content": "Backwards compatibility verified via 10-test automated suite (prototypes/compatibility-test/test.sh). All single-session workflows survive multi-session refactor: (1) Token-in-URL auth returns 302 + Set-Cookie for initial login. (2) Dashboard renders with cookie auth. (3) /api/state returns valid JSON with sessions and pending arrays. (4) Hook payloads without session_id fall back to 'default' session. (5) Named session_id creates distinct session. (6) --claims flag serves claims data correctly. (7) Trust level change without session_id applies globally. (8) SSE /events endpoint accepts token auth and returns text/event-stream. (9) Unauthenticated / shows login page. (10) /api/state rejects without auth (401). Zero regressions detected.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/compatibility-test/test.sh — 10/10 tests passed against live server"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["compatibility", "backwards-compat", "single-session", "regression-test", "prototype"]
     }
   ]
 }
