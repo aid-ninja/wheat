@@ -862,6 +862,9 @@ function handleMessage(msg) {
 
 // --- Actions ---
 async function decide(requestId, allow) {
+  const card = document.getElementById('perm-' + requestId);
+  if (card) { card.style.opacity = '0.4'; card.style.pointerEvents = 'none'; }
+  showToast(allow ? 'Approved' : 'Denied');
   await fetch(API('/api/decide'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -876,6 +879,9 @@ async function respondToQuestion(requestId) {
   if (!input) return;
   const val = input.value || 'Approved remotely';
   input.blur();
+  const card = document.getElementById('perm-' + requestId);
+  if (card) { card.style.opacity = '0.4'; card.style.pointerEvents = 'none'; }
+  showToast('Sent: ' + val.slice(0, 40));
   await fetch(API('/api/decide'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -883,6 +889,13 @@ async function respondToQuestion(requestId) {
   });
   state.pending = state.pending.filter(p => p.requestId !== requestId);
   render();
+}
+
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#34d399;color:#000;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;max-width:80vw;text-align:center;'; document.body.appendChild(t); }
+  t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(t._timer); t._timer = setTimeout(() => t.style.opacity = '0', 2000);
 }
 
 let sprintSwitcherOpen = false;
