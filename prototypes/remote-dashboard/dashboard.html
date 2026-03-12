@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Remote Farmer</title>
+<title>Wheat</title>
 <style>
   :root {
     --bg: #0f172a;
@@ -474,7 +474,7 @@
 <body>
 <div class="app" id="app">
   <div class="header">
-    <h1>Remote Farmer</h1>
+    <h1>Wheat</h1>
     <div class="status">
       <div class="dot" id="statusDot"></div>
       <span id="statusText">Connecting...</span>
@@ -506,21 +506,63 @@ let activeTab = 'permissions';
 let topicFilter = null;
 let openQuickRules = null; // requestId of open quick-rules dropdown
 
-// --- Server-Sent Events ---
+// --- Connection: always poll, SSE upgrades if it works ---
+let pollInterval = null;
+
 function connect() {
-  evtSource = new EventSource(`${location.origin}/events?token=${TOKEN}`);
-  evtSource.onopen = () => {
+  // Always start polling immediately
+  poll();
+  pollInterval = setInterval(poll, 2000);
+
+  // Also try SSE — if it works, it gives faster updates
+  try {
+    evtSource = new EventSource(`${location.origin}/events?token=${TOKEN}`);
+    evtSource.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      handleMessage(msg);
+      document.getElementById('statusText').textContent = 'Connected (live)';
+    };
+    evtSource.onerror = () => { evtSource.close(); };
+  } catch { /* SSE not available, polling handles it */ }
+}
+
+let prevPendingIds = new Set();
+
+async function poll() {
+  try {
+    const res = await fetch(`${location.origin}/api/state?token=${TOKEN}`);
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+
+    // Detect new pending items for notifications
+    const newPending = (data.pending || []);
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      for (const p of newPending) {
+        const id = p.id || p.requestId;
+        if (!prevPendingIds.has(id)) {
+          if (p.isQuestion) {
+            new Notification('Claude Code has a question', { body: p.prompt, tag: id });
+          } else {
+            new Notification(`${p.tool_name} needs approval`, { body: formatInput(p.tool_input), tag: id });
+          }
+        }
+      }
+    }
+    prevPendingIds = new Set(newPending.map(p => p.id || p.requestId));
+
+    state.pending = newPending;
+    state.activity = data.activity || [];
+    state.claims = data.claims;
+    state.compilation = data.compilation;
+    state.trustLevel = data.trustLevel;
+    state.sessionRules = data.sessionRules || [];
     document.getElementById('statusDot').className = 'dot connected';
-    document.getElementById('statusText').textContent = 'Connected';
-  };
-  evtSource.onerror = () => {
+    document.getElementById('statusText').textContent = 'Connected (polling)';
+    render();
+  } catch (err) {
     document.getElementById('statusDot').className = 'dot';
-    document.getElementById('statusText').textContent = 'Disconnected — reconnecting...';
-  };
-  evtSource.onmessage = (e) => {
-    const msg = JSON.parse(e.data);
-    handleMessage(msg);
-  };
+    document.getElementById('statusText').textContent = 'Error: ' + (err.message || err);
+  }
 }
 
 function handleMessage(msg) {
@@ -530,7 +572,7 @@ function handleMessage(msg) {
       break;
     case 'permission_request':
       state.pending.push(msg.data);
-      if (Notification.permission === 'granted') {
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
         new Notification(`${msg.data.tool_name} needs approval`, {
           body: formatInput(msg.data.tool_input),
           tag: msg.data.requestId,
@@ -545,7 +587,7 @@ function handleMessage(msg) {
       break;
     case 'question':
       state.pending.push({ ...msg.data, isQuestion: true });
-      if (Notification.permission === 'granted') {
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
         new Notification('Claude Code has a question', {
           body: msg.data.prompt,
           tag: msg.data.requestId,
@@ -586,7 +628,7 @@ function handleMessage(msg) {
       state.agents = state.agents.map(a => a.id === msg.data.id ? { ...a, status: 'done', stoppedAt: Date.now() } : a);
       break;
     case 'notification':
-      if (Notification.permission === 'granted') {
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
         new Notification(msg.data.title, { body: msg.data.body });
       }
       break;
@@ -718,7 +760,7 @@ function updateBadge() {
   const n = state.pending.length;
   badge.style.display = n > 0 ? 'inline-block' : 'none';
   badge.textContent = n;
-  document.title = n > 0 ? `(${n}) Remote Farmer` : 'Remote Farmer';
+  document.title = n > 0 ? `(${n}) Wheat` : 'Wheat';
 }
 
 function renderPermissions() {
@@ -1056,7 +1098,7 @@ document.addEventListener('click', (e) => {
 });
 
 // --- Notifications ---
-if ('Notification' in window && Notification.permission === 'default') {
+if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
   Notification.requestPermission();
 }
 

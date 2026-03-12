@@ -151,23 +151,28 @@ const server = createServer(async (req, res) => {
 
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
+      'Cache-Control': 'no-cache, no-transform',
       'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no',           // nginx/Cloudflare: disable proxy buffering
+      'Content-Encoding': 'identity',       // prevent chunked compression that breaks SSE
     });
+    res.flushHeaders();
 
-    // Send current state as init event
-    const initData = JSON.stringify({
+    // Send current state as separate small SSE messages (mobile proxies choke on large single messages)
+    const initBase = JSON.stringify({
       type: 'init',
       data: {
         pending: [...pending.entries()].map(([id, p]) => ({ id, ...p.data, timestamp: p.timestamp })),
         activity: activity.slice(-50),
-        claims: claimsData,
-        compilation: compilationData,
+        claims: null,
+        compilation: null,
         trustLevel,
         sessionRules,
       }
     });
-    res.write(`data: ${initData}\n\n`);
+    res.write(`data: ${initBase}\n\n`);
+    if (claimsData) res.write(`data: ${JSON.stringify({ type: 'claims', data: claimsData })}\n\n`);
+    if (compilationData) res.write(`data: ${JSON.stringify({ type: 'compilation', data: compilationData })}\n\n`);
 
     sseClients.add(res);
     req.on('close', () => sseClients.delete(res));
