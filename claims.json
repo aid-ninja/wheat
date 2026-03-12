@@ -1,6 +1,6 @@
 {
   "meta": {
-    "question": "How should we build a remote permission and monitoring dashboard for Claude Code — a web UI that receives permission requests, shows live activity, and lets users approve/deny tool calls remotely over tunneled connections?",
+    "question": "How should we build a remote permission and monitoring dashboard for Claude Code \u2014 a web UI that receives permission requests, shows live activity, and lets users approve/deny tool calls remotely over tunneled connections?",
     "initiated": "2026-03-11",
     "audience": [
       "solo developer",
@@ -14,702 +14,1211 @@
       "id": "d001",
       "type": "constraint",
       "topic": "integration",
-      "content": "Must integrate with Claude Code's existing hook and permission system — no forking or patching Claude Code itself.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "content": "Must integrate with Claude Code's existing hook and permission system \u2014 no forking or patching Claude Code itself.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "define",
       "timestamp": "2026-03-11T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["hooks", "permissions", "architecture"]
+      "tags": [
+        "hooks",
+        "permissions",
+        "architecture"
+      ]
     },
     {
       "id": "d002",
       "type": "constraint",
       "topic": "stack",
       "content": "Self-contained Node.js server with minimal dependencies. Browser-based UI, no native app required.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "define",
       "timestamp": "2026-03-11T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["node", "browser", "stack"]
+      "tags": [
+        "node",
+        "browser",
+        "stack"
+      ]
     },
     {
       "id": "d003",
       "type": "constraint",
       "topic": "security",
-      "content": "Remote access must be secure for short-term sessions — tunneled via ngrok, Cloudflare Tunnel, or Tailscale with authentication.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "content": "Remote access must be secure for short-term sessions \u2014 tunneled via ngrok, Cloudflare Tunnel, or Tailscale with authentication.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "define",
       "timestamp": "2026-03-11T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["security", "tunneling", "remote-access"]
+      "tags": [
+        "security",
+        "tunneling",
+        "remote-access"
+      ]
     },
     {
       "id": "d004",
       "type": "constraint",
       "topic": "ui-features",
       "content": "Dashboard must support: (1) permission request notifications with approve/deny, (2) live activity feed of Claude Code actions, (3) toggleable claim tree and sprint dashboard views.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "define",
       "timestamp": "2026-03-11T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["ui", "permissions", "notifications", "dashboard"]
+      "tags": [
+        "ui",
+        "permissions",
+        "notifications",
+        "dashboard"
+      ]
     },
     {
       "id": "d005",
       "type": "constraint",
       "topic": "outcome",
       "content": "Sprint must produce both a working prototype and an architecture recommendation document for production use.",
-      "source": { "origin": "stakeholder", "artifact": null, "connector": null },
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "define",
       "timestamp": "2026-03-11T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["deliverable", "prototype"]
+      "tags": [
+        "deliverable",
+        "prototype"
+      ]
     },
     {
       "id": "r001",
       "type": "factual",
       "topic": "integration",
-      "content": "Claude Code supports 18 hook events including PreToolUse and PermissionRequest. Both fire before tool execution and can return allow/deny decisions via JSON. HTTP hooks (type: 'http') POST event data to a URL and accept synchronous JSON responses — this is the native integration point for a remote dashboard.",
-      "source": { "origin": "documentation", "artifact": "Claude Code hooks reference", "connector": null },
+      "content": "Claude Code supports 18 hook events including PreToolUse and PermissionRequest. Both fire before tool execution and can return allow/deny decisions via JSON. HTTP hooks (type: 'http') POST event data to a URL and accept synchronous JSON responses \u2014 this is the native integration point for a remote dashboard.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["hooks", "http", "PreToolUse", "PermissionRequest"]
+      "tags": [
+        "hooks",
+        "http",
+        "PreToolUse",
+        "PermissionRequest"
+      ]
     },
     {
       "id": "r002",
       "type": "factual",
       "topic": "integration",
       "content": "PermissionRequest hooks receive permission_suggestions (the 'always allow' options users see) and can respond with decision.behavior='allow'|'deny' plus updatedPermissions. PreToolUse hooks can return permissionDecision='allow'|'deny'|'ask'. Both support updatedInput to modify tool arguments before execution.",
-      "source": { "origin": "documentation", "artifact": "Claude Code hooks reference", "connector": null },
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["hooks", "permissions", "API-surface"]
+      "tags": [
+        "hooks",
+        "permissions",
+        "API-surface"
+      ]
     },
     {
       "id": "r003",
       "type": "factual",
       "topic": "integration",
       "content": "Hook input (POST body) includes: session_id, transcript_path, cwd, permission_mode, tool_name, tool_input, tool_use_id, agent_id, agent_type. This gives a remote dashboard full context about what Claude is doing and why.",
-      "source": { "origin": "documentation", "artifact": "Claude Code hooks reference", "connector": null },
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["hooks", "context", "session-data"]
+      "tags": [
+        "hooks",
+        "context",
+        "session-data"
+      ]
     },
     {
       "id": "r004",
       "type": "factual",
       "topic": "integration",
-      "content": "HTTP hook timeout defaults to 30 seconds (configurable up to 600s). Non-2xx responses or timeouts are non-blocking errors — execution continues (tool call proceeds). CORRECTED per x002: this is fail-open behavior, not a fallthrough to terminal prompt. If dashboard is down, permissions are silently granted.",
-      "source": { "origin": "documentation", "artifact": "Claude Code hooks reference", "connector": null },
+      "content": "HTTP hook timeout defaults to 30 seconds (configurable up to 600s). Non-2xx responses or timeouts are non-blocking errors \u2014 execution continues (tool call proceeds). CORRECTED per x002: this is fail-open behavior, not a fallthrough to terminal prompt. If dashboard is down, permissions are silently granted.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": "x002",
-      "tags": ["hooks", "timeout", "fail-open", "corrected"]
+      "tags": [
+        "hooks",
+        "timeout",
+        "fail-open",
+        "corrected"
+      ]
     },
     {
       "id": "r005",
       "type": "factual",
       "topic": "integration",
       "content": "Hook configuration lives in settings files: ~/.claude/settings.json (user-wide), .claude/settings.json (project), .claude/settings.local.json (personal, gitignored). HTTP hooks support header interpolation with allowedEnvVars for auth tokens.",
-      "source": { "origin": "documentation", "artifact": "Claude Code settings reference", "connector": null },
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code settings reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["hooks", "configuration", "auth"]
+      "tags": [
+        "hooks",
+        "configuration",
+        "auth"
+      ]
     },
     {
       "id": "r006",
       "type": "factual",
       "topic": "integration",
-      "content": "PostToolUse and PostToolUseFailure hooks fire after execution and are non-blocking. These can feed the live activity stream — every tool call, success or failure, gets reported to the dashboard without affecting Claude Code's performance.",
-      "source": { "origin": "documentation", "artifact": "Claude Code hooks reference", "connector": null },
+      "content": "PostToolUse and PostToolUseFailure hooks fire after execution and are non-blocking. These can feed the live activity stream \u2014 every tool call, success or failure, gets reported to the dashboard without affecting Claude Code's performance.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["hooks", "activity-feed", "PostToolUse"]
+      "tags": [
+        "hooks",
+        "activity-feed",
+        "PostToolUse"
+      ]
     },
     {
       "id": "r007",
       "type": "risk",
       "topic": "integration",
       "content": "Hook JSON config is loaded at session startup. Mid-session changes require /hooks menu interaction or session restart. This means the dashboard can't dynamically reconfigure which tools need approval without restarting Claude Code.",
-      "source": { "origin": "documentation", "artifact": "Claude Code hooks reference", "connector": null },
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["hooks", "limitation", "hot-reload"]
+      "tags": [
+        "hooks",
+        "limitation",
+        "hot-reload"
+      ]
     },
     {
       "id": "r008",
       "type": "risk",
       "topic": "security",
       "content": "Check Point Research found CVEs (CVE-2025-59536, CVE-2026-21852) where malicious .claude/settings.json enables RCE through hooks. Hook URLs in settings are plaintext. For our dashboard this means: the hook config itself is a security-sensitive file, and the localhost HTTP endpoint must be authenticated.",
-      "source": { "origin": "web", "artifact": "Check Point security research", "connector": null },
+      "source": {
+        "origin": "web",
+        "artifact": "Check Point security research",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["security", "CVE", "hook-config"]
+      "tags": [
+        "security",
+        "CVE",
+        "hook-config"
+      ]
     },
     {
       "id": "r009",
       "type": "factual",
       "topic": "security",
-      "content": "Ngrok provides TLS tunnels with ephemeral URLs, optional --auth (basic auth), and IP allowlisting on paid plans. Traffic routes through ngrok's infrastructure (trust dependency). Cloudflare Tunnel runs through your own CF account with Zero Trust access policies (email OTP, no client install). Tailscale uses WireGuard mesh VPN with ACLs — zero public exposure but requires client on both ends.",
-      "source": { "origin": "web", "artifact": "ngrok/cloudflare/tailscale docs", "connector": null },
+      "content": "Ngrok provides TLS tunnels with ephemeral URLs, optional --auth (basic auth), and IP allowlisting on paid plans. Traffic routes through ngrok's infrastructure (trust dependency). Cloudflare Tunnel runs through your own CF account with Zero Trust access policies (email OTP, no client install). Tailscale uses WireGuard mesh VPN with ACLs \u2014 zero public exposure but requires client on both ends.",
+      "source": {
+        "origin": "web",
+        "artifact": "ngrok/cloudflare/tailscale docs",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["tunneling", "ngrok", "cloudflare", "tailscale"]
+      "tags": [
+        "tunneling",
+        "ngrok",
+        "cloudflare",
+        "tailscale"
+      ]
     },
     {
       "id": "r010",
       "type": "recommendation",
       "topic": "security",
       "content": "For short-term fixed sessions: ngrok with --auth is adequate. For anything longer or multi-user: Cloudflare Tunnel with Access policies preferred (free tier, email OTP auth, no trust dependency on third-party infra for inspection). Tailscale is best if both endpoints can install a client.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["tunneling", "recommendation"]
+      "tags": [
+        "tunneling",
+        "recommendation"
+      ]
     },
     {
       "id": "r011",
       "type": "recommendation",
       "topic": "architecture",
       "content": "Recommended architecture: Node.js HTTP server on localhost receives hook POSTs from Claude Code. Server holds pending permission requests in memory. Browser connects via WebSocket for real-time push. User approves/denies in browser, server responds to the held HTTP request. PostToolUse hooks feed activity stream. claims.json watched via fs.watch for sprint dashboard updates.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["architecture", "WebSocket", "Node.js"]
+      "tags": [
+        "architecture",
+        "WebSocket",
+        "Node.js"
+      ]
     },
     {
       "id": "r012",
       "type": "factual",
       "topic": "architecture",
-      "content": "Claude Code has 5 permission modes: default (prompt each tool), acceptEdits (auto-accept file edits), plan (read-only), dontAsk (deny unless pre-approved), bypassPermissions (skip all checks). The dashboard should be aware of the current mode and adjust its behavior — e.g., in acceptEdits mode, only non-edit tools trigger approval requests.",
-      "source": { "origin": "documentation", "artifact": "Claude Code permissions reference", "connector": null },
+      "content": "Claude Code has 5 permission modes: default (prompt each tool), acceptEdits (auto-accept file edits), plan (read-only), dontAsk (deny unless pre-approved), bypassPermissions (skip all checks). The dashboard should be aware of the current mode and adjust its behavior \u2014 e.g., in acceptEdits mode, only non-edit tools trigger approval requests.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code permissions reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["permissions", "modes"]
+      "tags": [
+        "permissions",
+        "modes"
+      ]
     },
     {
       "id": "r013",
       "type": "risk",
       "topic": "architecture",
       "content": "The PermissionRequest hook timeout (default 30s) is the window for a human to approve/deny remotely. If the user doesn't respond in time, the hook times out and falls through to local terminal prompt. For mobile/slow connections, may need to extend timeout to 120-300s, but this stalls Claude Code's entire session.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["timeout", "UX", "latency"]
+      "tags": [
+        "timeout",
+        "UX",
+        "latency"
+      ]
     },
     {
       "id": "r014",
       "type": "factual",
       "topic": "prior-art",
-      "content": "Several community projects wrap Claude Code as a subprocess for remote access (claude-code-server, claude-code-webui, CloudeCode, 247-claude-code-remote). None intercept the permission system remotely via hooks — they either pre-approve tools or relay stdin/stdout. Our HTTP hook approach would be novel.",
-      "source": { "origin": "web", "artifact": "GitHub community projects", "connector": null },
+      "content": "Several community projects wrap Claude Code as a subprocess for remote access (claude-code-server, claude-code-webui, CloudeCode, 247-claude-code-remote). None intercept the permission system remotely via hooks \u2014 they either pre-approve tools or relay stdin/stdout. Our HTTP hook approach would be novel.",
+      "source": {
+        "origin": "web",
+        "artifact": "GitHub community projects",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["prior-art", "community"]
+      "tags": [
+        "prior-art",
+        "community"
+      ]
     },
     {
       "id": "r015",
       "type": "estimate",
       "topic": "architecture",
       "content": "Minimum viable prototype requires: (1) Node.js HTTP server ~200 LOC, (2) WebSocket push to browser ~100 LOC, (3) Browser UI with approve/deny + activity feed ~300 LOC HTML/JS, (4) Hook config in settings.json ~20 lines. Total: ~600 LOC, zero npm dependencies if using Node built-in http + ws modules.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T01:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["estimate", "prototype", "LOC"]
+      "tags": [
+        "estimate",
+        "prototype",
+        "LOC"
+      ]
     },
     {
       "id": "p001",
       "type": "factual",
       "topic": "integration",
-      "content": "Working prototype confirms: Node.js HTTP server successfully receives Claude Code hook POSTs, parses tool_name/tool_input/session_id, and returns allow/deny JSON. The hook contract works exactly as documented — zero surprises.",
-      "source": { "origin": "prototype", "artifact": "prototypes/remote-dashboard/server.mjs", "connector": null },
+      "content": "Working prototype confirms: Node.js HTTP server successfully receives Claude Code hook POSTs, parses tool_name/tool_input/session_id, and returns allow/deny JSON. The hook contract works exactly as documented \u2014 zero surprises.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T02:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["prototype", "hooks", "verified"]
+      "tags": [
+        "prototype",
+        "hooks",
+        "verified"
+      ]
     },
     {
       "id": "p002",
       "type": "factual",
       "topic": "architecture",
       "content": "Prototype architecture: server.mjs (HTTP server + WebSocket) holds Claude Code's PermissionRequest response open while pushing the request to the browser via WebSocket. Browser clicks approve/deny, server relays the decision back as the HTTP response. Round-trip is synchronous from Claude Code's perspective.",
-      "source": { "origin": "prototype", "artifact": "prototypes/remote-dashboard/server.mjs", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T02:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["prototype", "architecture", "WebSocket"]
+      "tags": [
+        "prototype",
+        "architecture",
+        "WebSocket"
+      ]
     },
     {
       "id": "p003",
       "type": "factual",
       "topic": "stack",
       "content": "Prototype has zero npm dependencies. Uses Node built-in http, fs, crypto modules plus a custom 130-line WebSocket server (ws.mjs) implementing RFC 6455 text frames. Total: ~550 lines across 3 files (server.mjs, ws.mjs, dashboard.html).",
-      "source": { "origin": "prototype", "artifact": "prototypes/remote-dashboard/", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T02:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["prototype", "zero-deps", "LOC"]
+      "tags": [
+        "prototype",
+        "zero-deps",
+        "LOC"
+      ]
     },
     {
       "id": "p004",
       "type": "factual",
       "topic": "ui-features",
-      "content": "Dashboard UI has 4 tabs: (1) Permissions — pending approve/deny cards with tool context, browser Notification API for push alerts, (2) Activity — real-time feed of all tool calls via PostToolUse hooks, (3) Claims — filterable by topic with evidence tier bars, (4) Sprint — phase/type/evidence breakdowns with stats.",
-      "source": { "origin": "prototype", "artifact": "prototypes/remote-dashboard/dashboard.html", "connector": null },
+      "content": "Dashboard UI has 4 tabs: (1) Permissions \u2014 pending approve/deny cards with tool context, browser Notification API for push alerts, (2) Activity \u2014 real-time feed of all tool calls via PostToolUse hooks, (3) Claims \u2014 filterable by topic with evidence tier bars, (4) Sprint \u2014 phase/type/evidence breakdowns with stats.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/dashboard.html",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T02:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["prototype", "UI", "dashboard"]
+      "tags": [
+        "prototype",
+        "UI",
+        "dashboard"
+      ]
     },
     {
       "id": "p005",
       "type": "factual",
       "topic": "security",
       "content": "Prototype uses token-based auth: random 16-byte hex token generated on startup, required as query param for dashboard and WebSocket. Hook endpoints are unauthenticated (Claude Code doesn't send custom auth by default), but localhost-only. For remote access, tunnel auth (ngrok --auth or Cloudflare Access) provides the outer layer.",
-      "source": { "origin": "prototype", "artifact": "prototypes/remote-dashboard/server.mjs", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T02:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["prototype", "security", "auth"]
+      "tags": [
+        "prototype",
+        "security",
+        "auth"
+      ]
     },
     {
       "id": "p006",
       "type": "risk",
       "topic": "architecture",
       "content": "120-second timeout for held permission requests is a tradeoff: too short and mobile users can't respond in time; too long and Claude Code's session stalls. CORRECTED: timeout now sends explicit deny (was empty JSON = auto-allow). Race condition guarded with resolved flag.",
-      "source": { "origin": "prototype", "artifact": "prototypes/remote-dashboard/server.mjs", "connector": null },
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "prototype",
       "timestamp": "2026-03-11T02:00:00Z",
-      "conflicts_with": ["r013", "x001"],
+      "conflicts_with": [
+        "r013",
+        "x001"
+      ],
       "resolved_by": "x008",
-      "tags": ["prototype", "timeout", "risk", "fixed"]
+      "tags": [
+        "prototype",
+        "timeout",
+        "risk",
+        "fixed"
+      ]
     },
     {
       "id": "x001",
       "type": "risk",
       "topic": "security",
       "content": "CRITICAL (FIXED): Empty JSON {} on 2xx = auto-allow in Claude Code hooks. The original timeout handler sent empty JSON, silently granting every timed-out permission. Fixed: timeout now returns explicit deny decision.",
-      "source": { "origin": "documentation", "artifact": "Claude Code hooks reference", "connector": null },
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "resolved",
       "phase_added": "challenge",
       "timestamp": "2026-03-11T03:00:00Z",
-      "conflicts_with": ["p006"],
+      "conflicts_with": [
+        "p006"
+      ],
       "resolved_by": "x008",
-      "tags": ["security", "timeout", "critical", "fixed"]
+      "tags": [
+        "security",
+        "timeout",
+        "critical",
+        "fixed"
+      ]
     },
     {
       "id": "x002",
       "type": "risk",
       "topic": "security",
-      "content": "HTTP hooks are fail-open by design. If Remote Farmer server crashes or network drops, non-2xx/timeout = non-blocking error = Claude Code proceeds as if no hook exists. A network partition means all permissions auto-granted. This is architecturally unfixable from the dashboard side — it's Claude Code's design choice.",
-      "source": { "origin": "documentation", "artifact": "Claude Code hooks reference", "connector": null },
+      "content": "HTTP hooks are fail-open by design. If Remote Farmer server crashes or network drops, non-2xx/timeout = non-blocking error = Claude Code proceeds as if no hook exists. A network partition means all permissions auto-granted. This is architecturally unfixable from the dashboard side \u2014 it's Claude Code's design choice.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "challenge",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": "x010",
-      "tags": ["security", "fail-open", "critical", "network"]
+      "tags": [
+        "security",
+        "fail-open",
+        "critical",
+        "network"
+      ]
     },
     {
       "id": "x003",
       "type": "risk",
       "topic": "security",
-      "content": "HTTP hooks cannot signal blocking errors via status codes alone — must return 2xx with explicit deny JSON to block. Non-2xx = non-blocking error = execution continues. The only way to block is a well-formed 2xx deny response.",
-      "source": { "origin": "documentation", "artifact": "Claude Code hooks reference", "connector": null },
+      "content": "HTTP hooks cannot signal blocking errors via status codes alone \u2014 must return 2xx with explicit deny JSON to block. Non-2xx = non-blocking error = execution continues. The only way to block is a well-formed 2xx deny response.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "challenge",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["security", "hooks", "deny-mechanism"]
+      "tags": [
+        "security",
+        "hooks",
+        "deny-mechanism"
+      ]
     },
     {
       "id": "x005",
       "type": "risk",
       "topic": "architecture",
-      "content": "Race condition on timeout boundary: user clicks Allow at second 119, timeout fires at second 120. Fixed with a resolved boolean guard — both the timeout and resolve paths check and set it atomically in Node's single-threaded event loop.",
-      "source": { "origin": "analysis", "artifact": "prototypes/remote-dashboard/server.mjs", "connector": null },
+      "content": "Race condition on timeout boundary: user clicks Allow at second 119, timeout fires at second 120. Fixed with a resolved boolean guard \u2014 both the timeout and resolve paths check and set it atomically in Node's single-threaded event loop.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "resolved",
       "phase_added": "challenge",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": "code fix",
-      "tags": ["race-condition", "timeout", "fixed"]
+      "tags": [
+        "race-condition",
+        "timeout",
+        "fixed"
+      ]
     },
     {
       "id": "x006",
       "type": "factual",
       "topic": "architecture",
       "content": "Mobile notification-to-action latency is 15-45s best case (notification 1-3s, user notices 5-15s, unlock 2-3s, open browser 3-5s, read context 5-10s, tap 2-5s). Push notification open rates average 4.6%. If user is in a meeting or phone is on DND, response time is effectively infinite. 120s covers attentive case but fails the common case.",
-      "source": { "origin": "web", "artifact": "Mobile push notification benchmarks", "connector": null },
+      "source": {
+        "origin": "web",
+        "artifact": "Mobile push notification benchmarks",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "challenge",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["mobile", "latency", "UX"]
+      "tags": [
+        "mobile",
+        "latency",
+        "UX"
+      ]
     },
     {
       "id": "x007",
       "type": "risk",
       "topic": "architecture",
       "content": "Stall compounding: 120s timeout * N permissions = potentially minutes of stalling. Typical session triggers 5-15 permissions. Even at 30s average response, 15 permissions = 7.5 minutes of human-in-the-loop latency added to a 2-minute autonomous task.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "challenge",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["stalling", "UX", "latency"]
+      "tags": [
+        "stalling",
+        "UX",
+        "latency"
+      ]
     },
     {
       "id": "x008",
       "type": "recommendation",
       "topic": "architecture",
       "content": "Timeout must be fail-DENY, not fail-ALLOW. Fixed in prototype: timeout now returns explicit deny JSON. This is the single most important security property of the system.",
-      "source": { "origin": "analysis", "artifact": "prototypes/remote-dashboard/server.mjs", "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
       "evidence": "tested",
       "status": "active",
       "phase_added": "challenge",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["fix", "security", "timeout"]
+      "tags": [
+        "fix",
+        "security",
+        "timeout"
+      ]
     },
     {
       "id": "x009",
       "type": "recommendation",
       "topic": "architecture",
       "content": "Implement tiered auto-approval to reduce stall compounding: (1) Auto-allow read-only tools (Read, Glob, Grep). (2) Short timeout 15-30s for low-risk writes. (3) Full 120s only for dangerous ops (Bash, rm, git push). (4) 'Approve all from this session' toggle. (5) Batch checkbox UI for queued permissions.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "stated",
       "status": "active",
       "phase_added": "challenge",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["tiered-approval", "UX", "performance"]
+      "tags": [
+        "tiered-approval",
+        "UX",
+        "performance"
+      ]
     },
     {
       "id": "x010",
       "type": "recommendation",
       "topic": "security",
       "content": "Mitigate fail-open with hybrid approach: HTTP hook for dashboard UI + local command hook as fail-safe that checks if dashboard server is alive before allowing any tool call. Command hooks with exit code 2 ARE blocking errors, unlike HTTP hooks.",
-      "source": { "origin": "documentation", "artifact": "Claude Code hooks reference", "connector": null },
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "challenge",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["security", "fail-safe", "hybrid-hooks"]
+      "tags": [
+        "security",
+        "fail-safe",
+        "hybrid-hooks"
+      ]
     },
     {
       "id": "r016",
       "type": "factual",
       "topic": "tunneling",
-      "content": "ngrok free tier (2026): 1 GB/month bandwidth, up to 3 active endpoints, random subdomains, no session timeout for registered users. An interstitial warning page is injected for all free-tier HTML browser traffic — annoying on mobile unless on paid plan ($8/mo).",
-      "source": { "origin": "web", "artifact": "ngrok free plan docs", "connector": null },
+      "content": "ngrok free tier (2026): 1 GB/month bandwidth, up to 3 active endpoints, random subdomains, no session timeout for registered users. An interstitial warning page is injected for all free-tier HTML browser traffic \u2014 annoying on mobile unless on paid plan ($8/mo).",
+      "source": {
+        "origin": "web",
+        "artifact": "ngrok free plan docs",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["tunneling", "ngrok", "free-tier"]
+      "tags": [
+        "tunneling",
+        "ngrok",
+        "free-tier"
+      ]
     },
     {
       "id": "r017",
       "type": "factual",
       "topic": "tunneling",
       "content": "ngrok basic auth: modern approach uses Traffic Policy or --basic-auth flag. TLS automatic on all tunnels. mTLS requires Enterprise ($39/mo).",
-      "source": { "origin": "web", "artifact": "ngrok auth docs", "connector": null },
+      "source": {
+        "origin": "web",
+        "artifact": "ngrok auth docs",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["tunneling", "ngrok", "auth"]
+      "tags": [
+        "tunneling",
+        "ngrok",
+        "auth"
+      ]
     },
     {
       "id": "r018",
       "type": "factual",
       "topic": "tunneling",
       "content": "Cloudflare Tunnel quick setup: `cloudflared tunnel --url http://localhost:9090` generates a random trycloudflare.com subdomain with no account needed. Persistent tunnels require CF account + domain. Quick tunnels have no SLA.",
-      "source": { "origin": "web", "artifact": "Cloudflare One docs", "connector": null },
+      "source": {
+        "origin": "web",
+        "artifact": "Cloudflare One docs",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["tunneling", "cloudflare", "setup"]
+      "tags": [
+        "tunneling",
+        "cloudflare",
+        "setup"
+      ]
     },
     {
       "id": "r019",
       "type": "factual",
       "topic": "tunneling",
       "content": "Cloudflare Zero Trust Access: free for up to 50 users. Email OTP auth with no identity provider needed. Configure via CF dashboard with email-domain policy. Most secure tunnel option for permission approval.",
-      "source": { "origin": "web", "artifact": "Cloudflare Zero Trust docs", "connector": null },
-      "evidence": "web",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/ \u2014 verified live via trycloudflare.com tunnel to phone",
+        "connector": null
+      },
+      "evidence": "tested",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["tunneling", "cloudflare", "zero-trust", "auth"]
+      "tags": [
+        "tunneling",
+        "cloudflare",
+        "zero-trust",
+        "auth"
+      ]
     },
     {
       "id": "r020",
       "type": "factual",
       "topic": "tunneling",
-      "content": "Tailscale Funnel: `tailscale funnel 9090` exposes service publicly via HTTPS. Requires ACL opt-in. No built-in auth layer — our dashboard token is the only protection. Tailscale Serve (non-Funnel) restricts to tailnet but requires Tailscale app on phone.",
-      "source": { "origin": "web", "artifact": "Tailscale Funnel docs", "connector": null },
+      "content": "Tailscale Funnel: `tailscale funnel 9090` exposes service publicly via HTTPS. Requires ACL opt-in. No built-in auth layer \u2014 our dashboard token is the only protection. Tailscale Serve (non-Funnel) restricts to tailnet but requires Tailscale app on phone.",
+      "source": {
+        "origin": "web",
+        "artifact": "Tailscale Funnel docs",
+        "connector": null
+      },
       "evidence": "web",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["tunneling", "tailscale", "funnel"]
+      "tags": [
+        "tunneling",
+        "tailscale",
+        "funnel"
+      ]
     },
     {
       "id": "r022",
       "type": "recommendation",
       "topic": "tunneling",
       "content": "For 4-hour sprint from phone: Cloudflare Tunnel + Access for recurring use (email OTP second factor, free). ngrok for quick one-off demos. Tailscale Funnel simplest if already installed but no auth layer.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
-      "evidence": "web",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/ \u2014 Cloudflare quick tunnel verified end-to-end",
+        "connector": null
+      },
+      "evidence": "tested",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["tunneling", "recommendation"]
+      "tags": [
+        "tunneling",
+        "recommendation"
+      ]
     },
     {
       "id": "r023",
       "type": "factual",
       "topic": "open-permissions",
       "content": "Claude Code hooks CANNOT inject user prompts or answer AskUserQuestion dialogs. Hooks return allow/deny decisions and additionalContext, but there's no mechanism to submit a prompt on the user's behalf. UserPromptSubmit fires AFTER the user types, not instead of. Multiple GitHub issues (#13830, #15872, #20169) request this feature.",
-      "source": { "origin": "documentation", "artifact": "Claude Code hooks reference", "connector": null },
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["hooks", "text-input", "limitation"]
+      "tags": [
+        "hooks",
+        "text-input",
+        "limitation"
+      ]
     },
     {
       "id": "r024",
       "type": "factual",
       "topic": "open-permissions",
-      "content": "AskUserQuestion triggers a Notification hook with type 'elicitation_dialog'. Notification hooks are observe-only — cannot block, modify, or respond. The question is visible but unanswerable from the dashboard.",
-      "source": { "origin": "documented", "artifact": "Claude Code hooks reference", "connector": null },
+      "content": "AskUserQuestion triggers a Notification hook with type 'elicitation_dialog'. Notification hooks are observe-only \u2014 cannot block, modify, or respond. The question is visible but unanswerable from the dashboard.",
+      "source": {
+        "origin": "documented",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["hooks", "AskUserQuestion", "limitation"]
+      "tags": [
+        "hooks",
+        "AskUserQuestion",
+        "limitation"
+      ]
     },
     {
       "id": "r025",
       "type": "factual",
       "topic": "open-permissions",
       "content": "additionalContext in hook responses injects text into Claude's context but does NOT substitute for user input. Can inject guidance ('the remote user prefers option B') but cannot answer a dialog or submit a prompt.",
-      "source": { "origin": "documentation", "artifact": "Claude Code hooks reference", "connector": null },
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["hooks", "additionalContext", "limitation"]
+      "tags": [
+        "hooks",
+        "additionalContext",
+        "limitation"
+      ]
     },
     {
       "id": "r026",
       "type": "recommendation",
       "topic": "open-permissions",
-      "content": "Workaround for remote text: detect elicitation_dialog via Notification hook, display on dashboard, collect typed answer, inject via next UserPromptSubmit's additionalContext as '[Remote user answered: ...]'. Requires a local trigger prompt — not seamless but functional.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "content": "Workaround for remote text: detect elicitation_dialog via Notification hook, display on dashboard, collect typed answer, inject via next UserPromptSubmit's additionalContext as '[Remote user answered: ...]'. Requires a local trigger prompt \u2014 not seamless but functional.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["hooks", "text-input", "workaround"]
+      "tags": [
+        "hooks",
+        "text-input",
+        "workaround"
+      ]
     },
     {
       "id": "r028",
       "type": "factual",
       "topic": "batch-permissions",
       "content": "Session-scoped auto-approval fully supported via PreToolUse hooks. Server maintains in-memory allow-list, returns permissionDecision:'allow' for matching tools. Matcher supports regex ('Read|Grep|Glob'). Hook fires before EVERY tool call regardless of permission status.",
-      "source": { "origin": "documentation", "artifact": "Claude Code hooks reference", "connector": null },
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["batch-permissions", "PreToolUse", "auto-approve"]
+      "tags": [
+        "batch-permissions",
+        "PreToolUse",
+        "auto-approve"
+      ]
     },
     {
       "id": "r029",
       "type": "factual",
       "topic": "batch-permissions",
-      "content": "updatedPermissions in PermissionRequest response persists 'always allow' rules in Claude Code's own permission system — survives session restarts. permission_suggestions array provides the available options to pass back.",
-      "source": { "origin": "documentation", "artifact": "Claude Code hooks reference", "connector": null },
+      "content": "updatedPermissions in PermissionRequest response persists 'always allow' rules in Claude Code's own permission system \u2014 survives session restarts. permission_suggestions array provides the available options to pass back.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["batch-permissions", "updatedPermissions", "persistent"]
+      "tags": [
+        "batch-permissions",
+        "updatedPermissions",
+        "persistent"
+      ]
     },
     {
       "id": "r030",
       "type": "recommendation",
       "topic": "batch-permissions",
-      "content": "Three-tier trust model: (1) PARANOID — approve everything manually. (2) STANDARD — auto-approve read-only (Read, Grep, Glob, WebSearch), require approval for writes. (3) AUTONOMOUS — auto-approve all except dangerous Bash (rm, git push, curl|sh). Tier stored server-side, checked on every PreToolUse.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "content": "Three-tier trust model: (1) PARANOID \u2014 approve everything manually. (2) STANDARD \u2014 auto-approve read-only (Read, Grep, Glob, WebSearch), require approval for writes. (3) AUTONOMOUS \u2014 auto-approve all except dangerous Bash (rm, git push, curl|sh). Tier stored server-side, checked on every PreToolUse.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["batch-permissions", "trust-levels", "recommendation"]
+      "tags": [
+        "batch-permissions",
+        "trust-levels",
+        "recommendation"
+      ]
     },
     {
       "id": "r031",
       "type": "recommendation",
       "topic": "batch-permissions",
       "content": "Dashboard UX: Rules panel with checkboxes grouped by category (Read tools, Write tools, Execution, Web, MCP). File-path pattern rules ('auto-approve Edit for src/**/*.ts'). Quick-rule dropdown on each permission card ('Always allow this tool'). Store rules server-side, PreToolUse hook checks before deciding.",
-      "source": { "origin": "analysis", "artifact": null, "connector": null },
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["batch-permissions", "UX", "checkboxes"]
+      "tags": [
+        "batch-permissions",
+        "UX",
+        "checkboxes"
+      ]
     },
     {
       "id": "r032",
       "type": "factual",
       "topic": "batch-permissions",
-      "content": "PreToolUse updatedInput can modify tool arguments before execution — enables a 'sandbox' pattern: auto-approve Bash but strip --force flags or add --dry-run. Combined with trust tiers, allows 'cautious autonomous' mode.",
-      "source": { "origin": "documentation", "artifact": "Claude Code hooks reference", "connector": null },
+      "content": "PreToolUse updatedInput can modify tool arguments before execution \u2014 enables a 'sandbox' pattern: auto-approve Bash but strip --force flags or add --dry-run. Combined with trust tiers, allows 'cautious autonomous' mode.",
+      "source": {
+        "origin": "documentation",
+        "artifact": "Claude Code hooks reference",
+        "connector": null
+      },
       "evidence": "documented",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["batch-permissions", "updatedInput", "sandboxing"]
+      "tags": [
+        "batch-permissions",
+        "updatedInput",
+        "sandboxing"
+      ]
+    },
+    {
+      "id": "p007",
+      "type": "factual",
+      "topic": "tunneling",
+      "content": "Cloudflare quick tunnels buffer SSE (Server-Sent Events) despite X-Accel-Buffering:no headers. SSE onopen fires but data never arrives in mobile browser. Polling fallback required for proxy compatibility.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/dashboard.html \u2014 SSE-to-polling fallback",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "supersedes": null,
+      "conflicts_with": [],
+      "resolved_by": null
+    },
+    {
+      "id": "p008",
+      "type": "factual",
+      "topic": "integration",
+      "content": "iOS Safari lacks the Notification API entirely \u2014 typeof Notification === 'undefined'. All references must be guarded or the entire dashboard JS crashes silently.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/dashboard.html \u2014 iOS guard",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "supersedes": null,
+      "conflicts_with": [],
+      "resolved_by": null
+    },
+    {
+      "id": "p009",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Trust tiers (paranoid/standard/autonomous) verified working end-to-end. Standard auto-approves Read/Grep/Glob/WebSearch/WebFetch. Autonomous auto-approves all except dangerous Bash patterns (rm -rf, git push, sudo). Reduces approval fatigue from ~120s/call to zero for safe tools.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/server.mjs \u2014 shouldAutoApprove()",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "supersedes": null,
+      "conflicts_with": [],
+      "resolved_by": null
+    },
+    {
+      "id": "p010",
+      "type": "factual",
+      "topic": "security",
+      "content": "Hook endpoints restricted to localhost via remoteAddress check (127.0.0.1/::1/::ffff:127.0.0.1). Request body capped at 1MB. Token comparison uses crypto.timingSafeEqual. Regex patterns in minimatch escape special chars to prevent ReDoS.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/server.mjs \u2014 security hardening",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "supersedes": null,
+      "conflicts_with": [],
+      "resolved_by": null
+    },
+    {
+      "id": "p011",
+      "type": "factual",
+      "topic": "ui-features",
+      "content": "Polling with state diff eliminates UI flash \u2014 JSON.stringify comparison skips re-render when data unchanged. 2-second poll interval provides near-real-time updates through any HTTP proxy without SSE dependency.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/dashboard.html \u2014 poll()",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "supersedes": null,
+      "conflicts_with": [],
+      "resolved_by": null
+    },
+    {
+      "id": "p012",
+      "type": "recommendation",
+      "topic": "tunneling",
+      "content": "For remote dashboard access: Cloudflare quick tunnel works but requires polling fallback (SSE buffered). Use --token flag for stable auth across server restarts. Tunnel URL changes on each cloudflared restart \u2014 acceptable for dev sessions, needs named tunnel for persistent access.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/ \u2014 live testing session",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "supersedes": null,
+      "conflicts_with": [],
+      "resolved_by": null
     }
   ]
 }
-

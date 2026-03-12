@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T02:40:09.835Z",
-  "claims_hash": "51751a2",
+  "compiled_at": "2026-03-12T04:16:29.767Z",
+  "claims_hash": "473da3f",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -31,18 +31,6 @@
       "message": "Topic \"prior-art\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
       "claims": [
         "r014"
-      ]
-    },
-    {
-      "code": "W_WEAK_EVIDENCE",
-      "message": "Topic \"tunneling\" has only web-level evidence (6 claims)",
-      "claims": [
-        "r016",
-        "r017",
-        "r018",
-        "r019",
-        "r020",
-        "r022"
       ]
     }
   ],
@@ -875,11 +863,11 @@
       "topic": "tunneling",
       "content": "Cloudflare Zero Trust Access: free for up to 50 users. Email OTP auth with no identity provider needed. Configure via CF dashboard with email-domain policy. Most secure tunnel option for permission approval.",
       "source": {
-        "origin": "web",
-        "artifact": "Cloudflare Zero Trust docs",
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/ — verified live via trycloudflare.com tunnel to phone",
         "connector": null
       },
-      "evidence": "web",
+      "evidence": "tested",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
@@ -920,11 +908,11 @@
       "topic": "tunneling",
       "content": "For 4-hour sprint from phone: Cloudflare Tunnel + Access for recurring use (email OTP second factor, free). ngrok for quick one-off demos. Tailscale Funnel simplest if already installed but no auth layer.",
       "source": {
-        "origin": "analysis",
-        "artifact": null,
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/ — Cloudflare quick tunnel verified end-to-end",
         "connector": null
       },
-      "evidence": "web",
+      "evidence": "tested",
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-11T03:00:00Z",
@@ -1132,6 +1120,108 @@
         "updatedInput",
         "sandboxing"
       ]
+    },
+    {
+      "id": "p007",
+      "type": "factual",
+      "topic": "tunneling",
+      "content": "Cloudflare quick tunnels buffer SSE (Server-Sent Events) despite X-Accel-Buffering:no headers. SSE onopen fires but data never arrives in mobile browser. Polling fallback required for proxy compatibility.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/dashboard.html — SSE-to-polling fallback",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "supersedes": null,
+      "conflicts_with": [],
+      "resolved_by": null
+    },
+    {
+      "id": "p008",
+      "type": "factual",
+      "topic": "integration",
+      "content": "iOS Safari lacks the Notification API entirely — typeof Notification === 'undefined'. All references must be guarded or the entire dashboard JS crashes silently.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/dashboard.html — iOS guard",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "supersedes": null,
+      "conflicts_with": [],
+      "resolved_by": null
+    },
+    {
+      "id": "p009",
+      "type": "factual",
+      "topic": "architecture",
+      "content": "Trust tiers (paranoid/standard/autonomous) verified working end-to-end. Standard auto-approves Read/Grep/Glob/WebSearch/WebFetch. Autonomous auto-approves all except dangerous Bash patterns (rm -rf, git push, sudo). Reduces approval fatigue from ~120s/call to zero for safe tools.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/server.mjs — shouldAutoApprove()",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "supersedes": null,
+      "conflicts_with": [],
+      "resolved_by": null
+    },
+    {
+      "id": "p010",
+      "type": "factual",
+      "topic": "security",
+      "content": "Hook endpoints restricted to localhost via remoteAddress check (127.0.0.1/::1/::ffff:127.0.0.1). Request body capped at 1MB. Token comparison uses crypto.timingSafeEqual. Regex patterns in minimatch escape special chars to prevent ReDoS.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/server.mjs — security hardening",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "supersedes": null,
+      "conflicts_with": [],
+      "resolved_by": null
+    },
+    {
+      "id": "p011",
+      "type": "factual",
+      "topic": "ui-features",
+      "content": "Polling with state diff eliminates UI flash — JSON.stringify comparison skips re-render when data unchanged. 2-second poll interval provides near-real-time updates through any HTTP proxy without SSE dependency.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/dashboard.html — poll()",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "supersedes": null,
+      "conflicts_with": [],
+      "resolved_by": null
+    },
+    {
+      "id": "p012",
+      "type": "recommendation",
+      "topic": "tunneling",
+      "content": "For remote dashboard access: Cloudflare quick tunnel works but requires polling fallback (SSE buffered). Use --token flag for stable auth across server restarts. Tunnel URL changes on each cloudflared restart — acceptable for dev sessions, needs named tunnel for persistent access.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/remote-dashboard/ — live testing session",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "supersedes": null,
+      "conflicts_with": [],
+      "resolved_by": null
     }
   ],
   "conflict_graph": {
@@ -1146,7 +1236,7 @@
   },
   "coverage": {
     "architecture": {
-      "claims": 10,
+      "claims": 11,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -1165,7 +1255,8 @@
         "x006",
         "x007",
         "x008",
-        "x009"
+        "x009",
+        "p009"
       ],
       "constraint_count": 0,
       "source_origins": [
@@ -1211,7 +1302,7 @@
       ]
     },
     "integration": {
-      "claims": 9,
+      "claims": 10,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -1228,7 +1319,8 @@
         "r005",
         "r006",
         "r007",
-        "p001"
+        "p001",
+        "p008"
       ],
       "constraint_count": 1,
       "source_origins": [
@@ -1322,7 +1414,7 @@
       ]
     },
     "security": {
-      "claims": 9,
+      "claims": 10,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -1340,7 +1432,8 @@
         "x001",
         "x002",
         "x003",
-        "x010"
+        "x010",
+        "p010"
       ],
       "constraint_count": 1,
       "source_origins": [
@@ -1384,9 +1477,9 @@
       ]
     },
     "tunneling": {
-      "claims": 6,
-      "max_evidence": "web",
-      "status": "weak",
+      "claims": 8,
+      "max_evidence": "tested",
+      "status": "strong",
       "types": [
         "factual",
         "recommendation"
@@ -1397,11 +1490,13 @@
         "r018",
         "r019",
         "r020",
-        "r022"
+        "r022",
+        "p007",
+        "p012"
       ],
       "constraint_count": 0,
       "source_origins": [
-        "analysis",
+        "prototype",
         "web"
       ],
       "source_count": 2,
@@ -1414,7 +1509,7 @@
       ]
     },
     "ui-features": {
-      "claims": 2,
+      "claims": 3,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -1423,7 +1518,8 @@
       ],
       "claim_ids": [
         "d004",
-        "p004"
+        "p004",
+        "p011"
       ],
       "constraint_count": 1,
       "source_origins": [
@@ -1489,7 +1585,13 @@
     "r029": 0,
     "r030": 0,
     "r031": 0,
-    "r032": 0
+    "r032": 0,
+    "p007": 0,
+    "p008": 0,
+    "p009": 0,
+    "p010": 0,
+    "p011": 0,
+    "p012": 0
   },
   "phase_summary": {
     "define": {
@@ -1501,7 +1603,7 @@
       "complete": true
     },
     "prototype": {
-      "claims": 6,
+      "claims": 12,
       "complete": true
     },
     "evaluate": {
@@ -1521,14 +1623,14 @@
     ],
     "initiated": "2026-03-11",
     "phase": "prototype",
-    "total_claims": 50,
-    "active_claims": 47,
+    "total_claims": 56,
+    "active_claims": 53,
     "conflicted_claims": 0,
     "superseded_claims": 1,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:51751a26fa72a38d9ca1819cd8adbcb0498bf58f236365a9c73568f1d8c70cd5",
+    "input_hash": "sha256:473da3f5d1722e167d37938fda8d88bed7e8afbba646c3fe00e1d7a01ba2c364",
     "compiler_version": "0.2.0",
     "deterministic": true
   }
