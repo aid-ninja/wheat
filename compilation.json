@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T10:10:54.239Z",
-  "claims_hash": "38f4552",
+  "compiled_at": "2026-03-12T10:14:35.627Z",
+  "claims_hash": "8c0d720",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -1337,6 +1337,41 @@
   "conflict_graph": {
     "resolved": [
       {
+        "winner": "p003",
+        "loser": "x010",
+        "reason": "evidence_tier: tested (4) > documented (3)"
+      },
+      {
+        "winner": "p003",
+        "loser": "x011",
+        "reason": "evidence_tier: tested (4) > documented (3)"
+      },
+      {
+        "winner": "p003",
+        "loser": "x012",
+        "reason": "evidence_tier: tested (4) > documented (3)"
+      },
+      {
+        "winner": "p003",
+        "loser": "x013",
+        "reason": "evidence_tier: tested (4) > documented (3)"
+      },
+      {
+        "winner": "p003",
+        "loser": "x014",
+        "reason": "evidence_tier: tested (4) > documented (3)"
+      },
+      {
+        "winner": "p003",
+        "loser": "x015",
+        "reason": "evidence_tier: tested (4) > documented (3)"
+      },
+      {
+        "winner": "p003",
+        "loser": "x016",
+        "reason": "evidence_tier: tested (4) > documented (3)"
+      },
+      {
         "winner": "p009",
         "loser": "x004",
         "reason": "evidence_tier: tested (4) > documented (3)"
@@ -1698,14 +1733,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 66,
+    "total_claims": 73,
     "active_claims": 58,
     "conflicted_claims": 0,
-    "superseded_claims": 8,
+    "superseded_claims": 15,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:38f4552bf0bc00321f23f8c45a9e7f97a6227a7ea4df2d4f7239b014d96483f9",
+    "input_hash": "sha256:8c0d720d4491ed96df27f653ea328a7b42a2941c085a0b85fec3c6f4df2e99bf",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

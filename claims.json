@@ -1348,6 +1348,132 @@
       "conflicts_with": ["p009"],
       "resolved_by": null,
       "tags": ["websocket", "reliability", "reconnection", "fallback", "client"]
+    },
+    {
+      "id": "x010",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Abandoned sessions are never garbage-collected. The staleness detector (setInterval every 60s) marks sessions as 'stale' but never removes them from the sessions Map. Over hours/days of use, dead sessions accumulate unboundedly — each carrying up to 200 activity entries, 50 messages, and an agents array. This is a slow memory leak proportional to session churn. Fix: add a reaper that deletes sessions in 'stale' or 'ended' status after a configurable TTL (e.g. 1 hour), persisting them to disk first if needed.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:612-619 — staleness detector sets status but never prunes; sessions Map grows monotonically"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": ["p003"],
+      "resolved_by": null,
+      "tags": ["multi-session", "memory-leak", "gc", "sessions"]
+    },
+    {
+      "id": "x011",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "No cap on session count. getSession() lazily creates a new SessionState for any session_id it hasn't seen. A buggy or malicious localhost process sending hooks with randomized session_ids can create thousands of sessions, exhausting server memory. Fix: enforce a MAX_SESSIONS limit (e.g. 50) and reject new session creation once the cap is reached, or evict the oldest stale session.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:190-201 — getSession() has no size guard on sessions Map"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": ["p003"],
+      "resolved_by": null,
+      "tags": ["multi-session", "denial-of-service", "resource-exhaustion"]
+    },
+    {
+      "id": "x012",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Session ID spoofing allows session hijacking. Any localhost process can send a hook with an arbitrary session_id and getSession() will return the existing SessionState for that ID. There is no proof-of-ownership: a second process can inject activity, trigger permission decisions, or change trust levels for a session it didn't create. Fix: assign a per-session secret on session_start and require it on subsequent hooks, or bind sessions to a source identifier (PID, socket).",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:190-201 — getSession() trusts caller-provided session_id without verification"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": ["p003"],
+      "resolved_by": null,
+      "tags": ["multi-session", "security", "spoofing", "session-hijack"]
+    },
+    {
+      "id": "x013",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Hooks without session_id silently conflate into 'default' session. When a Claude Code instance sends hooks with no session_id field, getSession(undefined) falls back to 'default'. If multiple session-less sources exist (older Claude Code versions, custom scripts), their activity merges into a single bucket with no way to distinguish origin. This makes the 'default' session's activity feed misleading and its trust level changes affect all session-less traffic. Fix: log a warning when session_id is missing and consider assigning synthetic IDs based on source IP+port or rejecting sessionless hooks when multi-session is active.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:190 — getSession(sessionId) where sessionId is undefined/null/empty triggers 'default' fallback"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": ["p003"],
+      "resolved_by": null,
+      "tags": ["multi-session", "backwards-compat", "data-integrity", "default-session"]
+    },
+    {
+      "id": "x014",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Out-of-order lifecycle events cause silent data loss. handleLifecycle 'session_end' does sessions.get(session_id) and silently no-ops if the session doesn't exist. If session_end arrives before session_start (due to network reordering or server restart), the end event is lost — pending permissions are never denied, and the session later appears as 'active' when the delayed start arrives. Fix: if session_end arrives for an unknown session, create a tombstone entry that prevents a subsequent session_start from treating it as new, or queue out-of-order events.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:1190-1202 — session_end silently ignores unknown session_id"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": ["p003"],
+      "resolved_by": null,
+      "tags": ["multi-session", "lifecycle", "ordering", "data-loss"]
+    },
+    {
+      "id": "x015",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "State persistence races under concurrent mutation. saveState() serializes the sessions Map by iterating it, but hook handlers concurrently mutate session properties (activity, pending, trustLevel) on the same tick via HTTP handlers. Node is single-threaded so there's no data corruption, but the periodic 30s saveState timer can fire mid-handler between two related mutations, producing a snapshot with inconsistent cross-session state. More critically, if saveState() is called explicitly from handleTrustLevel/handleRules at nearly the same time as the periodic timer, two writes race on the tmp/rename sequence. Fix: debounce saveState() calls so only one runs per tick, or use a dirty flag checked by a single timer.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:94-111,609,1130,1173 — saveState() called from multiple paths without coordination"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": ["p003"],
+      "resolved_by": null,
+      "tags": ["multi-session", "persistence", "race-condition", "state"]
+    },
+    {
+      "id": "x016",
+      "type": "risk",
+      "topic": "multi-session",
+      "content": "Dashboard UX degrades with many concurrent sessions. allPending(), allActivity(), allMessages(), allAgents() aggregate across all sessions with O(n*m) iteration on every SSE init and /api/state request. The init payload grows linearly with session count. The dashboard has no pagination, virtual scrolling, or session filtering — at 10+ sessions the permission queue becomes unusable, and at 20+ the SSE init payload may exceed mobile proxy buffer limits. Fix: add server-side session filtering (?session_id=X query param), paginate activity, and cap the init payload size.",
+      "source": {
+        "type": "code-review",
+        "origin": "challenge",
+        "detail": "server.mjs:244-292 — allPending/allActivity/allMessages/allAgents iterate all sessions; SSE init sends everything"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "challenge",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": ["p003"],
+      "resolved_by": null,
+      "tags": ["multi-session", "ux", "scalability", "dashboard", "performance"]
     }
   ]
 }
