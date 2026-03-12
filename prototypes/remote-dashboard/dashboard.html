@@ -217,7 +217,7 @@
     border: 1px solid var(--accent);
     color: var(--text);
     border-radius: 8px;
-    font-size: 13px;
+    font-size: 16px; /* 16px prevents iOS Safari auto-zoom on focus */
     font-family: inherit;
     margin-top: 8px;
     resize: vertical;
@@ -492,12 +492,13 @@
     <div class="tab active" data-tab="permissions">
       Permissions <span class="badge" id="permBadge" style="display:none">0</span>
     </div>
+    <div class="tab" data-tab="requests">Requests <span class="badge" id="reqBadge" style="display:none">0</span></div>
     <div class="tab" data-tab="activity">Activity</div>
     <div class="tab" data-tab="claims">Claims</div>
     <div class="tab" data-tab="sprint">Sprint</div>
     <div class="tab" data-tab="rules">Rules</div>
     <div class="tab" data-tab="agents">Agents <span class="badge" id="agentBadge" style="display:none">0</span></div>
-    <div class="tab" data-tab="messages">Messages <span class="badge" id="msgBadge" style="display:none">0</span></div>
+    <!-- Messages tab removed — Requests tab handles interactive questions -->
   </div>
 
   <div class="content" id="content"></div>
@@ -593,9 +594,15 @@ function handleMessage(msg) {
       break;
     case 'permission_request':
       state.pending.push(msg.data);
+      if ((msg.data.tool_name || '') === 'Request') {
+        // Auto-switch to Requests tab
+        activeTab = 'requests';
+        document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'requests'));
+      }
       if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-        new Notification(`${msg.data.tool_name} needs approval`, {
-          body: formatInput(msg.data.tool_input),
+        const label = (msg.data.tool_name === 'Request') ? 'Question from Claude' : `${msg.data.tool_name} needs approval`;
+        new Notification(label, {
+          body: (msg.data.tool_input && msg.data.tool_input.prompt) || formatInput(msg.data.tool_input),
           tag: msg.data.requestId,
         });
       }
@@ -670,7 +677,7 @@ async function respondToQuestion(requestId) {
   await fetch(API('/api/decide'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ requestId, response: input.value }),
+    body: JSON.stringify({ requestId, allow: true, reason: input.value || 'Approved remotely', response: input.value }),
   });
 }
 
@@ -760,41 +767,66 @@ function render() {
   const el = document.getElementById('content');
   switch (activeTab) {
     case 'permissions': el.innerHTML = renderPermissions(); break;
+    case 'requests': el.innerHTML = renderRequests(); break;
     case 'activity': el.innerHTML = renderActivity(); break;
     case 'claims': el.innerHTML = renderClaims(); break;
     case 'sprint': el.innerHTML = renderSprint(); break;
     case 'rules': el.innerHTML = renderRules(); break;
     case 'agents': el.innerHTML = renderAgents(); break;
-    case 'messages': el.innerHTML = renderMessages(); break;
+    // messages tab removed
   }
   // Update agents badge
   const ab = document.getElementById('agentBadge');
   const running = state.agents.filter(a => a.status === 'running').length;
   ab.style.display = running > 0 ? 'inline-block' : 'none';
   ab.textContent = running;
-  const mb = document.getElementById('msgBadge');
-  mb.style.display = state.messages.length > 0 ? 'inline-block' : 'none';
-  mb.textContent = state.messages.length;
   ab.style.background = 'var(--accent)';
 }
 
 function updateBadge() {
+  const reqs = state.pending.filter(p => (p.tool_name || '') === 'Request');
+  const perms = state.pending.filter(p => (p.tool_name || '') !== 'Request');
   const badge = document.getElementById('permBadge');
-  const n = state.pending.length;
-  badge.style.display = n > 0 ? 'inline-block' : 'none';
-  badge.textContent = n;
-  document.title = n > 0 ? `(${n}) Farmer` : 'Farmer';
+  badge.style.display = perms.length > 0 ? 'inline-block' : 'none';
+  badge.textContent = perms.length;
+  const rb = document.getElementById('reqBadge');
+  rb.style.display = reqs.length > 0 ? 'inline-block' : 'none';
+  rb.textContent = reqs.length;
+  const total = state.pending.length;
+  document.title = total > 0 ? `(${total}) Farmer` : 'Farmer';
 }
 
 function renderPermissions() {
-  if (state.pending.length === 0) {
+  const perms = state.pending.filter(p => (p.tool_name || '') !== 'Request');
+  if (perms.length === 0) {
     return `<div class="empty"><div class="icon">&#10003;</div><p>No pending permissions</p><p style="font-size:12px;margin-top:4px;">Claude Code will send requests here when it needs approval</p></div>`;
   }
-  return state.pending.map(p => {
+  return perms.map(p => {
     if (p.isQuestion) {
       return renderQuestionCard(p);
     }
     return renderPermissionCard(p);
+  }).join('');
+}
+
+function renderRequests() {
+  const reqs = state.pending.filter(p => (p.tool_name || '') === 'Request');
+  if (reqs.length === 0) {
+    return `<div class="empty"><div class="icon">&#128172;</div><p>No pending requests</p><p style="font-size:12px;margin-top:4px;">Questions from Claude Code will appear here for your input</p></div>`;
+  }
+  return reqs.map(p => {
+    const prompt = (p.tool_input && p.tool_input.prompt) || p.prompt || '';
+    return `
+      <div class="perm-card question-card" id="perm-${p.requestId}">
+        <div class="tool-name">&#128172; Request from Claude</div>
+        <div class="meta">Session ${esc((p.session_id||'').slice(0,8))} &middot; ${new Date(p.timestamp || Date.now()).toLocaleTimeString()}</div>
+        <div class="tool-input">${esc(prompt)}</div>
+        <textarea class="question-input" id="question-input-${esc(p.requestId)}" placeholder="Type your response..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();respondToQuestion('${esc(p.requestId)}')}"></textarea>
+        <div class="perm-actions">
+          <button class="btn btn-blue" onclick="respondToQuestion('${esc(p.requestId)}')">Send Response</button>
+        </div>
+      </div>
+    `;
   }).join('');
 }
 
