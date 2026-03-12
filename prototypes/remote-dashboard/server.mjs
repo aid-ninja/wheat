@@ -443,7 +443,7 @@ const server = createServer(async (req, res) => {
       res.end(loginPage());
       return;
     }
-    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.writeHead(200, { 'Content-Type': 'text/html', 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' });
     res.end(dashboardPage(TOKEN));
     return;
   }
