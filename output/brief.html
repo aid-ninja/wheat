@@ -46,11 +46,11 @@
 
 <div class="slide">
   <h1>Scaling Remote Farmer</h1>
-  <p class="meta">Decision Brief | 2026-03-12 | 59 claims (58 active) | 7 topics | 9 prototypes | 8 DONE</p>
+  <p class="meta">Decision Brief | 2026-03-12 | 60 claims (58 active) | 7 topics | 10 prototypes | 9 DONE</p>
   <p>Three core workstreams to scale Remote Farmer -- all <strong>prototyped and validated</strong>: multi-session via session-keyed Maps <span class="claim-ref">p003</span>, multi-sprint via sprints/ directory <span class="claim-ref">p004</span>, and repo cartography via compiler-generated topic-map manifest in &lt;10ms <span class="claim-ref">p001</span>.</p>
-  <p>Security hardening is <strong>implemented</strong> <span class="claim-ref">p005</span>, backwards compatibility <strong>verified</strong> (10/10 tests) <span class="claim-ref">p006</span>. Three new prototypes since initial brief: <strong>compiler manifest integration</strong> <span class="claim-ref">p007</span>, <strong>JSON state persistence</strong> <span class="claim-ref">p008</span>, and <strong>WebSocket transport</strong> <span class="claim-ref">p009</span>.</p>
+  <p>Security hardening is <strong>implemented</strong> <span class="claim-ref">p005</span>, backwards compatibility <strong>verified</strong> (10/10 tests) <span class="claim-ref">p006</span>. Four additional prototypes since initial brief: <strong>compiler manifest integration</strong> <span class="claim-ref">p007</span>, <strong>JSON state persistence</strong> <span class="claim-ref">p008</span>, <strong>WebSocket transport</strong> <span class="claim-ref">p009</span>, and <strong>CSRF + token rotation</strong> <span class="claim-ref">p010</span>.</p>
   <div class="grid-3">
-    <div style="background:rgba(52,211,153,0.1);"><div class="num" style="color:var(--green);">59</div><div class="label">CLAIMS</div></div>
+    <div style="background:rgba(52,211,153,0.1);"><div class="num" style="color:var(--green);">60</div><div class="label">CLAIMS</div></div>
     <div style="background:rgba(96,165,250,0.1);"><div class="num" style="color:var(--accent);">7</div><div class="label">TOPICS</div></div>
     <div style="background:rgba(251,191,36,0.1);"><div class="num" style="color:var(--orange);">0</div><div class="label">CONFLICTS</div></div>
   </div>
@@ -69,13 +69,12 @@
   <h2>Recommendation</h2>
   <div class="card card-green">
     <h3>Continue to Production Integration</h3>
-    <p>Eight of eleven roadmap items are DONE. Six prototypes validated. Remaining work:</p>
+    <p>Nine of eleven roadmap items are DONE. Ten prototypes validated. Remaining work:</p>
     <ul>
       <li><strong>Named Cloudflare tunnel</strong> -- stable subdomain + native SSE. WebSocket fallback <span class="claim-ref">p009</span> reduces urgency <span class="claim-ref">r027</span> <span class="claim-ref">r036</span></li>
-      <li><strong>Token rotation + CSRF</strong> -- on-demand rotation <span class="claim-ref">r034</span> + CSRF tokens <span class="claim-ref">r035</span></li>
       <li><strong>Sprint pointer resolution</strong> -- resolve f001: git-derived vs config pointer <span class="claim-ref">f001</span></li>
     </ul>
-    <p>Total estimated remaining effort: <strong>2--3 hours</strong></p>
+    <p>Total estimated remaining effort: <strong>2--2.5 hours</strong></p>
   </div>
 </div>
 
@@ -137,25 +136,28 @@
 
 <div class="slide">
   <h2>Security</h2>
-  <p class="meta">13 claims | tested evidence | 5 sources | hardening + WebSocket implemented</p>
+  <p class="meta">14 claims | tested evidence | 5 sources | hardening + WebSocket + CSRF implemented</p>
   <div class="card card-green">
     <h3>Mitigations Implemented</h3>
     <p>Cookie-based auth (HttpOnly, SameSite=Strict) with 302-redirect to clean URL. CORS restricted to request origin. Referrer-Policy: no-referrer. X-Content-Type-Options: nosniff <span class="claim-ref">p005</span>.</p>
   </div>
   <div class="card card-green">
-    <h3>WebSocket Transport (NEW)</h3>
+    <h3>WebSocket Transport</h3>
     <p>RFC 6455 handshake + frame encoding/decoding (~120 LOC, zero deps, Node 20 compatible). Dashboard cascade fallback: WebSocket first (works through CF quick tunnels), SSE second (works local/direct), 2s polling baseline <span class="claim-ref">p009</span>. 30s ping/pong heartbeat. Auth via timing-safe token comparison. SSE preserved for backwards compat.</p>
+  </div>
+  <div class="card card-green">
+    <h3>CSRF Protection + Token Rotation (NEW)</h3>
+    <p>Per-session CSRF tokens (crypto.randomBytes, 24h TTL) delivered via init payloads and /api/state polling. All mutating dashboard endpoints validate <code>X-CSRF-Token</code> header, returning 403 on mismatch. Hook endpoints (localhost-only) exempt <span class="claim-ref">p010</span>.</p>
+    <p>Configurable auto-rotation (<code>--token-rotation-interval</code>) and on-demand rotation via <code>POST /api/admin/rotate-token</code>. Retired tokens have configurable grace period (<code>--token-grace-period</code>, default 60s) with timing-safe comparison. Dashboard auto-updates cookie on rotation broadcast. Zero deps, ~80 LOC.</p>
   </div>
   <div class="card card-red">
     <h3>Token Compromise Blast Radius</h3>
-    <p>If token leaks: approve arbitrary tool executions, set autonomous mode, inject /api/ask responses, read all data <span class="claim-ref">r031</span>. No token rotation -- restart is only fix <span class="claim-ref">r034</span>.</p>
+    <p>If token leaks: approve arbitrary tool executions, set autonomous mode, inject /api/ask responses, read all data <span class="claim-ref">r031</span>. <strong>Now mitigated</strong>: token rotation + CSRF tokens reduce blast radius and enable recovery without restart <span class="claim-ref">p010</span>.</p>
   </div>
   <div class="card card-orange">
     <h3>Remaining Gaps</h3>
     <ul>
-      <li>CSRF tokens for state-changing endpoints <span class="claim-ref">r035</span></li>
       <li>Named tunnel for stable subdomain <span class="claim-ref">r036</span></li>
-      <li>Token rotation mechanism <span class="claim-ref">r034</span></li>
       <li>Rate limiting on auth failures <span class="claim-ref">r033</span></li>
     </ul>
   </div>
@@ -194,10 +196,10 @@
     <tr><td>SSE broken via quick tunnels <span class="claim-ref">r027</span></td><td style="color:var(--red);">HIGH</td><td>documented</td><td style="color:var(--green);">WebSocket fallback done [p009]</td></tr>
     <tr><td>Token-in-URL leakage <span class="claim-ref">r029</span></td><td style="color:var(--red);">HIGH</td><td>web</td><td style="color:var(--green);">Cookie auth done [p005]</td></tr>
     <tr><td>CORS wildcard <span class="claim-ref">r030</span></td><td style="color:var(--red);">HIGH</td><td>documented</td><td style="color:var(--green);">Restricted done [p005]</td></tr>
-    <tr><td>Full compromise on leak <span class="claim-ref">r031</span></td><td style="color:var(--red);">HIGH</td><td>documented</td><td>Token rotation TODO</td></tr>
-    <tr><td>/api/ask injection <span class="claim-ref">r032</span></td><td style="color:var(--orange);">MED</td><td>documented</td><td>CSRF tokens TODO</td></tr>
+    <tr><td>Full compromise on leak <span class="claim-ref">r031</span></td><td style="color:var(--red);">HIGH</td><td>documented</td><td style="color:var(--green);">Token rotation done [p010]</td></tr>
+    <tr><td>/api/ask injection <span class="claim-ref">r032</span></td><td style="color:var(--orange);">MED</td><td>documented</td><td style="color:var(--green);">CSRF tokens done [p010]</td></tr>
     <tr><td>Approval confusion <span class="claim-ref">r006</span></td><td style="color:var(--orange);">MED</td><td>stated</td><td>Session labels + colors</td></tr>
-    <tr><td>No token rotation <span class="claim-ref">r034</span></td><td style="color:var(--orange);">MED</td><td>documented</td><td>Planned</td></tr>
+    <tr><td>No token rotation <span class="claim-ref">r034</span></td><td style="color:var(--orange);">MED</td><td>documented</td><td style="color:var(--green);">Rotation done [p010]</td></tr>
     <tr><td>All state in-memory <span class="claim-ref">r038</span></td><td style="color:var(--orange);">MED</td><td>documented</td><td style="color:var(--green);">JSON snapshots done [p008]</td></tr>
     <tr><td>Stale manifest <span class="claim-ref">r014</span></td><td style="color:var(--dim);">LOW</td><td>documented</td><td style="color:var(--green);">Compiler-generated [p007]</td></tr>
     <tr><td>Config duplicates derivable state <span class="claim-ref">f001</span></td><td style="color:var(--dim);">LOW</td><td>stated</td><td>Under review</td></tr>
@@ -216,25 +218,25 @@
     <tr><td>6</td><td style="color:var(--green)">Compiler manifest integration</td><td>1h</td><td style="color:var(--green)">DONE (p007)</td></tr>
     <tr><td>7</td><td style="color:var(--green)">State persistence</td><td>1h</td><td style="color:var(--green)">DONE (p008)</td></tr>
     <tr><td>8</td><td style="color:var(--green)">WebSocket transport</td><td>--</td><td style="color:var(--green)">DONE (p009)</td></tr>
-    <tr><td>9</td><td>Named tunnel / stable subdomain</td><td>2h</td><td style="color:var(--orange)">TODO</td></tr>
-    <tr><td>10</td><td>Token rotation + CSRF</td><td>1h</td><td style="color:var(--orange)">TODO</td></tr>
+    <tr><td>9</td><td style="color:var(--green)">Token rotation + CSRF</td><td>1h</td><td style="color:var(--green)">DONE (p010)</td></tr>
+    <tr><td>10</td><td>Named tunnel / stable subdomain</td><td>2h</td><td style="color:var(--orange)">TODO</td></tr>
     <tr><td>11</td><td>Sprint pointer resolution (f001)</td><td>0.5h</td><td style="color:var(--orange)">TODO</td></tr>
   </table>
 
   <h3 style="margin-top: 32px;">Evidence Coverage</h3>
   <table>
     <tr><th>Topic</th><th>Claims</th><th>Evidence</th><th>Sources</th><th>Types</th></tr>
+    <tr><td>security</td><td>14</td><td><span class="tag tested">tested</span></td><td>5</td><td>3/6</td></tr>
     <tr><td>multi-session</td><td>13</td><td><span class="tag tested">tested</span></td><td>4</td><td>5/6</td></tr>
-    <tr><td>security</td><td>13</td><td><span class="tag tested">tested</span></td><td>5</td><td>3/6</td></tr>
-    <tr><td>multi-sprint</td><td>9</td><td><span class="tag tested">tested</span></td><td>3</td><td>5/6</td></tr>
     <tr><td>cartography</td><td>9</td><td><span class="tag tested">tested</span></td><td>4</td><td>4/6</td></tr>
+    <tr><td>multi-sprint</td><td>8</td><td><span class="tag tested">tested</span></td><td>3</td><td>5/6</td></tr>
     <tr><td>performance</td><td>6</td><td><span class="tag tested">tested</span></td><td>4</td><td>4/6</td></tr>
     <tr><td>state-persistence</td><td>6</td><td><span class="tag tested">tested</span></td><td>3</td><td>4/6</td></tr>
     <tr><td>compatibility</td><td>2</td><td><span class="tag tested">tested</span></td><td>2</td><td>2/6</td></tr>
   </table>
 
   <div class="cert">
-    Compilation certificate: sha256:b58e96c31337a191625d7d9ff2f01e873f2ef8971ae9ece8459095dbab5670de | Compiler: wheat v0.2.0 | Claims: 59 (58 active, 1 superseded) | Compiled: 2026-03-12T10:00:19.639Z
+    Compilation certificate: sha256:d66705c3eac8e0bfc97ea56789f9460403a4e74be07671a63069fe5f7ad81fb0 | Compiler: wheat v0.2.0 | Claims: 60 (58 active, 2 superseded) | Compiled: 2026-03-12T10:07:56.692Z
   </div>
 </div>
 

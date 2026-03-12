@@ -19,19 +19,18 @@ css: |-
 
 ## Executive Summary
 
-Remote Farmer should scale via three parallel workstreams -- all prototyped and validated: **multi-session** (session-keyed Maps, tested [p003]), **multi-sprint** (sprints/ directory with config pointer, tested [p004]), and **repo cartography** (compiler-generated topic-map manifest in <10ms, tested [p001]). Security hardening (cookie auth, CORS restriction, Referrer-Policy) is implemented [p005], backwards compatibility is verified with 10/10 tests passing [p006], and three additional prototypes have landed since the initial brief: **compiler manifest integration** [p007], **JSON state persistence with graceful shutdown** [p008], and **WebSocket transport for Cloudflare tunnel compatibility** [p009].
+Remote Farmer should scale via three parallel workstreams -- all prototyped and validated: **multi-session** (session-keyed Maps, tested [p003]), **multi-sprint** (sprints/ directory with config pointer, tested [p004]), and **repo cartography** (compiler-generated topic-map manifest in <10ms, tested [p001]). Security hardening (cookie auth, CORS restriction, Referrer-Policy) is implemented [p005], backwards compatibility is verified with 10/10 tests passing [p006], and four additional prototypes have landed since the initial brief: **compiler manifest integration** [p007], **JSON state persistence with graceful shutdown** [p008], **WebSocket transport for Cloudflare tunnel compatibility** [p009], and **CSRF protection with auth token rotation** [p010].
 
 Stakeholder feedback [f001] flagged that config files should not duplicate git-derivable state, superseding the original config-pointer recommendations [r020, r025].
 
 ## Recommendation
 
-**Continue to production integration.** Six of nine roadmap items are now DONE. Remaining work:
+**Continue to production integration.** Nine of eleven roadmap items are now DONE. Remaining work:
 
 1. **Named Cloudflare tunnel** -- replace quick tunnel for stable subdomain and native SSE support [r027, r036]. WebSocket fallback [p009] reduces urgency but named tunnel remains best practice.
-2. **Token rotation + CSRF** -- add on-demand token rotation [r034] and CSRF tokens for state-changing endpoints [r035].
-3. **Sprint pointer resolution** -- resolve f001 conflict: determine whether sprint pointer uses config file or git-derived detection.
+2. **Sprint pointer resolution** -- resolve f001 conflict: determine whether sprint pointer uses config file or git-derived detection.
 
-Total estimated remaining effort: 2--3 hours.
+Total estimated remaining effort: 2--2.5 hours.
 
 ## Evidence Summary
 
@@ -57,7 +56,7 @@ Each sprint lives in `sprints/<slug>/` with own claims.json. Current sprint poin
 
 **Risk**: Manifest can mislead if out of date -- compiler-generated approach mitigates but does not eliminate [r014]. Search tools still fall back to Glob/Grep if manifest is missing [r013].
 
-### Security (13 claims, tested)
+### Security (14 claims, tested)
 
 Cloudflare quick tunnels do not support SSE -- dashboard falls back to 2s polling [r027]. Quick tunnels are dev-only with 200 concurrent request limit [r028]. Token-in-URL leaks through browser history, Referer headers, proxy logs [r029]. CORS wildcard allows any website to make authenticated API calls [r030]. Full compromise on token leak: approve arbitrary tool executions, set autonomous mode, inject responses [r031]. The `/api/ask` injection vector allows attackers to respond to pending questions before the real user [r032]. Token brute force is infeasible (2^128 entropy, timingSafeEqual) but no rate limiting exists [r033]. No token rotation -- only fix for a leak is full restart [r034]. Token embedded in served HTML via template replacement [r037].
 
@@ -65,7 +64,9 @@ Cloudflare quick tunnels do not support SSE -- dashboard falls back to 2s pollin
 
 **WebSocket transport** [p009]: RFC 6455 handshake and frame encoding (~120 LOC, zero deps). Dashboard cascade fallback: WebSocket first (works through CF quick tunnels), SSE second (works local/direct), 2s polling baseline always active. 30s ping/pong heartbeat. Verified: 101 upgrade with valid token, 401 rejection on invalid.
 
-**Recommended next steps**: Named tunnel for SSE + OAuth [r036], CSRF tokens for state-changing endpoints [r035].
+**CSRF protection + token rotation** [p010]: Per-session CSRF tokens (crypto.randomBytes, 24h TTL) delivered via init payloads (SSE, WebSocket) and /api/state polling. All mutating dashboard endpoints validate X-CSRF-Token header, returning 403 on mismatch. Hook endpoints (localhost-only) exempt. Configurable auto-rotation (--token-rotation-interval) and on-demand rotation via POST /api/admin/rotate-token. Retired tokens have configurable grace period (--token-grace-period, default 60s) with timing-safe comparison. Dashboard auto-updates cookie on rotation broadcast. Zero dependencies, ~80 LOC added.
+
+**Recommended next steps**: Named tunnel for SSE + OAuth [r036].
 
 ### Compatibility (2 claims, tested)
 
@@ -86,10 +87,10 @@ All server state was held in memory with zero persistence -- restart loses every
 | Approval confusion with concurrent sessions [r006] | Medium | stated | Session labels + colors |
 | Token-in-URL leakage [r029] | High | web | Cookie auth implemented [p005] |
 | CORS wildcard [r030] | High | documented | Restricted to origin [p005] |
-| Full compromise on token leak [r031] | High | documented | Cookie auth + Referrer-Policy [p005], token rotation TODO |
-| /api/ask injection [r032] | Medium | documented | Pending: CSRF tokens [r035] |
+| Full compromise on token leak [r031] | High | documented | Cookie auth + Referrer-Policy [p005], token rotation done [p010] |
+| /api/ask injection [r032] | Medium | documented | CSRF tokens implemented [p010] |
 | SSE broken through quick tunnels [r027] | High | documented | WebSocket fallback implemented [p009]; named tunnel recommended |
-| No token rotation [r034] | Medium | documented | Planned: on-demand rotation |
+| No token rotation [r034] | Medium | documented | On-demand + auto rotation implemented [p010] |
 | All state in-memory [r038] | Medium | documented | JSON snapshots implemented [p008] |
 | Manifest can mislead if stale [r014] | Low | documented | Compiler-generated, auto-updates [p007] |
 | Config duplicates derivable state [f001] | Low | stated | Under review: git-derived sprint detection |
@@ -110,8 +111,8 @@ All server state was held in memory with zero persistence -- restart loses every
 | 6 | Compiler manifest integration | 1h | DONE (p007) |
 | 7 | State persistence | 1h | DONE (p008) |
 | 8 | WebSocket transport | -- | DONE (p009) |
-| 9 | Named tunnel / stable subdomain | 2h | TODO |
-| 10 | Token rotation + CSRF | 1h | TODO |
+| 9 | Token rotation + CSRF | 1h | DONE (p010) |
+| 10 | Named tunnel / stable subdomain | 2h | TODO |
 | 11 | Sprint pointer resolution (f001) | 0.5h | TODO |
 
 ## Appendix: Claim Inventory
@@ -176,9 +177,10 @@ All server state was held in memory with zero persistence -- restart loses every
 | p007 | factual | cartography | tested | Manifest wired into compiler, 6.7ms, non-fatal |
 | p008 | factual | state-persistence | tested | JSON persistence + graceful shutdown implemented |
 | p009 | factual | security | tested | WebSocket transport with cascade fallback |
+| p010 | factual | security | tested | CSRF protection + token rotation implemented |
 | f001 | feedback | multi-sprint | stated | Config should not duplicate git-derivable state |
 
 ---
 <div class="certificate">
-Compilation certificate: sha256:b58e96c31337a191625d7d9ff2f01e873f2ef8971ae9ece8459095dbab5670de | Compiler: wheat v0.2.0 | Claims: 59 (58 active, 1 superseded) | Compiled: 2026-03-12T10:00:19.639Z
+Compilation certificate: sha256:d66705c3eac8e0bfc97ea56789f9460403a4e74be07671a63069fe5f7ad81fb0 | Compiler: wheat v0.2.0 | Claims: 60 (58 active, 2 superseded) | Compiled: 2026-03-12T10:07:56.692Z
 </div>
