@@ -17,9 +17,9 @@
  */
 
 import { createServer } from 'node:http';
-import { readFileSync, readdirSync, statSync, watchFile, unwatchFile, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, watchFile, unwatchFile, existsSync, writeFileSync, renameSync } from 'node:fs';
 import { join, resolve, basename, dirname } from 'node:path';
-import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { randomBytes, timingSafeEqual, createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 // --- Config ---
@@ -33,6 +33,63 @@ const PORT = parseInt(arg('port', '9090'), 10);
 const TOKEN = arg('token', randomBytes(16).toString('hex'));
 const CLAIMS_PATH = resolve(arg('claims', './claims.json'));
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const STATE_PATH = join(__dirname, '.farmer-state.json');
+
+// --- State persistence (JSON snapshots) ---
+function saveState() {
+  const state = {
+    savedAt: Date.now(),
+    sessions: [...sessions.entries()].map(([id, s]) => ({
+      id, trustLevel: s.trustLevel,
+      sessionRules: s.sessionRules,
+      activity: s.activity,
+      label: s.label, color: s.color, cwd: s.cwd,
+    })),
+  };
+  try {
+    const tmp = STATE_PATH + '.tmp';
+    writeFileSync(tmp, JSON.stringify(state, null, 2));
+    renameSync(tmp, STATE_PATH);
+  } catch (err) {
+    console.error('[persist] save failed:', err.message);
+  }
+}
+
+function loadState() {
+  if (!existsSync(STATE_PATH)) return;
+  try {
+    const state = JSON.parse(readFileSync(STATE_PATH, 'utf8'));
+    for (const s of state.sessions) {
+      const session = getSession(s.id, s.cwd);
+      session.trustLevel = s.trustLevel || 'paranoid';
+      session.sessionRules = s.sessionRules || [];
+      session.activity = s.activity || [];
+      if (s.label) session.label = s.label;
+      if (s.color) session.color = s.color;
+    }
+    console.log(`  Restored ${state.sessions.length} session(s) from ${basename(STATE_PATH)}`);
+  } catch (err) {
+    console.error('[persist] load failed (corrupt state file?):', err.message);
+  }
+}
+
+// --- Graceful shutdown ---
+function gracefulShutdown(signal) {
+  console.log(`\n  [${signal}] Shutting down gracefully...`);
+  // Deny all pending permissions
+  for (const [sid, session] of sessions) {
+    for (const [reqId, entry] of session.pending) {
+      entry.resolve({ allow: false, reason: `Server shutting down (${signal})` });
+    }
+  }
+  saveState();
+  broadcast({ type: 'server_shutdown', data: { signal } });
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(1), 3000);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // --- SessionState class ---
 class SessionState {
@@ -240,10 +297,216 @@ function minimatch(str, pattern) {
 // --- SSE clients ---
 const sseClients = new Set();
 
+// --- WebSocket clients (raw implementation for Node < 21, zero deps) ---
+const wsClients = new Set();
+
+// WebSocket frame encoder: creates a text frame from a string
+function wsEncodeFrame(payload) {
+  const data = Buffer.from(payload, 'utf8');
+  const len = data.length;
+  let header;
+  if (len < 126) {
+    header = Buffer.alloc(2);
+    header[0] = 0x81; // FIN + text opcode
+    header[1] = len;
+  } else if (len < 65536) {
+    header = Buffer.alloc(4);
+    header[0] = 0x81;
+    header[1] = 126;
+    header.writeUInt16BE(len, 2);
+  } else {
+    header = Buffer.alloc(10);
+    header[0] = 0x81;
+    header[1] = 127;
+    // Write as two 32-bit values (good up to ~4GB)
+    header.writeUInt32BE(0, 2);
+    header.writeUInt32BE(len, 6);
+  }
+  return Buffer.concat([header, data]);
+}
+
+// WebSocket frame decoder: parses a single frame from a buffer
+// Returns { opcode, payload, bytesConsumed } or null if incomplete
+function wsDecodeFrame(buf) {
+  if (buf.length < 2) return null;
+  const firstByte = buf[0];
+  const opcode = firstByte & 0x0f;
+  const masked = (buf[1] & 0x80) !== 0;
+  let payloadLen = buf[1] & 0x7f;
+  let offset = 2;
+
+  if (payloadLen === 126) {
+    if (buf.length < 4) return null;
+    payloadLen = buf.readUInt16BE(2);
+    offset = 4;
+  } else if (payloadLen === 127) {
+    if (buf.length < 10) return null;
+    payloadLen = buf.readUInt32BE(6); // ignore high 32 bits
+    offset = 10;
+  }
+
+  if (masked) {
+    if (buf.length < offset + 4 + payloadLen) return null;
+    const mask = buf.slice(offset, offset + 4);
+    offset += 4;
+    const data = Buffer.alloc(payloadLen);
+    for (let i = 0; i < payloadLen; i++) {
+      data[i] = buf[offset + i] ^ mask[i % 4];
+    }
+    return { opcode, payload: data, bytesConsumed: offset + payloadLen };
+  } else {
+    if (buf.length < offset + payloadLen) return null;
+    return { opcode, payload: buf.slice(offset, offset + payloadLen), bytesConsumed: offset + payloadLen };
+  }
+}
+
+// Handle WebSocket upgrade request
+function handleWsUpgrade(req, socket, head) {
+  const url = new URL(req.url, `http://localhost:${PORT}`);
+
+  // Only upgrade /ws path
+  if (url.pathname !== '/ws') {
+    socket.destroy();
+    return;
+  }
+
+  // Auth check: token in query string
+  const provided = url.searchParams.get('token') || '';
+  if (provided.length !== TOKEN.length || !timingSafeEqual(Buffer.from(provided), Buffer.from(TOKEN))) {
+    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+    socket.destroy();
+    return;
+  }
+
+  // Validate WebSocket headers
+  const key = req.headers['sec-websocket-key'];
+  if (!key) {
+    socket.destroy();
+    return;
+  }
+
+  // Compute accept key per RFC 6455
+  const GUID = '258EAFA5-E914-47DA-95CA-5AB5DC799B07';
+  const acceptKey = createHash('sha1').update(key + GUID).digest('base64');
+
+  // Send upgrade response
+  socket.write(
+    'HTTP/1.1 101 Switching Protocols\r\n' +
+    'Upgrade: websocket\r\n' +
+    'Connection: Upgrade\r\n' +
+    `Sec-WebSocket-Accept: ${acceptKey}\r\n` +
+    '\r\n'
+  );
+
+  // Track this client
+  const client = { socket, buffer: Buffer.alloc(0), alive: true };
+  wsClients.add(client);
+
+  // Send initial state (same as SSE init)
+  const defaultSession = sessions.has('default') ? sessions.get('default') : null;
+  const initBase = {
+    type: 'init',
+    data: {
+      pending: allPending(),
+      activity: allActivity(),
+      claims: null,
+      compilation: null,
+      trustLevel: defaultSession ? defaultSession.trustLevel : 'paranoid',
+      sessionRules: defaultSession ? defaultSession.sessionRules : [],
+      agents: allAgents(),
+      sessions: allSessionsSummary(),
+    }
+  };
+  wsSend(client, initBase);
+  if (claimsData) wsSend(client, { type: 'claims', data: claimsData });
+  if (compilationData) wsSend(client, { type: 'compilation', data: compilationData });
+
+  // Handle incoming frames
+  socket.on('data', (chunk) => {
+    client.buffer = Buffer.concat([client.buffer, chunk]);
+    while (true) {
+      const frame = wsDecodeFrame(client.buffer);
+      if (!frame) break;
+      client.buffer = client.buffer.slice(frame.bytesConsumed);
+
+      if (frame.opcode === 0x08) {
+        // Close frame — echo it back and clean up
+        try { socket.write(wsEncodeFrame('')); } catch {}
+        wsClients.delete(client);
+        socket.destroy();
+        return;
+      }
+      if (frame.opcode === 0x09) {
+        // Ping — respond with pong
+        const pong = Buffer.alloc(2);
+        pong[0] = 0x8a; // FIN + pong
+        pong[1] = 0;
+        try { socket.write(pong); } catch {}
+        continue;
+      }
+      if (frame.opcode === 0x0a) {
+        // Pong — mark alive for heartbeat
+        client.alive = true;
+        continue;
+      }
+      // Text frame (0x01) — currently not expecting client messages, ignore
+    }
+  });
+
+  socket.on('close', () => { wsClients.delete(client); });
+  socket.on('error', () => { wsClients.delete(client); });
+
+  // Process head buffer (data that arrived with the upgrade request)
+  if (head && head.length > 0) {
+    socket.emit('data', head);
+  }
+}
+
+function wsSend(client, msg) {
+  try {
+    const frame = wsEncodeFrame(JSON.stringify(msg));
+    client.socket.write(frame);
+  } catch {
+    wsClients.delete(client);
+    try { client.socket.destroy(); } catch {}
+  }
+}
+
+// WebSocket heartbeat — detect dead connections every 30s
+setInterval(() => {
+  for (const client of wsClients) {
+    if (!client.alive) {
+      wsClients.delete(client);
+      try { client.socket.destroy(); } catch {}
+      continue;
+    }
+    client.alive = false;
+    // Send ping
+    const ping = Buffer.alloc(2);
+    ping[0] = 0x89; // FIN + ping
+    ping[1] = 0;
+    try { client.socket.write(ping); } catch {
+      wsClients.delete(client);
+      try { client.socket.destroy(); } catch {}
+    }
+  }
+}, 30_000);
+
 function broadcast(msg) {
   const data = JSON.stringify(msg);
+  // SSE clients
   for (const res of sseClients) {
     res.write(`data: ${data}\n\n`);
+  }
+  // WebSocket clients
+  const frame = wsEncodeFrame(data);
+  for (const client of wsClients) {
+    try {
+      client.socket.write(frame);
+    } catch {
+      wsClients.delete(client);
+      try { client.socket.destroy(); } catch {}
+    }
   }
 }
 
@@ -269,7 +532,11 @@ function loadCompilation() {
 
 loadClaims();
 loadCompilation();
+loadState();
 watchFile(CLAIMS_PATH, { interval: 1000 }, loadClaims);
+
+// Periodic state flush (catches activity log updates between explicit saves)
+setInterval(saveState, 30_000);
 
 // --- Staleness detection ---
 setInterval(() => {
@@ -741,6 +1008,7 @@ function handleTrustLevel(data, res) {
       timestamp: Date.now(),
     });
   }
+  saveState();
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ ok: true, level: data.level }));
 }
@@ -783,6 +1051,7 @@ function handleRules(data, res) {
 
   // Return the first target's rules for backwards compat
   const sessionRules = targetSessions[0].sessionRules;
+  saveState();
   broadcast({ type: 'rules_updated', data: { sessionRules } });
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ ok: true, sessionRules }));
@@ -1008,9 +1277,12 @@ function dashboardPage(token) {
   return html.replace('{{TOKEN}}', token);
 }
 
+// --- WebSocket upgrade handler ---
+server.on('upgrade', handleWsUpgrade);
+
 server.listen(PORT, () => {
-  console.log(`\n  Remote Farmer (multi-session)`);
-  console.log(`  ──────────────────────────────`);
+  console.log(`\n  Remote Farmer (multi-session + WebSocket)`);
+  console.log(`  ──────────────────────────────────────────`);
   console.log(`  Local:  http://localhost:${PORT}/?token=${TOKEN}`);
   console.log(`  Token:  ${TOKEN}`);
   console.log(`  Claims: ${CLAIMS_PATH}`);
@@ -1019,6 +1291,7 @@ server.listen(PORT, () => {
   console.log(`    http://localhost:${PORT}/hooks/activity`);
   console.log(`    http://localhost:${PORT}/hooks/notification`);
   console.log(`    http://localhost:${PORT}/hooks/lifecycle`);
-  console.log(`\n  SSE stream: /events?token=${TOKEN}`);
+  console.log(`\n  Realtime: WebSocket /ws?token=... (preferred)`);
+  console.log(`            SSE /events?token=... (fallback)`);
   console.log(`  Waiting for connections...\n`);
 });

@@ -1186,6 +1186,24 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["cartography", "manifest", "compiler-integration", "topic-map", "prototype"]
+    },
+    {
+      "id": "p008",
+      "type": "factual",
+      "topic": "state-persistence",
+      "content": "JSON file persistence implemented in server.mjs — atomic writes (tmp+rename) to .farmer-state.json, restores trust levels, session rules, and activity logs on restart. Graceful shutdown (SIGTERM/SIGINT) denies pending permissions and flushes state. Periodic 30s auto-save catches activity between explicit saves. Ephemeral state (pending permissions, SSE connections) correctly excluded. ~45 LOC, zero new dependencies. Verified: state survives full stop/start cycle.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs — saveState(), loadState(), gracefulShutdown()"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["state-persistence", "json-snapshots", "graceful-shutdown", "prototype"]
     }
   ]
 }

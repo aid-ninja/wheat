@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T09:03:19.907Z",
-  "claims_hash": "9bf1528",
+  "compiled_at": "2026-03-12T09:04:18.848Z",
+  "claims_hash": "9cb0d44",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -1285,6 +1285,29 @@
         "topic-map",
         "prototype"
       ]
+    },
+    {
+      "id": "p008",
+      "type": "factual",
+      "topic": "state-persistence",
+      "content": "JSON file persistence implemented in server.mjs — atomic writes (tmp+rename) to .farmer-state.json, restores trust levels, session rules, and activity logs on restart. Graceful shutdown (SIGTERM/SIGINT) denies pending permissions and flushes state. Periodic 30s auto-save catches activity between explicit saves. Ephemeral state (pending permissions, SSE connections) correctly excluded. ~45 LOC, zero new dependencies. Verified: state survives full stop/start cycle.",
+      "source": {
+        "type": "prototype",
+        "origin": "prototype",
+        "detail": "prototypes/remote-dashboard/server.mjs — saveState(), loadState(), gracefulShutdown()"
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "state-persistence",
+        "json-snapshots",
+        "graceful-shutdown",
+        "prototype"
+      ]
     }
   ],
   "conflict_graph": {
@@ -1509,9 +1532,9 @@
       ]
     },
     "state-persistence": {
-      "claims": 5,
-      "max_evidence": "documented",
-      "status": "moderate",
+      "claims": 6,
+      "max_evidence": "tested",
+      "status": "strong",
       "types": [
         "estimate",
         "factual",
@@ -1523,14 +1546,16 @@
         "r039",
         "r040",
         "r041",
-        "r042"
+        "r042",
+        "p008"
       ],
       "constraint_count": 0,
       "source_origins": [
         "analysis",
-        "code-review"
+        "code-review",
+        "prototype"
       ],
-      "source_count": 2,
+      "source_count": 3,
       "type_diversity": 4,
       "missing_types": [
         "constraint",
@@ -1594,7 +1619,8 @@
     "r042": 0,
     "p005": 0,
     "p006": 0,
-    "p007": 0
+    "p007": 0,
+    "p008": 0
   },
   "phase_summary": {
     "define": {
@@ -1606,7 +1632,7 @@
       "complete": true
     },
     "prototype": {
-      "claims": 7,
+      "claims": 8,
       "complete": true
     },
     "evaluate": {
@@ -1626,14 +1652,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 57,
-    "active_claims": 56,
+    "total_claims": 58,
+    "active_claims": 57,
     "conflicted_claims": 0,
     "superseded_claims": 1,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:9bf152819498d479aba9b33b676b6bb0051da2dff7d2ed3857c6c785106e5ea6",
+    "input_hash": "sha256:9cb0d4490dc2a98097b4300bfd108299d65293b8c299b840ef0d7cb7d9c7db14",
     "compiler_version": "0.2.0",
     "deterministic": true
   }
