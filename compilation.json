@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T10:47:39.141Z",
-  "claims_hash": "93906a0",
+  "compiled_at": "2026-03-12T10:49:49.603Z",
+  "claims_hash": "525231b",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -1983,6 +1983,31 @@
         "prediction-accuracy",
         "meta"
       ]
+    },
+    {
+      "id": "p016",
+      "type": "recommendation",
+      "topic": "security",
+      "content": "Named Cloudflare tunnel setup guide created at prototypes/remote-dashboard/setup-tunnel.sh. Named tunnels fix the r027 SSE blocker, provide stable subdomains, remove the 200-request concurrency limit, and enable Cloudflare Access (OAuth/OIDC) as an additional auth layer. Server gains --trust-proxy flag (off by default) that trusts X-Forwarded-For headers from cloudflared for accurate client IP in sourceFingerprint and logging. The flag is opt-in to prevent header spoofing when not behind a trusted proxy. Hook endpoints remain localhost-only regardless of --trust-proxy since Claude Code calls them directly.",
+      "source": {
+        "type": "prototype",
+        "origin": "cloudflare-docs",
+        "detail": "setup-tunnel.sh — interactive setup for cloudflared tunnel create/route/config; server.mjs — TRUST_PROXY flag, clientAddr() helper"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "cloudflare-tunnel",
+        "named-tunnel",
+        "SSE",
+        "proxy-trust",
+        "setup-guide"
+      ]
     }
   ],
   "conflict_graph": {
@@ -2226,7 +2251,7 @@
       ]
     },
     "security": {
-      "claims": 16,
+      "claims": 17,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
@@ -2250,7 +2275,8 @@
         "p009",
         "p010",
         "x004",
-        "x005"
+        "x005",
+        "p016"
       ],
       "constraint_count": 0,
       "source_origins": [
@@ -2408,7 +2434,8 @@
     "cal004": 0,
     "cal005": 0,
     "cal006": 0,
-    "cal007": 0
+    "cal007": 0,
+    "p016": 0
   },
   "phase_summary": {
     "define": {
@@ -2420,7 +2447,7 @@
       "complete": true
     },
     "prototype": {
-      "claims": 15,
+      "claims": 16,
       "complete": true
     },
     "evaluate": {
@@ -2439,10 +2466,10 @@
       "status": "active",
       "phase": "research",
       "question": "How should we scale Remote Farmer for multi-session and multi-sprint support, and what repo cartography system keeps AI model interactions fast as the Wheat codebase and git history grow?",
-      "claims_count": 85,
-      "active_claims": 70,
-      "last_git_activity": "2026-03-12T05:34:24-05:00",
-      "git_commit_count": 75
+      "claims_count": 86,
+      "active_claims": 71,
+      "last_git_activity": "2026-03-12T05:47:49-05:00",
+      "git_commit_count": 76
     },
     {
       "name": "remote-farmer-sprint",
@@ -2475,14 +2502,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 85,
-    "active_claims": 70,
+    "total_claims": 86,
+    "active_claims": 71,
     "conflicted_claims": 0,
     "superseded_claims": 2,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:93906a09cb27c696f6e4b879cddd9b3c3790810bc31695f9e91ec6ccfc4001de",
+    "input_hash": "sha256:525231b1886328a11a39688f6307f664c30d5baaad2a989b52bf35b4643604b5",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

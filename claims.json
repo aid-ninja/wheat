@@ -1996,6 +1996,31 @@
         "prediction-accuracy",
         "meta"
       ]
+    },
+    {
+      "id": "p016",
+      "type": "recommendation",
+      "topic": "security",
+      "content": "Named Cloudflare tunnel setup guide created at prototypes/remote-dashboard/setup-tunnel.sh. Named tunnels fix the r027 SSE blocker, provide stable subdomains, remove the 200-request concurrency limit, and enable Cloudflare Access (OAuth/OIDC) as an additional auth layer. Server gains --trust-proxy flag (off by default) that trusts X-Forwarded-For headers from cloudflared for accurate client IP in sourceFingerprint and logging. The flag is opt-in to prevent header spoofing when not behind a trusted proxy. Hook endpoints remain localhost-only regardless of --trust-proxy since Claude Code calls them directly.",
+      "source": {
+        "type": "prototype",
+        "origin": "cloudflare-docs",
+        "detail": "setup-tunnel.sh — interactive setup for cloudflared tunnel create/route/config; server.mjs — TRUST_PROXY flag, clientAddr() helper"
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "cloudflare-tunnel",
+        "named-tunnel",
+        "SSE",
+        "proxy-trust",
+        "setup-guide"
+      ]
     }
   ]
 }

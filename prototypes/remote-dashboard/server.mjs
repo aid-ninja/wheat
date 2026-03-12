@@ -13,7 +13,7 @@
  * Zero npm dependencies — uses only Node built-in modules.
  *
  * Usage:
- *   node server.mjs [--port 9090] [--token mysecret] [--claims /path/to/claims.json]
+ *   node server.mjs [--port 9090] [--token mysecret] [--claims /path/to/claims.json] [--trust-proxy]
  */
 
 import { createServer } from 'node:http';
@@ -33,6 +33,7 @@ const PORT = parseInt(arg('port', '9090'), 10);
 let TOKEN = arg('token', randomBytes(16).toString('hex'));
 const TOKEN_ROTATION_INTERVAL = parseInt(arg('token-rotation-interval', '0'), 10); // seconds, 0 = disabled
 const TOKEN_GRACE_PERIOD = parseInt(arg('token-grace-period', '60'), 10); // seconds old tokens remain valid
+const TRUST_PROXY = args.includes('--trust-proxy');  // p016: trust X-Forwarded-* from named tunnel
 const CLAIMS_PATH = resolve(arg('claims', './claims.json'));
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const STATE_PATH = join(__dirname, '.farmer-state.json');
@@ -255,10 +256,19 @@ function deriveSessionId(context) {
   return 'auto-' + createHash('sha256').update(parts.join(':')).digest('hex').slice(0, 12);
 }
 
+/** p016: get real client IP, trusting X-Forwarded-For only when --trust-proxy is set */
+function clientAddr(req) {
+  if (TRUST_PROXY) {
+    const xff = req.headers['x-forwarded-for'];
+    if (xff) return xff.split(',')[0].trim();
+  }
+  return req.socket?.remoteAddress || 'unknown';
+}
+
 /** x012: compute a source fingerprint from request metadata for session binding */
 function sourceFingerprint(req) {
   if (!req) return null;
-  const addr = req.socket?.remoteAddress || 'unknown';
+  const addr = clientAddr(req);
   const pid = req._hookPid || '';  // set by hook handler if available
   return createHash('sha256').update(`${addr}:${pid}`).digest('hex').slice(0, 16);
 }
