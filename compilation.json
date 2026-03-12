@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-12T07:52:28.621Z",
-  "claims_hash": "ae44197",
+  "compiled_at": "2026-03-12T08:05:25.119Z",
+  "claims_hash": "d1e9b72",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -853,6 +853,263 @@
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
       "resolved_by": null
+    },
+    {
+      "id": "r027",
+      "type": "factual",
+      "topic": "security",
+      "content": "Cloudflare quick tunnels explicitly do not support Server-Sent Events (SSE). The Farmer dashboard relies on SSE (/events endpoint) for real-time updates. This means the core real-time functionality is broken when exposed via `cloudflared tunnel --url`. Documented at developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/.",
+      "source": {
+        "origin": "cloudflare-docs",
+        "artifact": "https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "cloudflare",
+        "SSE",
+        "quick-tunnel",
+        "blocking"
+      ]
+    },
+    {
+      "id": "r028",
+      "type": "factual",
+      "topic": "security",
+      "content": "Cloudflare quick tunnels are officially 'intended for testing and development only' with no SLA or uptime guarantee. They have a hard limit of 200 concurrent in-flight requests (HTTP 429 on exceed). Quick tunnels are used to test new Cloudflare features before production deployment, meaning behavior may change without notice.",
+      "source": {
+        "origin": "cloudflare-docs",
+        "artifact": "https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "cloudflare",
+        "quick-tunnel",
+        "reliability"
+      ]
+    },
+    {
+      "id": "r029",
+      "type": "risk",
+      "topic": "security",
+      "content": "Auth token is passed as URL query parameter (?token=). Per OWASP, this exposes the token in: browser history, Referer headers (if user clicks any external link from the dashboard), server/proxy logs (including Cloudflare's infrastructure), browser cache, and shoulder surfing. HTTPS does not mitigate these vectors. The login page form also redirects to /?token=<value>, permanently embedding the secret in browser history.",
+      "source": {
+        "origin": "OWASP",
+        "artifact": "https://owasp.org/www-community/vulnerabilities/Information_exposure_through_query_strings_in_url",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "token",
+        "OWASP",
+        "query-param",
+        "referer-leak"
+      ]
+    },
+    {
+      "id": "r030",
+      "type": "risk",
+      "topic": "security",
+      "content": "CORS is set to Access-Control-Allow-Origin: * on all endpoints (server.mjs line 289). This means any website the user has open can make authenticated requests to the Farmer API if it knows the token. Combined with token-in-URL (visible in Referer headers), a malicious page could extract the token from document.referrer and then call /api/decide to approve dangerous tool executions or /api/trust-level to set autonomous mode.",
+      "source": {
+        "origin": "code-review",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "CORS",
+        "CSRF",
+        "XSS",
+        "blast-radius"
+      ]
+    },
+    {
+      "id": "r031",
+      "type": "risk",
+      "topic": "security",
+      "content": "If an attacker obtains the tunnel URL + token, blast radius is full control of Claude Code sessions: approve any tool execution (including rm -rf, git push --force, sudo), deny legitimate requests to disrupt work, set trust level to 'autonomous' to auto-approve all future operations, add session rules to whitelist dangerous tools, and read all activity/claims/compilation data via /api/state. The token is static for the server lifetime with no rotation mechanism.",
+      "source": {
+        "origin": "code-review",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "blast-radius",
+        "token-compromise",
+        "trust-level"
+      ]
+    },
+    {
+      "id": "r032",
+      "type": "risk",
+      "topic": "security",
+      "content": "The /api/ask endpoint is localhost-only (remoteAddress check at line 422-425), but the /api/decide endpoint is token-authenticated and accessible from the internet. An attacker with the token can respond to any pending /api/ask question with arbitrary content, potentially injecting malicious instructions into Claude Code sessions via the question-response flow. The requestId is a random 8-byte hex, but pending requests are enumerable if the attacker connects to the SSE stream.",
+      "source": {
+        "origin": "code-review",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "api-ask",
+        "api-decide",
+        "prompt-injection"
+      ]
+    },
+    {
+      "id": "r033",
+      "type": "factual",
+      "topic": "security",
+      "content": "The 128-bit hex token (32 chars, randomBytes(16)) has 2^128 entropy, making brute force computationally infeasible. The timing-safe comparison (timingSafeEqual at line 297) prevents timing side-channel attacks. However, there is no rate limiting on failed auth attempts — an attacker could make unlimited guesses against the token endpoint. With 200 concurrent request limit on quick tunnels, this is self-limiting but not by design.",
+      "source": {
+        "origin": "code-review",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "brute-force",
+        "token-entropy",
+        "rate-limit"
+      ]
+    },
+    {
+      "id": "r034",
+      "type": "risk",
+      "topic": "security",
+      "content": "No token rotation or session expiry exists. The token is generated once at server start and remains valid until the process is killed. If the token leaks (via Referer, logs, screen share, browser history), the only remediation is restarting the server to generate a new token, which also disconnects all legitimate clients and loses in-memory session state.",
+      "source": {
+        "origin": "code-review",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "token-rotation",
+        "session-management"
+      ]
+    },
+    {
+      "id": "r035",
+      "type": "recommendation",
+      "topic": "security",
+      "content": "Migrate from query-param token to: (1) POST-based login that sets an HttpOnly, Secure, SameSite=Strict cookie, eliminating Referer/history/log leakage. (2) Add Referrer-Policy: no-referrer header to all responses as defense-in-depth. (3) Restrict CORS to the specific tunnel origin instead of wildcard *. (4) Add CSRF token for state-changing POST endpoints (/api/decide, /api/trust-level, /api/rules).",
+      "source": {
+        "origin": "OWASP-best-practices",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "recommendation",
+        "cookie-auth",
+        "CSRF",
+        "CORS"
+      ]
+    },
+    {
+      "id": "r036",
+      "type": "recommendation",
+      "topic": "security",
+      "content": "Replace Cloudflare quick tunnel with a named Cloudflare tunnel for production use. Named tunnels support SSE (fixing the r027 blocker), offer Cloudflare Access integration for additional auth layer (OAuth/OIDC), provide stable subdomains, and have no 200-request concurrency limit. Alternatively, switch to WebSocket transport which quick tunnels do support, replacing the SSE /events endpoint.",
+      "source": {
+        "origin": "cloudflare-docs",
+        "artifact": "https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "recommendation",
+        "cloudflare",
+        "named-tunnel",
+        "WebSocket",
+        "SSE"
+      ]
+    },
+    {
+      "id": "r037",
+      "type": "risk",
+      "topic": "security",
+      "content": "The dashboardPage() function (line 967-971) injects the raw TOKEN into the HTML template via string replacement: html.replace('{{TOKEN}}', token). If an attacker could control the template content (e.g., via path traversal on /output/ or if dashboard.html were compromised), they could extract the token. Additionally, the token is embedded in the served HTML, meaning it is visible in the page source and browser DevTools to anyone who can view the page.",
+      "source": {
+        "origin": "code-review",
+        "artifact": "prototypes/remote-dashboard/server.mjs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "security",
+        "token-exposure",
+        "template-injection"
+      ]
     }
   ],
   "conflict_graph": {
@@ -1022,6 +1279,43 @@
         "recommendation",
         "feedback"
       ]
+    },
+    "security": {
+      "claims": 11,
+      "max_evidence": "documented",
+      "status": "moderate",
+      "types": [
+        "factual",
+        "recommendation",
+        "risk"
+      ],
+      "claim_ids": [
+        "r027",
+        "r028",
+        "r029",
+        "r030",
+        "r031",
+        "r032",
+        "r033",
+        "r034",
+        "r035",
+        "r036",
+        "r037"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "OWASP",
+        "OWASP-best-practices",
+        "cloudflare-docs",
+        "code-review"
+      ],
+      "source_count": 4,
+      "type_diversity": 3,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "feedback"
+      ]
     }
   },
   "corroboration": {
@@ -1061,7 +1355,18 @@
     "p001": 0,
     "p002": 0,
     "p003": 0,
-    "p004": 0
+    "p004": 0,
+    "r027": 0,
+    "r028": 0,
+    "r029": 0,
+    "r030": 0,
+    "r031": 0,
+    "r032": 0,
+    "r033": 0,
+    "r034": 0,
+    "r035": 0,
+    "r036": 0,
+    "r037": 0
   },
   "phase_summary": {
     "define": {
@@ -1069,7 +1374,7 @@
       "complete": true
     },
     "research": {
-      "claims": 23,
+      "claims": 34,
       "complete": true
     },
     "prototype": {
@@ -1093,14 +1398,14 @@
     ],
     "initiated": "2026-03-12",
     "phase": "research",
-    "total_claims": 37,
-    "active_claims": 37,
+    "total_claims": 48,
+    "active_claims": 48,
     "conflicted_claims": 0,
     "superseded_claims": 0,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:ae441976e7a83bf03c806c8b59e26fb1b9529c97fd60c480f9247274263c1eee",
+    "input_hash": "sha256:d1e9b72a4c4f651a51639b13291cebf121cbbedfa22da498f4d1c56420e0f533",
     "compiler_version": "0.2.0",
     "deterministic": true
   }
