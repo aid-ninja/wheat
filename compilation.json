@@ -1,5 +1,5 @@
 {
-  "compiled_at": "2026-03-12T10:34:10.037Z",
+  "compiled_at": "2026-03-12T10:36:12.816Z",
   "claims_hash": "deca61e",
   "compiler_version": "0.2.0",
   "status": "ready",
@@ -2218,8 +2218,8 @@
       "question": "How should we scale Remote Farmer for multi-session and multi-sprint support, and what repo cartography system keeps AI model interactions fast as the Wheat codebase and git history grow?",
       "claims_count": 78,
       "active_claims": 63,
-      "last_git_activity": "2026-03-12T05:31:16-05:00",
-      "git_commit_count": 74
+      "last_git_activity": "2026-03-12T05:34:24-05:00",
+      "git_commit_count": 75
     },
     {
       "name": "remote-farmer-sprint",

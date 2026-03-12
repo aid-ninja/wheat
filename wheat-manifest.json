@@ -1,5 +1,5 @@
 {
-  "generated": "2026-03-12T10:34:10.264Z",
+  "generated": "2026-03-12T10:36:13.004Z",
   "generator": "generate-manifest.js",
   "claims_hash": "deca61e",
   "topics": {
@@ -183,8 +183,8 @@
       "active_claims": 63,
       "path": ".",
       "status": "active",
-      "last_git_activity": "2026-03-12T05:31:16-05:00",
-      "git_commit_count": 74
+      "last_git_activity": "2026-03-12T05:34:24-05:00",
+      "git_commit_count": 75
     },
     "remote-farmer-sprint": {
       "question": "How should we build a remote permission and monitoring dashboard for Claude Code — a web UI that receives permission requests, shows live activity, and lets users approve/deny tool calls remotely over tunneled connections?",
