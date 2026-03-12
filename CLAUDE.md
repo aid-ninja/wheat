@@ -4,18 +4,18 @@
 
 ## Sprint
 
-**Question:** How should we build a remote permission and monitoring dashboard for Claude Code — a web UI that receives permission requests, shows live activity, and lets users approve/deny tool calls remotely over tunneled connections?
+**Question:** How should we scale Remote Farmer for multi-session and multi-sprint support, and what repo cartography system keeps AI model interactions fast as the Wheat codebase and git history grow?
 
-**Audience:** Solo developer (self), potentially extensible to team leads supervising multiple sessions
+**Audience:** Solo developer (self), scaling to team use
 
 **Constraints:**
-- Must integrate with Claude Code's existing hook/permission system (no patching Claude Code itself)
-- Self-contained Node.js server (minimal dependencies)
-- Browser-based UI (mobile-friendly is a plus)
-- Secure short-term tunneled access (ngrok, Cloudflare Tunnel, or Tailscale)
-- Dashboard should also surface Wheat sprint state (claim tree, status)
+- Build on existing Remote Farmer prototype (prototypes/remote-dashboard/)
+- Zero npm dependencies (Node built-in only)
+- Must not slow down existing single-session workflow
+- Repo cartography must work with Claude Code's existing search tools (Glob, Grep, Read)
+- Sprint structure must be self-describing (new sessions understand the repo without full scans)
 
-**Done looks like:** Working prototype + architecture recommendation for production use
+**Done looks like:** Multi-session Farmer prototype + repo manifest/index system + measured improvement in AI search time
 
 ## Connectors
 
