@@ -1,18 +1,9 @@
 {
-  "compiled_at": "2026-03-12T06:49:46.070Z",
-  "claims_hash": "f5aac5c",
+  "compiled_at": "2026-03-12T06:51:10.089Z",
+  "claims_hash": "1f6f8ee",
   "compiler_version": "0.2.0",
-  "status": "blocked",
-  "errors": [
-    {
-      "code": "E_CONFLICT",
-      "message": "Unresolved conflict between r020 and r025 (topic: multi-sprint) — same_evidence_tier: both documented",
-      "claims": [
-        "r020",
-        "r025"
-      ]
-    }
-  ],
+  "status": "ready",
+  "errors": [],
   "warnings": [
     {
       "code": "W_CONSTRAINT_ONLY",
@@ -607,6 +598,29 @@
       "corroborates": "r002"
     },
     {
+      "id": "r020",
+      "type": "recommendation",
+      "topic": "multi-sprint",
+      "content": "Use a sprints/ directory with one subdirectory per sprint (e.g., sprints/remote-farmer/, sprints/scaling-cartography/). Each subdirectory is a self-contained sprint with its own claims.json, compilation.json, research/, prototypes/, output/, and evidence/. The current active sprint is symlinked from the repo root: claims.json -> sprints/current-sprint/claims.json. This preserves backwards compatibility (d004) — all existing tools that read ./claims.json continue working unchanged. The examples/ directory becomes unnecessary; archived sprints live in sprints/ alongside active ones, distinguished only by their meta.phase field. Use wheat.config.json currentSprint field as canonical pointer (not symlinks) per r025 portability concern. Symlinks optional as local convenience only, not committed to git.",
+      "source": {
+        "origin": "analysis",
+        "artifact": "wheat.config.json, wheat-compiler.js, examples/remote-farmer-sprint/",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": "r025",
+      "tags": [
+        "directory-structure",
+        "symlink",
+        "backwards-compat",
+        "sprint-layout"
+      ]
+    },
+    {
       "id": "r021",
       "type": "recommendation",
       "topic": "multi-sprint",
@@ -702,6 +716,30 @@
       ]
     },
     {
+      "id": "r025",
+      "type": "risk",
+      "topic": "multi-sprint",
+      "content": "Symlinks for the 'current sprint' create a git portability issue: symlinks are stored in git but may not resolve correctly on Windows (requires developer mode or admin privileges). For a solo-developer Mac/Linux setup this is fine, but scaling to team use (per sprint question's audience) could hit this. Mitigation: use a wheat.config.json 'currentSprint' field as the canonical pointer, and only create symlinks as a convenience layer that the tooling does not depend on. The compiler and server should read the config field, not follow symlinks.",
+      "source": {
+        "origin": "analysis",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-12T00:00:00Z",
+      "conflicts_with": [],
+      "resolved_by": "r020",
+      "tags": [
+        "symlink",
+        "portability",
+        "windows",
+        "git",
+        "team-use"
+      ]
+    },
+    {
       "id": "r026",
       "type": "estimate",
       "topic": "multi-sprint",
@@ -775,14 +813,7 @@
   ],
   "conflict_graph": {
     "resolved": [],
-    "unresolved": [
-      {
-        "claimA": "r020",
-        "claimB": "r025",
-        "topic": "multi-sprint",
-        "reason": "same_evidence_tier: both documented"
-      }
-    ]
+    "unresolved": []
   },
   "coverage": {
     "cartography": {
@@ -882,20 +913,23 @@
       ]
     },
     "multi-sprint": {
-      "claims": 6,
+      "claims": 8,
       "max_evidence": "documented",
       "status": "moderate",
       "types": [
         "constraint",
         "estimate",
-        "recommendation"
+        "recommendation",
+        "risk"
       ],
       "claim_ids": [
         "d002",
+        "r020",
         "r021",
         "r022",
         "r023",
         "r024",
+        "r025",
         "r026"
       ],
       "constraint_count": 1,
@@ -904,10 +938,9 @@
         "stakeholder"
       ],
       "source_count": 2,
-      "type_diversity": 3,
+      "type_diversity": 4,
       "missing_types": [
         "factual",
-        "risk",
         "feedback"
       ]
     },
@@ -1012,13 +1045,13 @@
     "initiated": "2026-03-12",
     "phase": "research",
     "total_claims": 35,
-    "active_claims": 33,
-    "conflicted_claims": 2,
+    "active_claims": 35,
+    "conflicted_claims": 0,
     "superseded_claims": 0,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:f5aac5c578be42e53ddacc0cdc7731adebdd731e99766cff32fdb51de14f6c04",
+    "input_hash": "sha256:1f6f8eea32516e94997e6639ef683514b0b44e66ac075536ffcfae2ac39b646a",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

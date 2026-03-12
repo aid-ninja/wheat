@@ -112,8 +112,8 @@
     padding: 20px;
     margin-bottom: 16px;
     border-left: 4px solid var(--orange);
-    animation: slideIn 0.3s ease-out;
   }
+  .perm-card.new-card { animation: slideIn 0.3s ease-out; }
   .perm-card.resolved { opacity: 0.5; border-left-color: var(--dim); }
   .perm-card.danger { border-left-color: var(--red); background: rgba(239,68,68,0.05); }
   .perm-card.danger .tool-name { color: var(--red); }
@@ -516,6 +516,7 @@ let state = { pending: [], activity: [], messages: [], claims: null, compilation
 let activeTab = 'permissions';
 let topicFilter = null;
 let openQuickRules = null; // requestId of open quick-rules dropdown
+let seenCardIds = new Set(); // track seen cards to avoid re-animating
 
 // --- Connection: always poll, SSE upgrades if it works ---
 let pollInterval = null;
@@ -581,7 +582,11 @@ async function poll() {
     if (changed) {
       Object.assign(state, newState);
       lastPollHash = JSON.stringify(newState);
-      render();
+      // Don't re-render if user is typing in an input/textarea (kills focus + text)
+      const active = document.activeElement;
+      if (!active || (active.tagName !== 'TEXTAREA' && active.tagName !== 'INPUT')) {
+        render();
+      }
     }
     document.getElementById('statusDot').className = 'dot connected';
     document.getElementById('statusText').textContent = 'Connected (polling)';
@@ -779,6 +784,8 @@ function render() {
     case 'agents': el.innerHTML = renderAgents(); break;
     // messages tab removed
   }
+  // Mark rendered cards as seen
+  state.pending.forEach(p => seenCardIds.add(p.requestId));
   // Update agents badge
   const ab = document.getElementById('agentBadge');
   const running = state.agents.filter(a => a.status === 'running').length;
@@ -820,8 +827,9 @@ function renderRequests() {
   }
   return reqs.map(p => {
     const prompt = (p.tool_input && p.tool_input.prompt) || p.prompt || '';
+    const isNew = !seenCardIds.has(p.requestId);
     return `
-      <div class="perm-card question-card" id="perm-${p.requestId}">
+      <div class="perm-card question-card${isNew ? ' new-card' : ''}" id="perm-${p.requestId}">
         <div class="tool-name">&#128172; Request from Claude</div>
         <div class="meta">Session ${esc((p.session_id||'').slice(0,8))} &middot; ${new Date(p.timestamp || Date.now()).toLocaleTimeString()}</div>
         <div class="tool-input">${esc(prompt)}</div>
@@ -851,8 +859,9 @@ function renderPermissionCard(p) {
   const isReadTool = readTools.includes(toolName);
   const desc = describePermission(p);
 
+  const isNew = !seenCardIds.has(p.requestId);
   return `
-    <div class="perm-card${desc.danger ? ' danger' : ''}" id="perm-${p.requestId}">
+    <div class="perm-card${desc.danger ? ' danger' : ''}${isNew ? ' new-card' : ''}" id="perm-${p.requestId}">
       <div class="tool-name">${desc.icon} ${esc(desc.title)}</div>
       <div class="tool-input" style="font-family:monospace;font-size:12px;background:var(--bg);padding:8px;border-radius:6px;margin:6px 0;word-break:break-all;">${esc(desc.detail)}</div>
       <div class="perm-actions">

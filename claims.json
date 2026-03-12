@@ -14,7 +14,7 @@
       "id": "d001",
       "type": "constraint",
       "topic": "multi-session",
-      "content": "Must support multiple concurrent Claude Code sessions in a single Farmer dashboard — each session identifiable, filterable, and independently approvable.",
+      "content": "Must support multiple concurrent Claude Code sessions in a single Farmer dashboard \u2014 each session identifiable, filterable, and independently approvable.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -35,7 +35,7 @@
       "id": "d002",
       "type": "constraint",
       "topic": "multi-sprint",
-      "content": "Dashboard must support viewing and switching between multiple Wheat sprints — each sprint's claims, compilation status, and output artifacts accessible from the remote UI.",
+      "content": "Dashboard must support viewing and switching between multiple Wheat sprints \u2014 each sprint's claims, compilation status, and output artifacts accessible from the remote UI.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -56,7 +56,7 @@
       "id": "d003",
       "type": "constraint",
       "topic": "cartography",
-      "content": "Repo must be self-describing — new Claude Code sessions should understand the repo structure without full-tree Glob/Grep scans. A manifest or index system must point AI models to the right files quickly.",
+      "content": "Repo must be self-describing \u2014 new Claude Code sessions should understand the repo structure without full-tree Glob/Grep scans. A manifest or index system must point AI models to the right files quickly.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -119,7 +119,7 @@
       "id": "r001",
       "type": "factual",
       "topic": "multi-session",
-      "content": "Every Claude Code hook payload includes session_id (UUID format), transcript_path, cwd, and hook_event_name as common fields. The session_id is a stable UUID assigned at session creation and persists across resume/continue. This is the natural routing key for multi-session Farmer — no custom identification needed.",
+      "content": "Every Claude Code hook payload includes session_id (UUID format), transcript_path, cwd, and hook_event_name as common fields. The session_id is a stable UUID assigned at session creation and persists across resume/continue. This is the natural routing key for multi-session Farmer \u2014 no custom identification needed.",
       "source": {
         "origin": "documentation",
         "artifact": "https://code.claude.com/docs/en/hooks",
@@ -141,7 +141,7 @@
       "id": "r002",
       "type": "factual",
       "topic": "multi-session",
-      "content": "Claude Code supports SessionStart and SessionEnd lifecycle hooks. SessionStart fires on new sessions and resumes (with source field: 'startup', 'resume', 'clear', 'compact'). SessionEnd fires on session termination but cannot block it. These provide explicit session lifecycle signals — no need to infer session boundaries from tool-use gaps.",
+      "content": "Claude Code supports SessionStart and SessionEnd lifecycle hooks. SessionStart fires on new sessions and resumes (with source field: 'startup', 'resume', 'clear', 'compact'). SessionEnd fires on session termination but cannot block it. These provide explicit session lifecycle signals \u2014 no need to infer session boundaries from tool-use gaps.",
       "source": {
         "origin": "documentation",
         "artifact": "https://code.claude.com/docs/en/hooks",
@@ -207,7 +207,7 @@
       "id": "r005",
       "type": "recommendation",
       "topic": "multi-session",
-      "content": "Dashboard UX should use a session-aware unified feed as default view, with session color-coding (assign each session_id a stable hue via hash). Add a session switcher pill bar at top for filtering to one session. Avoid split-view on mobile — phone screen real estate is too limited. Permission cards already show truncated session_id (first 8 chars); extend this with color dots and cwd-derived labels (e.g., 'wheat', 'api-server').",
+      "content": "Dashboard UX should use a session-aware unified feed as default view, with session color-coding (assign each session_id a stable hue via hash). Add a session switcher pill bar at top for filtering to one session. Avoid split-view on mobile \u2014 phone screen real estate is too limited. Permission cards already show truncated session_id (first 8 chars); extend this with color dots and cwd-derived labels (e.g., 'wheat', 'api-server').",
       "source": {
         "origin": "analysis",
         "artifact": "prototypes/remote-dashboard/dashboard.html",
@@ -296,7 +296,7 @@
       "id": "r010",
       "type": "factual",
       "topic": "cartography",
-      "content": "Claude Code automatically loads CLAUDE.md from the project root and from any subdirectory the user is working in. This makes CLAUDE.md files the highest-bandwidth zero-cost channel for repo cartography — anything in CLAUDE.md is in context before the first tool call. Per-directory CLAUDE.md files enable layered discovery without a central mega-file.",
+      "content": "Claude Code automatically loads CLAUDE.md from the project root and from any subdirectory the user is working in. This makes CLAUDE.md files the highest-bandwidth zero-cost channel for repo cartography \u2014 anything in CLAUDE.md is in context before the first tool call. Per-directory CLAUDE.md files enable layered discovery without a central mega-file.",
       "source": {
         "origin": "documentation",
         "artifact": null,
@@ -362,7 +362,7 @@
       "id": "r013",
       "type": "recommendation",
       "topic": "cartography",
-      "content": "Add a sprint-index section to compilation.json (or separate sprints-index.json) listing all sprints — current and archived in examples/ — with question, phase, claim count, date range, and file paths. Lets Claude Code answer 'which sprint dealt with X?' with a single Read instead of scanning examples/*/claims.json.",
+      "content": "Add a sprint-index section to compilation.json (or separate sprints-index.json) listing all sprints \u2014 current and archived in examples/ \u2014 with question, phase, claim count, date range, and file paths. Lets Claude Code answer 'which sprint dealt with X?' with a single Read instead of scanning examples/*/claims.json.",
       "source": {
         "origin": "analysis",
         "artifact": null,
@@ -384,7 +384,7 @@
       "id": "r014",
       "type": "recommendation",
       "topic": "cartography",
-      "content": "Extend commit message conventions with topic tags in brackets: 'wheat: /research [cartography] summary — r010-r012'. Makes git log --grep='[cartography]' instant. Combined with existing 'git log --oneline claims.json' pattern, gives two fast search axes: by topic and by file.",
+      "content": "Extend commit message conventions with topic tags in brackets: 'wheat: /research [cartography] summary \u2014 r010-r012'. Makes git log --grep='[cartography]' instant. Combined with existing 'git log --oneline claims.json' pattern, gives two fast search axes: by topic and by file.",
       "source": {
         "origin": "analysis",
         "artifact": null,
@@ -406,7 +406,7 @@
       "id": "r015",
       "type": "risk",
       "topic": "cartography",
-      "content": "Per-directory CLAUDE.md files create maintenance burden: they must stay synchronized with actual directory contents. If a CLAUDE.md claims 'this directory contains X' but X was moved, it actively misleads the AI — worse than no index. Mitigation: generate per-directory CLAUDE.md content from the manifest automatically, or use manifest as single source of truth and keep CLAUDE.md for behavioral instructions only.",
+      "content": "Per-directory CLAUDE.md files create maintenance burden: they must stay synchronized with actual directory contents. If a CLAUDE.md claims 'this directory contains X' but X was moved, it actively misleads the AI \u2014 worse than no index. Mitigation: generate per-directory CLAUDE.md content from the manifest automatically, or use manifest as single source of truth and keep CLAUDE.md for behavioral instructions only.",
       "source": {
         "origin": "analysis",
         "artifact": null,
@@ -428,7 +428,7 @@
       "id": "r016",
       "type": "estimate",
       "topic": "performance",
-      "content": "At current scale (80 files, 5 claims, 1 sprint), cartography adds overhead without measurable benefit — Glob/Grep return results in <1s. Crossover point where a manifest saves net time: ~150-200 files or 3+ sprints, when Glob results become noisy enough to require follow-up filtering.",
+      "content": "At current scale (80 files, 5 claims, 1 sprint), cartography adds overhead without measurable benefit \u2014 Glob/Grep return results in <1s. Crossover point where a manifest saves net time: ~150-200 files or 3+ sprints, when Glob results become noisy enough to require follow-up filtering.",
       "source": {
         "origin": "analysis",
         "artifact": null,
@@ -472,7 +472,7 @@
       "id": "x001",
       "type": "factual",
       "topic": "performance",
-      "content": "r016 states '80 files' but the repo actually contains 157 files (excluding .git). The repo has already crossed into r016's own predicted crossover zone of 150-200 files. The baseline measurement is wrong, which invalidates the 'overhead without measurable benefit' conclusion — the benefit zone is NOW, not future.",
+      "content": "r016 states '80 files' but the repo actually contains 157 files (excluding .git). The repo has already crossed into r016's own predicted crossover zone of 150-200 files. The baseline measurement is wrong, which invalidates the 'overhead without measurable benefit' conclusion \u2014 the benefit zone is NOW, not future.",
       "source": {
         "origin": "measurement",
         "artifact": "find . -type f -not -path '*/.git/*' | wc -l => 157",
@@ -495,7 +495,7 @@
       "id": "x002",
       "type": "factual",
       "topic": "performance",
-      "content": "r016 frames the crossover as file-count-driven, but the real cost driver is result noise from structural duplication. At 157 files, 'dashboard.html' matches 10 files across examples/*/output, prototypes/*, and templates/. Grepping 'claims.json' returns 71 file matches. Grepping 'createServer' returns 5 hits across 3 near-identical copies. The examples/ directory alone holds 62 files that mirror active sprint files. This duplication means the noise problem is already acute — a manifest that says 'the current sprint's server is prototypes/remote-dashboard/server.mjs, ignore examples/' would eliminate 40-60% of false hits TODAY, not at some future scale.",
+      "content": "r016 frames the crossover as file-count-driven, but the real cost driver is result noise from structural duplication. At 157 files, 'dashboard.html' matches 10 files across examples/*/output, prototypes/*, and templates/. Grepping 'claims.json' returns 71 file matches. Grepping 'createServer' returns 5 hits across 3 near-identical copies. The examples/ directory alone holds 62 files that mirror active sprint files. This duplication means the noise problem is already acute \u2014 a manifest that says 'the current sprint's server is prototypes/remote-dashboard/server.mjs, ignore examples/' would eliminate 40-60% of false hits TODAY, not at some future scale.",
       "source": {
         "origin": "measurement",
         "artifact": "Grep 'dashboard.html' => 40 files; Grep 'claims.json' => 71 files; examples/ = 62 files",
@@ -519,7 +519,7 @@
       "id": "x003",
       "type": "risk",
       "topic": "performance",
-      "content": "r016 measures cost as wall-clock Glob/Grep time (<1s) but ignores the dominant cost: context window pollution. When Grep returns 71 results for 'claims.json', the AI must process all paths in its context window to determine which is relevant. Each noisy tool result consumes ~500-2000 tokens of context. Over a multi-step research session with 20+ tool calls, noisy results can waste 10-40K tokens — equivalent to 5-20% of the context window. The crossover point for cartography is not about I/O latency, it is about context budget efficiency, and that threshold is much lower than r016 estimates because even one noisy result triggers follow-up tool calls that compound the cost.",
+      "content": "r016 measures cost as wall-clock Glob/Grep time (<1s) but ignores the dominant cost: context window pollution. When Grep returns 71 results for 'claims.json', the AI must process all paths in its context window to determine which is relevant. Each noisy tool result consumes ~500-2000 tokens of context. Over a multi-step research session with 20+ tool calls, noisy results can waste 10-40K tokens \u2014 equivalent to 5-20% of the context window. The crossover point for cartography is not about I/O latency, it is about context budget efficiency, and that threshold is much lower than r016 estimates because even one noisy result triggers follow-up tool calls that compound the cost.",
       "source": {
         "origin": "analysis",
         "artifact": null,
@@ -543,7 +543,7 @@
       "id": "w001",
       "type": "factual",
       "topic": "multi-session",
-      "content": "Official Claude Code docs (code.claude.com/docs/en/hooks) confirm SessionStart and SessionEnd are supported hook event types. SessionStart input includes a `source` field with values 'startup', 'resume', 'clear', 'compact' — exactly as r002 states. SessionEnd cannot block termination (no decision control). SessionStart stdout is injected as context for Claude; only `type: \"command\"` hooks are supported for SessionStart. SessionEnd receives a `reason` field (not `source`) with values: 'clear', 'logout', 'prompt_input_exit', 'bypass_permissions_disabled', 'other'.",
+      "content": "Official Claude Code docs (code.claude.com/docs/en/hooks) confirm SessionStart and SessionEnd are supported hook event types. SessionStart input includes a `source` field with values 'startup', 'resume', 'clear', 'compact' \u2014 exactly as r002 states. SessionEnd cannot block termination (no decision control). SessionStart stdout is injected as context for Claude; only `type: \"command\"` hooks are supported for SessionStart. SessionEnd receives a `reason` field (not `source`) with values: 'clear', 'logout', 'prompt_input_exit', 'bypass_permissions_disabled', 'other'.",
       "source": {
         "origin": "documentation",
         "artifact": "https://code.claude.com/docs/en/hooks",
@@ -567,7 +567,7 @@
       "id": "w002",
       "type": "factual",
       "topic": "multi-session",
-      "content": "Claude Code supports at least 17 hook event types beyond SessionStart/SessionEnd: PreToolUse, PostToolUse, PostToolUseFailure, Notification, UserPromptSubmit, Stop, SubagentStart, SubagentStop, PreCompact, PermissionRequest, Setup, TeammateIdle, TaskCompleted, ConfigChange, WorktreeCreate, WorktreeRemove, InstructionsLoaded. Four hook handler types exist: command, http, prompt, and agent — but SessionStart and SessionEnd only support 'command' type. This is a design constraint for multi-session Farmer: SessionStart/SessionEnd hooks cannot use HTTP POST directly; they require a shell command wrapper (e.g., curl) to notify the Farmer server.",
+      "content": "Claude Code supports at least 17 hook event types beyond SessionStart/SessionEnd: PreToolUse, PostToolUse, PostToolUseFailure, Notification, UserPromptSubmit, Stop, SubagentStart, SubagentStop, PreCompact, PermissionRequest, Setup, TeammateIdle, TaskCompleted, ConfigChange, WorktreeCreate, WorktreeRemove, InstructionsLoaded. Four hook handler types exist: command, http, prompt, and agent \u2014 but SessionStart and SessionEnd only support 'command' type. This is a design constraint for multi-session Farmer: SessionStart/SessionEnd hooks cannot use HTTP POST directly; they require a shell command wrapper (e.g., curl) to notify the Farmer server.",
       "source": {
         "origin": "documentation",
         "artifact": "https://code.claude.com/docs/en/hooks",
@@ -590,7 +590,7 @@
       "id": "r020",
       "type": "recommendation",
       "topic": "multi-sprint",
-      "content": "Use a sprints/ directory with one subdirectory per sprint (e.g., sprints/remote-farmer/, sprints/scaling-cartography/). Each subdirectory is a self-contained sprint with its own claims.json, compilation.json, research/, prototypes/, output/, and evidence/. The current active sprint is symlinked from the repo root: claims.json -> sprints/current-sprint/claims.json. This preserves backwards compatibility (d004) — all existing tools that read ./claims.json continue working unchanged. The examples/ directory becomes unnecessary; archived sprints live in sprints/ alongside active ones, distinguished only by their meta.phase field.",
+      "content": "Use a sprints/ directory with one subdirectory per sprint (e.g., sprints/remote-farmer/, sprints/scaling-cartography/). Each subdirectory is a self-contained sprint with its own claims.json, compilation.json, research/, prototypes/, output/, and evidence/. The current active sprint is symlinked from the repo root: claims.json -> sprints/current-sprint/claims.json. This preserves backwards compatibility (d004) \u2014 all existing tools that read ./claims.json continue working unchanged. The examples/ directory becomes unnecessary; archived sprints live in sprints/ alongside active ones, distinguished only by their meta.phase field. Use wheat.config.json currentSprint field as canonical pointer (not symlinks) per r025 portability concern. Symlinks optional as local convenience only, not committed to git.",
       "source": {
         "origin": "analysis",
         "artifact": "wheat.config.json, wheat-compiler.js, examples/remote-farmer-sprint/",
@@ -601,7 +601,7 @@
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
       "conflicts_with": [],
-      "resolved_by": null,
+      "resolved_by": "r025",
       "tags": [
         "directory-structure",
         "symlink",
@@ -661,7 +661,7 @@
       "id": "r023",
       "type": "recommendation",
       "topic": "multi-sprint",
-      "content": "Sprint lifecycle: (1) /init creates a new subdirectory under sprints/ with the standard structure, updates the root symlink to point to it, and registers it in wheat-manifest.json. (2) Active sprints have meta.phase in {define, research, prototype, evaluate}. (3) Archiving sets meta.phase to 'archived' — no file moves needed, the sprint stays in sprints/ but the dashboard sorts it below active sprints. (4) The root symlink always points to the most recently active sprint, updated by /init or a new 'wheat switch <slug>' command. This avoids the current pattern of manually copying sprints to examples/ which loses git history.",
+      "content": "Sprint lifecycle: (1) /init creates a new subdirectory under sprints/ with the standard structure, updates the root symlink to point to it, and registers it in wheat-manifest.json. (2) Active sprints have meta.phase in {define, research, prototype, evaluate}. (3) Archiving sets meta.phase to 'archived' \u2014 no file moves needed, the sprint stays in sprints/ but the dashboard sorts it below active sprints. (4) The root symlink always points to the most recently active sprint, updated by /init or a new 'wheat switch <slug>' command. This avoids the current pattern of manually copying sprints to examples/ which loses git history.",
       "source": {
         "origin": "analysis",
         "artifact": "wheat-init.js, examples/remote-farmer-sprint/",
@@ -685,7 +685,7 @@
       "id": "r024",
       "type": "recommendation",
       "topic": "multi-sprint",
-      "content": "Cross-sprint claim references use the format 'sprint-slug:claim-id' (e.g., 'remote-farmer:r003'). The conflicts_with and resolved_by fields already accept string IDs — extending to qualified IDs requires no schema change. The compiler should resolve cross-sprint references by loading the referenced sprint's claims.json on demand. This enables /merge to create cross-sprint dependency links rather than duplicating claims, and lets /challenge reference claims from a different sprint without copying them.",
+      "content": "Cross-sprint claim references use the format 'sprint-slug:claim-id' (e.g., 'remote-farmer:r003'). The conflicts_with and resolved_by fields already accept string IDs \u2014 extending to qualified IDs requires no schema change. The compiler should resolve cross-sprint references by loading the referenced sprint's claims.json on demand. This enables /merge to create cross-sprint dependency links rather than duplicating claims, and lets /challenge reference claims from a different sprint without copying them.",
       "source": {
         "origin": "analysis",
         "artifact": "wheat-compiler.js",
@@ -718,10 +718,8 @@
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-03-12T00:00:00Z",
-      "conflicts_with": [
-        "r020"
-      ],
-      "resolved_by": null,
+      "conflicts_with": [],
+      "resolved_by": "r020",
       "tags": [
         "symlink",
         "portability",
