@@ -864,15 +864,23 @@ function handleMessage(msg) {
 // --- Actions ---
 async function decide(requestId, allow) {
   const card = document.getElementById('perm-' + requestId);
-  if (card) { card.style.opacity = '0.4'; card.style.pointerEvents = 'none'; }
-  showToast(allow ? 'Approved' : 'Denied');
-  await fetch(API('/api/decide'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ requestId, allow, reason: allow ? 'Approved remotely' : 'Denied remotely' }),
-  });
-  state.pending = state.pending.filter(p => p.requestId !== requestId);
-  render();
+  if (card) {
+    const icon = allow ? '&#9989;' : '&#10060;';
+    const label = allow ? 'Approved' : 'Denied';
+    const color = allow ? 'var(--green)' : 'var(--red)';
+    card.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:32px;">' + icon + '</div><div style="color:' + color + ';font-weight:700;margin-top:8px;">' + label + '</div></div>';
+  }
+  try {
+    await fetch(API('/api/decide'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requestId, allow, reason: allow ? 'Approved remotely' : 'Denied remotely' }),
+    });
+  } catch(e) {}
+  setTimeout(() => {
+    state.pending = state.pending.filter(p => p.requestId !== requestId);
+    render();
+  }, 1500);
 }
 
 async function respondToQuestion(requestId, directVal) {
@@ -880,15 +888,20 @@ async function respondToQuestion(requestId, directVal) {
   const val = directVal || (input && input.value) || 'Approved remotely';
   if (input) input.blur();
   const card = document.getElementById('perm-' + requestId);
-  if (card) { card.style.opacity = '0.4'; card.style.pointerEvents = 'none'; }
-  showToast('Sent: ' + val.slice(0, 40));
-  await fetch(API('/api/decide'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ requestId, allow: true, reason: val, response: val }),
-  });
-  state.pending = state.pending.filter(p => p.requestId !== requestId);
-  render();
+  if (card) {
+    card.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:32px;">&#9989;</div><div style="color:var(--green);font-weight:700;margin-top:8px;">Sent!</div><div style="color:var(--dim);font-size:12px;margin-top:4px;">' + esc(val.slice(0, 50)) + '</div></div>';
+  }
+  try {
+    await fetch(API('/api/decide'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requestId, allow: true, reason: val, response: val }),
+    });
+  } catch(e) { /* network error — response already sent visually */ }
+  setTimeout(() => {
+    state.pending = state.pending.filter(p => p.requestId !== requestId);
+    render();
+  }, 1500);
 }
 
 function showToast(msg) {
