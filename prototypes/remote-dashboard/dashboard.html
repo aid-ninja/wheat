@@ -497,6 +497,7 @@
     <div class="tab" data-tab="sprint">Sprint</div>
     <div class="tab" data-tab="rules">Rules</div>
     <div class="tab" data-tab="agents">Agents <span class="badge" id="agentBadge" style="display:none">0</span></div>
+    <div class="tab" data-tab="messages">Messages <span class="badge" id="msgBadge" style="display:none">0</span></div>
   </div>
 
   <div class="content" id="content"></div>
@@ -507,7 +508,7 @@ const TOKEN = '{{TOKEN}}';
 const API = (path) => `${location.origin}${path}?token=${TOKEN}`;
 
 let evtSource;
-let state = { pending: [], activity: [], claims: null, compilation: null, trustLevel: 'paranoid', sessionRules: [], agents: [] };
+let state = { pending: [], activity: [], messages: [], claims: null, compilation: null, trustLevel: 'paranoid', sessionRules: [], agents: [] };
 let activeTab = 'permissions';
 let topicFilter = null;
 let openQuickRules = null; // requestId of open quick-rules dropdown
@@ -565,6 +566,7 @@ async function poll() {
     const newState = {
       pending: freshPending,
       activity: data.activity || [],
+      messages: data.messages || [],
       claims: data.claims,
       compilation: data.compilation,
       trustLevel: data.trustLevel,
@@ -605,8 +607,17 @@ function handleMessage(msg) {
       state.pending = state.pending.filter(p => p.requestId !== msg.data.requestId);
       break;
     case 'notification_card':
-      state.activity.unshift({ type: 'info', tool_name: msg.data.tool_name, tool_input: { prompt: msg.data.prompt }, timestamp: msg.data.timestamp });
-      if (state.activity.length > 200) state.activity.pop();
+      if (msg.data.tool_name === 'Message') {
+        state.messages.push({ content: msg.data.prompt, timestamp: msg.data.timestamp });
+        if (state.messages.length > 50) state.messages.shift();
+      } else {
+        state.activity.unshift({ type: 'info', tool_name: msg.data.tool_name, tool_input: { prompt: msg.data.prompt }, timestamp: msg.data.timestamp });
+        if (state.activity.length > 200) state.activity.pop();
+      }
+      break;
+    case 'message':
+      state.messages.push(msg.data);
+      if (state.messages.length > 50) state.messages.shift();
       break;
     case 'auto_approved':
       // Flash in activity, no pending entry
@@ -754,12 +765,16 @@ function render() {
     case 'sprint': el.innerHTML = renderSprint(); break;
     case 'rules': el.innerHTML = renderRules(); break;
     case 'agents': el.innerHTML = renderAgents(); break;
+    case 'messages': el.innerHTML = renderMessages(); break;
   }
   // Update agents badge
   const ab = document.getElementById('agentBadge');
   const running = state.agents.filter(a => a.status === 'running').length;
   ab.style.display = running > 0 ? 'inline-block' : 'none';
   ab.textContent = running;
+  const mb = document.getElementById('msgBadge');
+  mb.style.display = state.messages.length > 0 ? 'inline-block' : 'none';
+  mb.textContent = state.messages.length;
   ab.style.background = 'var(--accent)';
 }
 
@@ -1069,6 +1084,18 @@ function renderRules() {
       }
     </div>
   `;
+}
+
+function renderMessages() {
+  if (state.messages.length === 0) {
+    return `<div class="empty"><div class="icon">&#128172;</div><p>No messages yet</p><p style="font-size:12px;margin-top:4px;">Claude's text responses will appear here</p></div>`;
+  }
+  return [...state.messages].reverse().map(m => `
+    <div style="background:var(--bg2);border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid var(--border);border-left:3px solid var(--accent);">
+      <div style="font-size:12px;color:var(--dim);margin-bottom:8px;">${timeAgo(m.timestamp)}</div>
+      <div style="font-size:13px;line-height:1.6;color:var(--text);white-space:pre-wrap;">${esc(m.content)}</div>
+    </div>
+  `).join('');
 }
 
 function renderAgents() {

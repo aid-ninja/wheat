@@ -32,6 +32,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 // --- State ---
 const pending = new Map();   // requestId → { resolve, data, timestamp }
 const activity = [];         // last 200 activity events
+const messages = [];         // last 50 Claude text messages
 const MAX_ACTIVITY = 200;
 let claimsData = null;
 let compilationData = null;
@@ -233,12 +234,37 @@ const server = createServer(async (req, res) => {
     return handleRules(data, res);
   }
 
+  // Message from Claude (text output relay)
+  if (req.method === 'POST' && url.pathname === '/api/message') {
+    // No auth — called from localhost by Claude Code via curl
+    const remoteAddr = req.socket.remoteAddress;
+    if (remoteAddr !== '127.0.0.1' && remoteAddr !== '::1' && remoteAddr !== '::ffff:127.0.0.1') {
+      res.writeHead(403); res.end('Localhost only'); return;
+    }
+    let body;
+    try { body = await readBody(req); } catch { res.writeHead(413); res.end('Too large'); return; }
+    let data;
+    try { data = JSON.parse(body); } catch { res.writeHead(400); res.end('Bad JSON'); return; }
+    const msg = {
+      type: 'message',
+      content: data.content || data.message || '',
+      timestamp: Date.now(),
+    };
+    messages.push(msg);
+    if (messages.length > 50) messages.shift();
+    broadcast({ type: 'message', data: msg });
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end('{"ok":true}');
+    return;
+  }
+
   if (req.method === 'GET' && url.pathname === '/api/state') {
     if (!authOk()) { res.writeHead(401); res.end('Unauthorized'); return; }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       pending: [...pending.entries()].map(([id, p]) => ({ id, ...p.data, timestamp: p.timestamp })),
       activity: activity.slice(-50),
+      messages,
       claims: claimsData,
       compilation: compilationData,
       trustLevel,
