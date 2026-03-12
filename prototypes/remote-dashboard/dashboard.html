@@ -623,6 +623,7 @@
 <script>
 const TOKEN = '{{TOKEN}}';
 const API = (path) => `${location.origin}${path}?token=${TOKEN}`;
+const isRequest = (name) => name === 'Request' || name === 'AskUserQuestion';
 
 let evtSource;
 let state = { pending: [], activity: [], messages: [], claims: null, compilation: null, trustLevel: 'paranoid', sessionRules: [], agents: [], sprints: [], activeSprint: null, sessions: [] };
@@ -776,13 +777,13 @@ function handleMessage(msg) {
       break;
     case 'permission_request':
       state.pending.push(msg.data);
-      if ((msg.data.tool_name || '') === 'Request') {
+      if (isRequest(msg.data.tool_name || '')) {
         // Auto-switch to Requests tab
         activeTab = 'requests';
         document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'requests'));
       }
       if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-        const label = (msg.data.tool_name === 'Request') ? 'Question from Claude' : `${msg.data.tool_name} needs approval`;
+        const label = isRequest(msg.data.tool_name) ? 'Question from Claude' : `${msg.data.tool_name} needs approval`;
         new Notification(label, {
           body: (msg.data.tool_input && msg.data.tool_input.prompt) || formatInput(msg.data.tool_input),
           tag: msg.data.requestId,
@@ -1009,8 +1010,8 @@ function render() {
 }
 
 function updateBadge() {
-  const reqs = state.pending.filter(p => (p.tool_name || '') === 'Request');
-  const perms = state.pending.filter(p => (p.tool_name || '') !== 'Request');
+  const reqs = state.pending.filter(p => isRequest(p.tool_name || ''));
+  const perms = state.pending.filter(p => !isRequest(p.tool_name || ''));
   const badge = document.getElementById('permBadge');
   badge.style.display = perms.length > 0 ? 'inline-block' : 'none';
   badge.textContent = perms.length;
@@ -1022,7 +1023,7 @@ function updateBadge() {
 }
 
 function renderPermissions() {
-  const allPerms = state.pending.filter(p => (p.tool_name || '') !== 'Request');
+  const allPerms = state.pending.filter(p => !isRequest(p.tool_name || ''));
   const perms = filterBySession(allPerms);
   if (perms.length === 0) {
     return `<div class="empty"><div class="icon">&#10003;</div><p>No pending permissions</p><p style="font-size:12px;margin-top:4px;">Claude Code will send requests here when it needs approval</p></div>`;
@@ -1036,19 +1037,25 @@ function renderPermissions() {
 }
 
 function renderRequests() {
-  const allReqs = state.pending.filter(p => (p.tool_name || '') === 'Request');
+  const allReqs = state.pending.filter(p => isRequest(p.tool_name || ''));
   const reqs = filterBySession(allReqs);
   if (reqs.length === 0) {
     return `<div class="empty"><div class="icon">&#128172;</div><p>No pending requests</p><p style="font-size:12px;margin-top:4px;">Questions from Claude Code will appear here for your input</p></div>`;
   }
   return reqs.map(p => {
-    const prompt = (p.tool_input && p.tool_input.prompt) || p.prompt || '';
+    const ti = p.tool_input || {};
+    const prompt = ti.prompt || p.prompt || (ti.questions && ti.questions[0] && ti.questions[0].question) || '';
+    const options = (ti.questions && ti.questions[0] && ti.questions[0].options) || [];
     const isNew = !seenCardIds.has(p.requestId);
     return `
       <div class="perm-card question-card${isNew ? ' new-card' : ''}" id="perm-${p.requestId}" data-session-id="${esc(p.session_id || '')}">
-        <div class="tool-name">&#128172; Request from Claude ${sessionTag(p.session_id)}</div>
+        <div class="tool-name">&#128172; Question from Claude ${sessionTag(p.session_id)}</div>
         <div class="meta">${sessionTag(p.session_id) ? '' : 'Session ' + esc((p.session_id||'').slice(0,8)) + ' &middot; '}${new Date(p.timestamp || Date.now()).toLocaleTimeString()}</div>
         <div class="tool-input">${esc(prompt)}</div>
+        ${options.length > 0 ? `<div style="display:flex;flex-direction:column;gap:6px;margin:8px 0;">${options.map(o => `
+          <button class="btn" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);text-align:left;padding:10px 12px;border-radius:8px;" onclick="document.getElementById('question-input-${esc(p.requestId)}').value='${esc(o.label)}';respondToQuestion('${esc(p.requestId)}')">
+            <strong>${esc(o.label)}</strong>${o.description ? `<br><span style="font-size:11px;color:var(--dim);">${esc(o.description)}</span>` : ''}
+          </button>`).join('')}</div>` : ''}
         <textarea class="question-input" id="question-input-${esc(p.requestId)}" placeholder="Type your response..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();respondToQuestion('${esc(p.requestId)}')}"></textarea>
         <div class="perm-actions">
           <button class="btn btn-blue" onclick="respondToQuestion('${esc(p.requestId)}')">Send Response</button>

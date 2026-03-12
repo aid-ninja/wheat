@@ -195,8 +195,8 @@ const DANGEROUS_BASH_PATTERNS = [
 ];
 
 function shouldAutoApprove(session, toolName, toolInput) {
-  // Requests always need human input — never auto-approve
-  if (toolName === 'Request') return false;
+  // Requests/questions always need human input — never auto-approve
+  if (toolName === 'Request' || toolName === 'AskUserQuestion') return false;
 
   // Check session rules first (user-defined overrides)
   for (const rule of session.sessionRules) {
